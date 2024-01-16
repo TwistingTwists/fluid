@@ -5,7 +5,7 @@ defmodule Fluid.MixProject do
     [
       app: :fluid,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.16",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -50,7 +50,14 @@ defmodule Fluid.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      # ash dependencies
+      {:ash, github: "ash-project/ash", override: true},
+      {:ash_postgres, github: "ash-project/ash_postgres"},
+      {:ash_phoenix, github: "ash-project/ash_phoenix", override: true},
+      {:spark, github: "ash-project/spark", override: true},
+      {:ash_oban, github: "ash-project/ash_oban"}
+      # {:oban, "~> 2.17"},
     ]
   end
 
