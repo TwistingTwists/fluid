@@ -7,7 +7,11 @@
 # General application configuration
 import Config
 
+config :ash,
+  use_all_identities_in_manage_relationship?: false
+
 config :fluid,
+  ash_apis: [Fluid.Model.Api],
   ecto_repos: [Fluid.Repo],
   generators: [timestamp_type: :utc_datetime]
 
