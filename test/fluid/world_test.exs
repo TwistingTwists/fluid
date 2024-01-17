@@ -10,7 +10,6 @@ defmodule Fluid.WorldTest do
     test "world has at least one standalone uncapped tank (SUCT)" do
       {:ok, world} =
         World.create(%{name: "One test World"})
-        |> IO.inspect(label: "one world")
 
       assert world.count_standalone_uncapped_tank >= 1
     end

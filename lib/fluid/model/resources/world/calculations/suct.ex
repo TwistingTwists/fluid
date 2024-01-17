@@ -13,8 +13,6 @@ defmodule Fluid.Model.World.Calculations.SUCT do
 
   @impl true
   def init(opts) do
-    opts |> IO.inspect(label: " init/1 in calculation.suct -> opts are ->")
-
     {:ok, opts}
   end
 
@@ -25,16 +23,17 @@ defmodule Fluid.Model.World.Calculations.SUCT do
 
   @impl true
   def load(_, opts, _) do
-    opts |> IO.inspect(label: " load/3 in calculation.suct -> opts are ->")
-
     [opts[:field]]
   end
 
   @impl Ash.Calculation
   def calculate(worlds, opts, _resolution) do
+    fields = List.wrap(opts[:field])
+
     {:ok,
      Enum.map(worlds, fn world ->
-       do_calculate(world.tanks)
+       tanks = Kernel.get_in(world, Enum.map(fields, &Access.key/1))
+       do_calculate(tanks)
      end)}
   end
 
