@@ -1,4 +1,4 @@
-defmodule Fluid.Model.Pool do
+defmodule Fluid.Model.Warehouse do
   require Logger
 
   use Ash.Resource,
@@ -7,25 +7,14 @@ defmodule Fluid.Model.Pool do
   attributes do
     uuid_primary_key :id
 
-    attribute :name, :string, allow_nil?: true
-
-    attribute :capacity_type, Fluid.PoolCapacityTypes do
-      description "fixed, uncapped, or capped pools can exist"
-    end
-
-    attribute :location_type, Fluid.TankLocationTypes do
-      description "Whether it is standalone or in warehouse"
-    end
-
     create_timestamp :created_at
     update_timestamp :updated_at
   end
 
   relationships do
-    # toask cannot belong to both at the same time?
-    belongs_to :warehouse, Fluid.Model.Warehouse
-    # toask can belong_to world directly - iff pool is standalone?
     belongs_to :world, Fluid.Model.World
+    has_many :tanks, Fluid.Model.Tank
+    has_many :pools, Fluid.Model.Pool
   end
 
   actions do
@@ -40,7 +29,7 @@ defmodule Fluid.Model.Pool do
     end
 
     create :create do
-      change load([:world, :warehouse])
+      change load([:tanks, :pools, :world])
     end
   end
 
@@ -56,7 +45,7 @@ defmodule Fluid.Model.Pool do
   end
 
   postgres do
-    table "pools"
+    table "warehouses"
     repo Fluid.Repo
   end
 end

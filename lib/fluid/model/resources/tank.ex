@@ -7,7 +7,7 @@ defmodule Fluid.Model.Tank do
   attributes do
     uuid_primary_key :id
 
-    attribute :name, allow_nil?: true
+    attribute :name, :string, allow_nil?: true
 
     attribute :capacity_type, Fluid.TankCapacityTypes do
       description "uncapped, capped"
@@ -24,6 +24,40 @@ defmodule Fluid.Model.Tank do
 
     create_timestamp :created_at
     update_timestamp :updated_at
+  end
+
+  relationships do
+    # toask cannot belong to both at the same time?
+    belongs_to :warehouse, Fluid.Model.Warehouse
+    # toask can belong_to world directly - iff pool is standalone?
+    belongs_to :world, Fluid.Model.World
+  end
+
+  actions do
+    defaults [:update]
+
+    read :read_all do
+      primary? true
+    end
+
+    read :read_by_id do
+      get_by [:id]
+    end
+
+    create :create do
+      change load([:world, :warehouse])
+    end
+  end
+
+  code_interface do
+    define_for Fluid.Model.Api
+
+    define :create
+
+    define :read_all
+    define :read_by_id, args: [:id]
+
+    define :update
   end
 
   postgres do
