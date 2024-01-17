@@ -7,9 +7,24 @@ defmodule Fluid.WorldTest do
   alias Fluid.Model.Tank
 
   describe "World Struct Validations" do
+    @tag tested: true
+    test "Every world needs to have a name" do
+      {:error, error_val} = World.create()
+
+      assert %{
+               errors: [
+                 %Ash.Error.Changes.Required{
+                   field: :name,
+                   type: :attribute
+                 }
+               ]
+             } =
+               error_val
+    end
+
+    @tag tested: true
     test "world has at least one standalone uncapped tank (SUCT)" do
-      {:ok, world} =
-        World.create(%{name: "One test World"})
+      {:ok, world} = World.create(%{name: "One test World"})
 
       assert world.count_standalone_uncapped_tank >= 1
     end
@@ -28,6 +43,20 @@ defmodule Fluid.WorldTest do
   end
 
   describe "WareHouse Struct Validations" do
+    # test "Every Warehouse needs to have a name" do
+    #   {:error, error_val} = Warehouse.create()
+
+    #   assert %{
+    #            errors: [
+    #              %Ash.Error.Changes.Required{
+    #                field: :name,
+    #                type: :attribute
+    #              }
+    #            ]
+    #          } =
+    #            error_val
+    # end
+
     test "warehouse(WH) one and only one UCT" do
       count = Warehouse.count_uncapped_tanks()
       assert count = 1
@@ -44,11 +73,20 @@ defmodule Fluid.WorldTest do
   end
 
   describe "Tank Struct Validations" do
-    test "Defaults for a Tank to exist" do
+    @tag tested: true
+    test "Tank : can create a standalone uncapped tank" do
       # A CT that receives Untagged Volume. The default setting is for every CT to be a Regular CT.
 
-      tank = Tank.new()
-      assert %{type: :regular_ct} = tank
+      {:ok, tank} =
+        Tank.create(%{
+          location_type: :standalone,
+          capacity_type: :uncapped
+        })
+
+      assert %{
+               location_type: :standalone,
+               capacity_type: :uncapped
+             } = tank
     end
   end
 

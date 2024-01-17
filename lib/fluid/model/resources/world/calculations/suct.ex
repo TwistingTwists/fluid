@@ -6,7 +6,6 @@ defmodule Fluid.Model.World.Calculations.SUCT do
   """
   use Ash.Calculation
 
-  import Ecto.Query
   require Logger
 
   alias Fluid.Repo
@@ -39,11 +38,11 @@ defmodule Fluid.Model.World.Calculations.SUCT do
 
   defp do_calculate(tanks) do
     Enum.count(tanks, fn
-      %{location_type: :standalone} ->
+      %{location_type: :standalone, capacity_type: :uncapped} ->
         1
 
       tank ->
-        Logger.debug(" has tank of location_type:  #{tank.location_type} ")
+        Logger.debug(" World has tank :  #{inspect(tank)} ")
         0
     end)
   end

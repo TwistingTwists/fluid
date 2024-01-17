@@ -45,6 +45,7 @@ defmodule Fluid.Model.Tank do
     end
 
     create :create do
+      primary? true
       change load([:world, :warehouse])
     end
   end

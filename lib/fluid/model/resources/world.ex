@@ -3,10 +3,7 @@ defmodule Fluid.Model.World do
   World has a unique name.
   World has a SUCT.
   """
-
-  # checklist
-  # preload all calculations in read / create actions
-
+  alias Fluid.Model.Tank
   alias __MODULE__
   require Logger
 
@@ -50,8 +47,19 @@ defmodule Fluid.Model.World do
     end
 
     create :create do
-      # change Fluid.Model.World.Changes.AddDefaultSUCT
+      argument :tanks, Tank, allow_nil?: true
+
+      change Fluid.Model.World.Changes.AddDefaultSUCT
       change load([:tanks, :pools, :warehouses, :count_standalone_uncapped_tank])
+
+      change manage_relationship(:tanks,
+               # if tank struct has an id, relate it
+               on_lookup: :relate,
+               # if tank struct does not have an id, create Tank
+               on_no_match: :create,
+               on_match: :update,
+               on_missing: :ignore
+             )
     end
   end
 
