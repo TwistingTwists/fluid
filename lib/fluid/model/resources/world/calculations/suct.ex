@@ -34,39 +34,18 @@ defmodule Fluid.Model.World.Calculations.SUCT do
   def calculate(worlds, opts, _resolution) do
     {:ok,
      Enum.map(worlds, fn world ->
-       case world.tanks do
-         [] ->
-           Logger.debug("world: #{world.name} does not have any tanks! ")
-
-           # no tanks
-           0
-
-         tanks ->
-           # return the calculation
-           world |> IO.inspect(label: " world is loaded. ", struct: false)
-
-           tanks
-           |> IO.inspect(
-             label: "you can going to do enum.reduce. is tanks a list? ",
-             struct: false
-           )
-
-           do_calculate(tanks)
-       end
+       do_calculate(world.tanks)
      end)}
   end
 
   defp do_calculate(tanks) do
-    IO.inspect("inside do_calculate funtion now : and value received is ")
-    IO.inspect(tanks)
+    Enum.count(tanks, fn
+      %{location_type: :standalone} ->
+        1
 
-    Enum.reduce(tanks, 0, fn
-      %{location_type: :standalone}, acc ->
-        acc + 1
-
-      tank, acc ->
+      tank ->
         Logger.debug(" has tank of location_type:  #{tank.location_type} ")
-        acc
+        0
     end)
   end
 end

@@ -4,6 +4,9 @@ defmodule Fluid.Model.World do
   World has a SUCT.
   """
 
+  # checklist
+  # preload all calculations in read / create actions
+
   alias __MODULE__
   require Logger
 
@@ -47,19 +50,9 @@ defmodule Fluid.Model.World do
     end
 
     create :create do
-      change load([:tanks, :pools, :warehouses])
+      # change Fluid.Model.World.Changes.AddDefaultSUCT
+      change load([:tanks, :pools, :warehouses, :count_standalone_uncapped_tank])
     end
-
-    # create :create do
-    #   change Fluid.Model.World.Changes.AddDefaultSUCT
-    #   change manage_relationship(:tanks, :direct_control)
-    # end
-
-    # read :count_standalone_uncapped_tank do
-    #   argument :id, allow_nil?: false
-    #   filter expr(id == ^arg(:id))
-
-    # end
   end
 
   code_interface do
