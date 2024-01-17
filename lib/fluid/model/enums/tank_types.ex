@@ -7,5 +7,5 @@ defmodule Fluid.TankRegularityTypes do
 end
 
 defmodule Fluid.TankLocationTypes do
-  use Ash.Type.Enum, values: [:standlone, :in_wh]
+  use Ash.Type.Enum, values: [:standalone, :in_wh]
 end
