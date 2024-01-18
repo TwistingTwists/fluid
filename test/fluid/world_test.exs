@@ -60,10 +60,20 @@ defmodule Fluid.WorldTest do
     test "warehouse(WH) has one and only one UCT - with default tank" do
       # create the UCT when creating the warehouse.
       {:ok, warehouse} =
-        Warehouse.create(%{name: "test warehouse"})
-        |> IO.inspect(label: "warehouse defaults")
+        Warehouse.create(%{name: "test warehouse - tanks"})
 
       assert warehouse.count_uncapped_tank == 1
+
+      # try to add one more tank and it should not succeed
+      {:ok, tank} =
+        Tank.create(%{
+          location_type: :in_wh,
+          capacity_type: :uncapped
+        })
+
+      {:error, error} =
+        Warehouse.add_tank(warehouse, tank)
+        |> IO.inspect(label: "warehouse add tanks")
     end
 
     @tag tested: false
@@ -74,10 +84,12 @@ defmodule Fluid.WorldTest do
       assert false
     end
 
-    @tag tested: false
-    test "warehouse (WH) at least one only one pool" do
-      count = Warehouse.count_pools()
-      assert count >= 1
+    @tag tested: true
+    test "warehouse (WH) has at least one pool" do
+      {:ok, warehouse} =
+        Warehouse.create(%{name: "test warehouse - pools"})
+
+      assert warehouse.count_pool >= 1
     end
 
     # test "If any Regular CTs in a WH are not full, then the UCT of that WH must be empty" do
@@ -100,6 +112,15 @@ defmodule Fluid.WorldTest do
                location_type: :standalone,
                capacity_type: :uncapped
              } = tank
+    end
+  end
+
+  describe "Pool Struct Validations" do
+    @tag tested: true
+    test "Pool can be created with no default arguments" do
+      {:ok, pool} = Pool.create()
+
+      assert %{capacity_type: nil, location_type: nil} = pool
     end
   end
 

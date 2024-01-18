@@ -1,6 +1,8 @@
 defmodule Fluid.Model.Warehouse do
   alias Fluid.Model.Tank
+  alias Fluid.Model.Pool
   alias __MODULE__
+
   require Logger
 
   use Ash.Resource,
@@ -22,6 +24,7 @@ defmodule Fluid.Model.Warehouse do
 
   calculations do
     calculate :count_uncapped_tank, :integer, {Warehouse.Calculations.UCT, field: :tanks}
+    calculate :count_pool, :integer, {Warehouse.Calculations.Pool, field: :pools}
   end
 
   actions do
@@ -37,22 +40,68 @@ defmodule Fluid.Model.Warehouse do
 
     create :create do
       primary? true
+
       argument :tanks, {:array, Tank}, allow_nil?: true
-      change load([:tanks, :pools, :world, :count_uncapped_tank])
+      argument :pools, {:array, Pool}, allow_nil?: true
+
+      change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
+
       change Fluid.Model.Warehouse.Changes.AddDefaultUCT
+      change Fluid.Model.Warehouse.Changes.AddDefaultPool
+
       change manage_relationship(:tanks, type: :append_and_remove)
+      change manage_relationship(:pools, type: :append_and_remove)
     end
+
+    update :add_tank do
+      argument :tank, Tank, allow_nil?: false
+
+      change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
+
+      # change {Fluid.Model.Changes.AddArgToRelationship, arg: :tank, rel: :tanks}
+      change Fluid.Model.Warehouse.Changes.OnlyOneUCT
+      change manage_relationship(:tank, :tanks, type: :append_and_remove)
+    end
+  end
+
+  changes do
+    change fn changeset, opts ->
+             Ash.Changeset.after_transaction(
+               changeset,
+               fn
+                 changeset, {:ok, warehouse} ->
+                   Logger.debug(warehouse)
+                   Logger.debug("warehouse in after_transaction")
+
+                   if is_integer(warehouse.count_pool) and warehouse.count_pool < 1 do
+                     Logger.error("Pool Count should be greater than one.")
+
+                     # Ash.Changeset.add_errors(changeset, :pools , "Pool Count should be greater than one.")
+                     {:error, changeset}
+                   else
+                     {:ok, warehouse}
+                   end
+
+                 changeset, error ->
+                   {:error, error}
+               end
+             )
+           end,
+           on: [:create]
   end
 
   code_interface do
     define_for Fluid.Model.Api
 
+    # define :create, args: [:tanks, :pools]
     define :create
 
     define :read_all
     define :read_by_id, args: [:id]
 
     define :update
+
+    define :add_tank, args: [:tank]
   end
 
   postgres do
