@@ -1,4 +1,6 @@
 defmodule Fluid.Model.Warehouse do
+  alias Fluid.Model.Tank
+  alias __MODULE__
   require Logger
 
   use Ash.Resource,
@@ -7,6 +9,7 @@ defmodule Fluid.Model.Warehouse do
   attributes do
     uuid_primary_key :id
 
+    # attribute :name, :string, allow_nil?: false
     create_timestamp :created_at
     update_timestamp :updated_at
   end
@@ -15,6 +18,10 @@ defmodule Fluid.Model.Warehouse do
     belongs_to :world, Fluid.Model.World
     has_many :tanks, Fluid.Model.Tank
     has_many :pools, Fluid.Model.Pool
+  end
+
+  calculations do
+    calculate :count_uncapped_tank, :integer, {Warehouse.Calculations.UCT, field: :tanks}
   end
 
   actions do
@@ -29,7 +36,11 @@ defmodule Fluid.Model.Warehouse do
     end
 
     create :create do
-      change load([:tanks, :pools, :world])
+      primary? true
+      argument :tanks, {:array, Tank}, allow_nil?: true
+      change load([:tanks, :pools, :world, :count_uncapped_tank])
+      change Fluid.Model.Warehouse.Changes.AddDefaultUCT
+      change manage_relationship(:tanks, type: :append_and_remove)
     end
   end
 

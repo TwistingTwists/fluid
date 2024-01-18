@@ -1,4 +1,4 @@
-defmodule Fluid.Model.World.Changes.AddDefaultSUCT do
+defmodule Fluid.Model.Warehouse.Changes.AddDefaultUCT do
   use Ash.Resource.Change
   alias Fluid.Model.Tank
 
@@ -6,8 +6,8 @@ defmodule Fluid.Model.World.Changes.AddDefaultSUCT do
     # todo improve - create a suct only if the world doesn't have one.
     {:ok, tank} =
       Tank.create(%{
-        location_type: :standalone,
-        capacity_type: :uncapped
+        location_type: :in_wh,
+        capacity_type: :capped
       })
 
     Ash.Changeset.set_argument(changeset, :tanks, [tank])

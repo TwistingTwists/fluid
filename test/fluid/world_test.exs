@@ -56,10 +56,22 @@ defmodule Fluid.WorldTest do
     #          } =
     #            error_val
     # end
+    @tag testing: true
+    test "warehouse(WH) has one and only one UCT - with default tank" do
+      # create the UCT when creating the warehouse.
+      {:ok, warehouse} =
+        Warehouse.create(%{name: "test warehouse"})
+        |> IO.inspect(label: "warehouse defaults")
+
+      assert warehouse.count_uncapped_tank == 1
+    end
+
     @tag tested: false
-    test "warehouse(WH) one and only one UCT" do
-      count = Warehouse.count_uncapped_tanks()
-      assert count = 1
+    test "warehouse(WH) has one and only one UCT - with given tank" do
+      # create the UCT when creating the warehouse.
+      {:ok, warehouse} = Warehouse.create(%{name: "test warehouse"})
+
+      assert false
     end
 
     @tag tested: false
