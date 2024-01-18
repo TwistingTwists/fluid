@@ -56,12 +56,13 @@ defmodule Fluid.WorldTest do
     #          } =
     #            error_val
     # end
-
+    @tag tested: false
     test "warehouse(WH) one and only one UCT" do
       count = Warehouse.count_uncapped_tanks()
       assert count = 1
     end
 
+    @tag tested: false
     test "warehouse (WH) at least one only one pool" do
       count = Warehouse.count_pools()
       assert count >= 1
@@ -91,6 +92,7 @@ defmodule Fluid.WorldTest do
   end
 
   describe "Connection Struct Validations" do
+    @tag tested: false
     test "Defaults for any Connection " do
       assert false
     end
