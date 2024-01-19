@@ -6,6 +6,8 @@ defmodule Fluid.WorldTest do
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
 
+  require MyInspect
+
   describe "World Struct Validations" do
     @tag tested: true
     test "Every world needs to have a name" do
@@ -73,7 +75,7 @@ defmodule Fluid.WorldTest do
 
       {:error, error} =
         Warehouse.add_tank(warehouse, tank)
-        |> IO.inspect(label: "warehouse add tanks")
+        |> MyInspect.print()
     end
 
     @tag tested: false

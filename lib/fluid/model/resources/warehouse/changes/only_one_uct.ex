@@ -3,8 +3,6 @@ defmodule Fluid.Model.Warehouse.Changes.OnlyOneUCT do
   alias Fluid.Model.Tank
 
   def change(changeset, _opts, _context) do
-    changeset.data.count_uncapped_tank |> IO.inspect(label: " changeset.data.count_uncapped_tank")
-
     cond do
       changeset.data.count_uncapped_tank == 0 ->
         changeset
@@ -17,14 +15,5 @@ defmodule Fluid.Model.Warehouse.Changes.OnlyOneUCT do
           value: changeset.data.count_uncapped_tank
         )
     end
-
-    # end
-    |> IO.inspect(label: "Edited - changeset for warehouse \n")
-
-    # Ash.Changeset.set_argument(changeset, :tanks, [tank])
-    # |> IO.inspect(label: "NEW changeset for warehouse")
-
-    # preload all tanks. Check if there is ONLY one uncapped tank.
-    # Fluid.Model.Api.load(changeset.data)
   end
 end
