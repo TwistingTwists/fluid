@@ -14,7 +14,6 @@ defmodule Fluid.Model.World do
     # uuid ensures uniqueness of world
     uuid_primary_key :id
 
-    # ensure unique via a unique db constraint
     attribute :name, :string, allow_nil?: false
 
     create_timestamp :created_at
@@ -52,14 +51,6 @@ defmodule Fluid.Model.World do
       change Fluid.Model.World.Changes.AddDefaultSUCT
       change load([:tanks, :pools, :warehouses, :count_standalone_uncapped_tank])
 
-      # change manage_relationship(:tanks,
-      #          # if tank struct has an id, relate it
-      #          on_lookup: :relate,
-      #          # if tank struct does not have an id, create Tank
-      #          on_no_match: :create,
-      #          on_match: :update,
-      #          on_missing: :ignore
-      #        )
       change manage_relationship(:tanks, type: :append_and_remove)
     end
   end
