@@ -2,6 +2,8 @@ defmodule Fluid.Model.Warehouse.Changes.AddDefaultUCT do
   use Ash.Resource.Change
   alias Fluid.Model.Tank
 
+  require Logger
+
   def change(changeset, _opts, _context) do
     # todo improve - create a suct only if the world doesn't have one.
     {:ok, tank} =
