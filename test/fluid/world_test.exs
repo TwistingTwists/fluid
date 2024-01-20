@@ -30,35 +30,10 @@ defmodule Fluid.WorldTest do
 
       assert world.count_standalone_uncapped_tank >= 1
     end
-
-    # test "At the beginning of every scenario, all of the water is in pools" do
-
-    # end
-
-    # test "conservation of water property - it cannot be created or destroyed in a world" do
-    # add it as a change .. do block with after_transaction to validate conservation property.
-    # end
-
-    # test "At the end of every scenario, all of the water is in SUCTs and, if there are any CTs in the
-    # World, SCTs" do
-    # end
   end
 
   describe "WareHouse Struct Validations" do
-    # test "Every Warehouse needs to have a name" do
-    #   {:error, error_val} = Warehouse.create()
-
-    #   assert %{
-    #            errors: [
-    #              %Ash.Error.Changes.Required{
-    #                field: :name,
-    #                type: :attribute
-    #              }
-    #            ]
-    #          } =
-    #            error_val
-    # end
-    @tag testing: true
+    @tag tested: true
     test "warehouse(WH) has one and only one UCT - with default tank" do
       # create the UCT when creating the warehouse.
       {:ok, warehouse} =
@@ -73,9 +48,25 @@ defmodule Fluid.WorldTest do
           capacity_type: :uncapped
         })
 
-      {:error, error} =
-        Warehouse.add_tank(warehouse, tank)
-        |> MyInspect.print()
+      assert {:error, error} =
+               Warehouse.add_tank(warehouse, tank)
+
+      assert %{
+               errors: [
+                 %Ash.Error.Changes.InvalidAttribute{
+                   field: :tanks
+                 }
+               ]
+             } = error
+    end
+
+    @tag testing: true
+    test "warehouse(WH) a unique name" do
+      # create the UCT when creating the warehouse.
+      {:ok, warehouse} = Warehouse.create(%{name: "test warehouse"})
+
+      assert {:error, error} =
+               Warehouse.create(%{name: "test warehouse"})
     end
 
     @tag tested: false
@@ -132,12 +123,4 @@ defmodule Fluid.WorldTest do
       assert false
     end
   end
-
-  # describe "Tank Connection Validations" do
-  #   test "UCT: Every UCT is linked either to one or more SUCTs and/or to one or more UCPs" do
-
-  #     tank = Tank.new()
-  #     assert %{type: :regular_ct} = tank
-  #   end
-  # end
 end

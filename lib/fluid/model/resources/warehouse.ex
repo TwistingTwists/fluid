@@ -11,6 +11,8 @@ defmodule Fluid.Model.Warehouse do
   attributes do
     uuid_primary_key :id
 
+    attribute :name, :string, allow_nil?: false
+
     # attribute :name, :string, allow_nil?: false
     create_timestamp :created_at
     update_timestamp :updated_at
