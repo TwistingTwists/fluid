@@ -81,10 +81,14 @@ defmodule Fluid.Model.Warehouse do
                      # Ash.Changeset.add_errors(changeset, :pools , "Pool Count should be greater than one.")
                      {:error, changeset}
                    else
+                   Logger.debug("warehouse in after_transaction: ok warehouse")
+
                      {:ok, warehouse}
                    end
 
                  changeset, error ->
+                 Logger.debug("warehouse in after_transaction error : #{inspect error}")
+
                    {:error, error}
                end
              )

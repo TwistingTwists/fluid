@@ -33,7 +33,7 @@ defmodule Fluid.WorldTest do
   end
 
   describe "WareHouse Struct Validations" do
-    @tag tested: true
+    @tag testing: true
     test "warehouse(WH) has one and only one UCT - with default tank" do
       # create the UCT when creating the warehouse.
       {:ok, warehouse} =
@@ -60,21 +60,13 @@ defmodule Fluid.WorldTest do
              } = error
     end
 
-    @tag testing: true
+    @tag tested: true
     test "warehouse(WH) a unique name" do
       # create the UCT when creating the warehouse.
       {:ok, warehouse} = Warehouse.create(%{name: "test warehouse"})
 
       assert {:error, error} =
                Warehouse.create(%{name: "test warehouse"})
-    end
-
-    @tag tested: false
-    test "warehouse(WH) has one and only one UCT - with given tank" do
-      # create the UCT when creating the warehouse.
-      {:ok, warehouse} = Warehouse.create(%{name: "test warehouse"})
-
-      assert false
     end
 
     @tag tested: true
@@ -84,10 +76,6 @@ defmodule Fluid.WorldTest do
 
       assert warehouse.count_pool >= 1
     end
-
-    # test "If any Regular CTs in a WH are not full, then the UCT of that WH must be empty" do
-    #
-    # end
   end
 
   describe "Tank Struct Validations" do
@@ -114,13 +102,6 @@ defmodule Fluid.WorldTest do
       {:ok, pool} = Pool.create()
 
       assert %{capacity_type: nil, location_type: nil} = pool
-    end
-  end
-
-  describe "Connection Struct Validations" do
-    @tag tested: false
-    test "Defaults for any Connection " do
-      assert false
     end
   end
 end
