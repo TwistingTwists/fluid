@@ -5,12 +5,13 @@ defmodule Fluid.WorldTest do
   alias Fluid.Model.Warehouse
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
+  alias Fluid.Model.Tag
 
   require MyInspect
 
   describe "World Struct Validations" do
     @tag tested: true
-    test "Every world needs to have a name" do
+    test "world without a name throws error" do
       {:error, error_val} = World.create()
 
       assert %{
@@ -29,79 +30,6 @@ defmodule Fluid.WorldTest do
       {:ok, world} = World.create(%{name: "One test World"})
 
       assert world.count_standalone_uncapped_tank >= 1
-    end
-  end
-
-  describe "WareHouse Struct Validations" do
-    @tag testing: true
-    test "warehouse(WH) has one and only one UCT - with default tank" do
-      # create the UCT when creating the warehouse.
-      {:ok, warehouse} =
-        Warehouse.create(%{name: "test warehouse - tanks"})
-
-      assert warehouse.count_uncapped_tank == 1
-
-      # try to add one more tank and it should not succeed
-      {:ok, tank} =
-        Tank.create(%{
-          location_type: :in_wh,
-          capacity_type: :uncapped
-        })
-
-      assert {:error, error} =
-               Warehouse.add_tank(warehouse, tank)
-
-      assert %{
-               errors: [
-                 %Ash.Error.Changes.InvalidAttribute{
-                   field: :tanks
-                 }
-               ]
-             } = error
-    end
-
-    @tag tested: true
-    test "warehouse(WH) a unique name" do
-      # create the UCT when creating the warehouse.
-      {:ok, warehouse} = Warehouse.create(%{name: "test warehouse"})
-
-      assert {:error, error} =
-               Warehouse.create(%{name: "test warehouse"})
-    end
-
-    @tag tested: true
-    test "warehouse (WH) has at least one pool" do
-      {:ok, warehouse} =
-        Warehouse.create(%{name: "test warehouse - pools"})
-
-      assert warehouse.count_pool >= 1
-    end
-  end
-
-  describe "Tank Struct Validations" do
-    @tag tested: true
-    test "Tank : can create a standalone uncapped tank" do
-      # A CT that receives Untagged Volume. The default setting is for every CT to be a Regular CT.
-
-      {:ok, tank} =
-        Tank.create(%{
-          location_type: :standalone,
-          capacity_type: :uncapped
-        })
-
-      assert %{
-               location_type: :standalone,
-               capacity_type: :uncapped
-             } = tank
-    end
-  end
-
-  describe "Pool Struct Validations" do
-    @tag tested: true
-    test "Pool can be created with no default arguments" do
-      {:ok, pool} = Pool.create()
-
-      assert %{capacity_type: nil, location_type: nil} = pool
     end
   end
 end

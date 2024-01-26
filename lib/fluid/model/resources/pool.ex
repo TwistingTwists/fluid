@@ -8,6 +8,7 @@ defmodule Fluid.Model.Pool do
     uuid_primary_key :id
 
     attribute :name, :string, allow_nil?: true
+    attribute :tag_id, :uuid, allow_nil?: true
 
     attribute :capacity_type, Fluid.PoolCapacityTypes do
       description "fixed, uncapped, or capped pools can exist"
@@ -42,12 +43,28 @@ defmodule Fluid.Model.Pool do
     create :create do
       change load([:world, :warehouse])
     end
+
+    # create :create_with_world do
+    #   argument :world, World, allow_nil?: true
+    #   change load([:world, :warehouse])
+
+    #   change manage_relationship(:world, type: :append_and_remove)
+    # end
+
+    # create :create_with_warehouse do
+    #   argument :warehouse, Warehouse, allow_nil?: true
+    #   change load([:world, :warehouse])
+
+    #   change manage_relationship(:warehouse, type: :append_and_remove)
+    # end
   end
 
   code_interface do
     define_for Fluid.Model.Api
 
     define :create
+    # define :create_with_world, args: [:world]
+    # define :create_with_warehouse, args: [:warehouse]
 
     define :read_all
     define :read_by_id, args: [:id]

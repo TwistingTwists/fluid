@@ -38,7 +38,7 @@ defmodule Fluid.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.20.1"},
+      {:phoenix_live_view, "~> 0.20.3"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.2"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
@@ -51,13 +51,24 @@ defmodule Fluid.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:plug_cowboy, "~> 2.5"},
+
       # ash dependencies
-      {:ash, github: "ash-project/ash", override: true},
-      {:ash_postgres, github: "ash-project/ash_postgres"},
-      {:ash_phoenix, github: "ash-project/ash_phoenix", override: true},
-      {:spark, github: "ash-project/spark", override: true},
-      {:ash_oban, github: "ash-project/ash_oban"}
-      # {:oban, "~> 2.17"},
+
+      {:ash, "~> 2.18"},
+      {:ash_postgres, "~> 1.3.6"},
+
+      # for future UI admin usage
+      {:ash_admin, "~> 0.10.2"},
+      {:ash_phoenix, "~> 1.1"},
+      {:spark, "~>  1.1.54"},
+      {:ash_oban, "~> 0.1.13"},
+      {:oban, "~> 2.17"}
+
+      # {:ash, github: "ash-project/ash", override: true},
+      # {:ash_postgres, github: "ash-project/ash_postgres"},
+      # {:ash_phoenix, github: "ash-project/ash_phoenix", override: true},
+      # {:spark, github: "ash-project/spark", override: true},
+      # {:ash_oban, github: "ash-project/ash_oban"}
     ]
   end
 
