@@ -1,5 +1,4 @@
 defmodule Fluid.Model.Warehouse do
-  alias Fluid.Model.Tank
   alias Fluid.Model.Pool
   alias __MODULE__
 
@@ -43,8 +42,8 @@ defmodule Fluid.Model.Warehouse do
     create :create do
       primary? true
 
-      argument :tanks, {:array, Tank}, allow_nil?: true
-      argument :pools, {:array, Pool}, allow_nil?: true
+      argument :tanks, {:array, Fluid.Model.Tank}, allow_nil?: true
+      argument :pools, {:array, Fluid.Model.Pool}, allow_nil?: true
 
       change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
 
@@ -56,7 +55,7 @@ defmodule Fluid.Model.Warehouse do
     end
 
     update :add_tank do
-      argument :tank, Tank, allow_nil?: false
+      argument :tank, Fluid.Model.Tank, allow_nil?: false
 
       change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
 
@@ -81,13 +80,13 @@ defmodule Fluid.Model.Warehouse do
                      # Ash.Changeset.add_errors(changeset, :pools , "Pool Count should be greater than one.")
                      {:error, changeset}
                    else
-                   Logger.debug("warehouse in after_transaction: ok warehouse")
+                     Logger.debug("warehouse in after_transaction: ok warehouse")
 
                      {:ok, warehouse}
                    end
 
                  changeset, error ->
-                 Logger.debug("warehouse in after_transaction error : #{inspect error}")
+                   Logger.debug("warehouse in after_transaction error : #{inspect(error)}")
 
                    {:error, error}
                end

@@ -48,6 +48,7 @@ defmodule Fluid.Model.World do
     create :create do
       argument :tanks, {:array, Tank}, allow_nil?: true
 
+      # todo validate that the given list has at least one suct
       change Fluid.Model.World.Changes.AddDefaultSUCT
       change load([:tanks, :pools, :warehouses, :count_standalone_uncapped_tank])
 
@@ -58,7 +59,7 @@ defmodule Fluid.Model.World do
   code_interface do
     define_for Fluid.Model.Api
 
-    define :create
+    define :create, args: [:tanks]
 
     define :read_all
     define :read_by_id, args: [:id]

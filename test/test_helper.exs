@@ -1,5 +1,6 @@
 :erlang.system_flag(:backtrace_depth, 100)
-ExUnit.configure(include: [testing: true, tested: true, tested: false ])
+# ExUnit.configure(include: [testing: true, tested: true, tested: false])
 # ExUnit.configure(exclude: [tested: true], include: [testing: true])
+ExUnit.configure(include: [running: true], exclude: [testing: true, tested: true, tested: false])
 ExUnit.start()
 Ecto.Adapters.SQL.Sandbox.mode(Fluid.Repo, :manual)
