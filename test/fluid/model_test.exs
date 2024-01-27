@@ -74,16 +74,28 @@ defmodule Fluid.ModelTest do
 
     # @tag tested: true
     @tag :running
-    test "WH:create: if no UCT is given in tank list while creating a warehouse, default UCT is added to WH ",
+    test "WH:create: if UCT is given in tank list while creating a warehouse. it is added as it is to WH",
          %{
            world: _setup_world,
            warehouse: warehouse,
            tanks: tanks
          } do
+      # filter out standalone tanks
+      tanks =
+        Enum.filter(tanks, fn
+          %Tank{
+            location_type: :in_wh
+          } ->
+            true
+
+          _ ->
+            false
+        end)
+
       # assert that tanks list has at least one UCT
       assert Enum.any?(tanks, fn
                %Tank{
-                 location_type: :standalone,
+                 location_type: :in_wh,
                  capacity_type: :uncapped
                } ->
                  true
@@ -94,20 +106,69 @@ defmodule Fluid.ModelTest do
 
       assert {:ok, warehouse} =
                Fluid.Model.create_warehouse(name: "Other unique name", tanks: tanks)
-               |> dbg()
 
       tank_ids =
         tanks
         |> Enum.map(& &1.id)
-        |> dbg()
 
       wh_tank_ids =
         warehouse.tanks
         |> Enum.sort_by(& &1.id, :asc)
         |> Enum.map(& &1.id)
-        |> dbg()
 
       assert tank_ids == wh_tank_ids
+    end
+
+    # @tag tested: true
+    @tag :running
+    test "WH:create: if no UCT is given in tank list while creating a warehouse, default UCT is added to WH ",
+         %{
+           world: _setup_world,
+           warehouse: _warehouse,
+           tanks: tanks
+         } do
+      # filter out standalone tanks
+      tanks =
+        Enum.filter(tanks, fn
+          %Tank{
+            location_type: :in_wh
+          } ->
+            true
+
+          _ ->
+            false
+        end)
+
+      # tanks list doesn't have UCT
+      tanks_without_uct =
+        Enum.reject(tanks, fn
+          %Tank{
+            location_type: :in_wh,
+            capacity_type: :uncapped
+          } ->
+            true
+
+          _ ->
+            false
+        end)
+
+      assert {:ok, warehouse} =
+               Fluid.Model.create_warehouse(
+                 name: "WH with tank list but no UCT in tank list",
+                 tanks: tanks
+               )
+
+      tank_ids =
+        tanks_without_uct
+        |> Enum.map(& &1.id)
+
+      wh_tank_ids =
+        warehouse.tanks
+        |> Enum.sort_by(& &1.id, :asc)
+        |> Enum.map(& &1.id)
+
+      tanks_in_wh = length(wh_tank_ids)
+      assert tanks_in_wh = length(tank_ids) + 1
     end
 
     # read all worlds
