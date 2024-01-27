@@ -1,5 +1,5 @@
 defmodule Fluid.Model.Warehouse do
-  alias Fluid.Model.Pool
+  # alias Fluid.Model.Pool
   alias __MODULE__
 
   require Logger

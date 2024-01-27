@@ -8,7 +8,7 @@ defmodule Fluid.Model.World.Calculations.SUCT do
 
   require Logger
 
-  alias Fluid.Repo
+  # alias Fluid.Repo
 
   @impl true
   def init(opts) do

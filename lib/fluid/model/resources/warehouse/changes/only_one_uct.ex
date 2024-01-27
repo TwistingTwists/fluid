@@ -1,6 +1,5 @@
 defmodule Fluid.Model.Warehouse.Changes.OnlyOneUCT do
   use Ash.Resource.Change
-  alias Fluid.Model.Tank
 
   def change(changeset, _opts, _context) do
     cond do

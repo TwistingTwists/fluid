@@ -46,8 +46,7 @@ defmodule Fluid.Model.Warehouse.Changes.AddDefaultUCT do
          # checking for uct
          %Tank{location_type: :in_wh, capacity_type: :uncapped} = _tank -> true
          _ -> false
-       end)
-       |> dbg() do
+       end) do
       changeset
     else
       # create a default uct

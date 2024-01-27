@@ -3,7 +3,7 @@ defmodule Fluid.Model.Warehouse.Calculations.Pool do
 
   require Logger
 
-  alias Fluid.Repo
+  # alias Fluid.Repo
 
   @impl true
   def init(opts) do
