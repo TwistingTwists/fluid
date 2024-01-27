@@ -26,12 +26,9 @@ defmodule Fluid.ModelTest do
   describe "Warehouse:Name" do
     @tag tested: true
     # @tag :running
-    test "create: warehouse cannot have duplicate name", %{
-      world: setup_world,
-      warehouse: warehouse
-    } do
-      assert {:error, error} =
-               Fluid.Model.create_warehouse(name: warehouse.name)
+    test "create: warehouse cannot have duplicate name",
+         %{world: setup_world, warehouse: warehouse} do
+      assert {:error, error} = Fluid.Model.create_warehouse(name: warehouse.name)
 
       assert %Ash.Error.Unknown{
                errors: [
@@ -48,13 +45,10 @@ defmodule Fluid.ModelTest do
   end
 
   describe "warehouse(WH) has one and only one UCT" do
-    # @tag tested: true
-    @tag :running
+    @tag tested: true
+    # @tag :running
     test "WH:create: default UCT is created if not provided",
-         %{
-           world: _setup_world,
-           warehouse: warehouse
-         } do
+         %{world: _setup_world, warehouse: warehouse} do
       # only the default uct is present in the default warehouse
       [uct] = warehouse.tanks
 
@@ -72,14 +66,10 @@ defmodule Fluid.ModelTest do
       assert warehouse.count_uncapped_tank == 1
     end
 
-    # @tag tested: true
-    @tag :running
+    @tag tested: true
+    # @tag :running
     test "WH:create: if UCT is given in tank list while creating a warehouse. it is added as it is to WH",
-         %{
-           world: _setup_world,
-           warehouse: warehouse,
-           tanks: tanks
-         } do
+         %{world: _setup_world, warehouse: warehouse, tanks: tanks} do
       # filter out standalone tanks
       tanks =
         Enum.filter(tanks, fn
@@ -94,18 +84,14 @@ defmodule Fluid.ModelTest do
 
       # assert that tanks list has at least one UCT
       assert Enum.any?(tanks, fn
-               %Tank{
-                 location_type: :in_wh,
-                 capacity_type: :uncapped
-               } ->
+               %Tank{location_type: :in_wh, capacity_type: :uncapped} ->
                  true
 
                _ ->
                  false
              end)
 
-      assert {:ok, warehouse} =
-               Fluid.Model.create_warehouse(name: "Other unique name", tanks: tanks)
+      assert {:ok, warehouse} = Fluid.Model.create_warehouse(name: "Other unique name", tanks: tanks)
 
       tank_ids =
         tanks
@@ -119,20 +105,14 @@ defmodule Fluid.ModelTest do
       assert tank_ids == wh_tank_ids
     end
 
-    # @tag tested: true
-    @tag :running
+    @tag tested: true
+    # @tag :running
     test "WH:create: if no UCT is given in tank list while creating a warehouse, default UCT is added to WH ",
-         %{
-           world: _setup_world,
-           warehouse: _warehouse,
-           tanks: tanks
-         } do
+         %{world: _setup_world, warehouse: _warehouse, tanks: tanks} do
       # filter out standalone tanks
       tanks =
         Enum.filter(tanks, fn
-          %Tank{
-            location_type: :in_wh
-          } ->
+          %Tank{location_type: :in_wh} ->
             true
 
           _ ->
@@ -142,10 +122,7 @@ defmodule Fluid.ModelTest do
       # tanks list doesn't have UCT
       tanks_without_uct =
         Enum.reject(tanks, fn
-          %Tank{
-            location_type: :in_wh,
-            capacity_type: :uncapped
-          } ->
+          %Tank{location_type: :in_wh, capacity_type: :uncapped} ->
             true
 
           _ ->
@@ -153,10 +130,7 @@ defmodule Fluid.ModelTest do
         end)
 
       assert {:ok, warehouse} =
-               Fluid.Model.create_warehouse(
-                 name: "WH with tank list but no UCT in tank list",
-                 tanks: tanks
-               )
+               Fluid.Model.create_warehouse(name: "WH with tank list but no UCT in tank list", tanks: tanks)
 
       tank_ids =
         tanks_without_uct
@@ -169,6 +143,21 @@ defmodule Fluid.ModelTest do
 
       tanks_in_wh = length(wh_tank_ids)
       assert tanks_in_wh = length(tank_ids) + 1
+    end
+
+    # @tag tested: true
+    @tag :running
+    test "WH:create: default pool is created if not provided",
+         %{world: _setup_world, warehouse: warehouse} do
+      # only the default uct is present in the default warehouse
+      [pool] = warehouse.pools
+      wh_id = warehouse.id
+
+      # also asserts that uct is `:regular`
+      assert %{warehouse_id: ^wh_id, location_type: :in_wh} = pool
+
+      # check if calculations are working properly
+      assert warehouse.count_pool >= 1
     end
 
     # read all worlds

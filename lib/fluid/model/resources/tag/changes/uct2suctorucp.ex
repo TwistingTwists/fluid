@@ -15,8 +15,7 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
       # Every UCT is linked either to one or more SUCTs and/or to one or more UCPs
       # todo : ensure that both tank and pool are from different warehouses
 
-      {%Tank{capacity_type: :uncapped, location_type: :in_wh},
-       %Pool{capacity_type: :uncapped, location_type: :in_wh}} ->
+      {%Tank{capacity_type: :uncapped, location_type: :in_wh}, %Pool{capacity_type: :uncapped, location_type: :in_wh}} ->
         changeset
         |> Ash.Changeset.change_attribute(:source, to_map(source))
         |> Ash.Changeset.change_attribute(:destination, to_map(dest))
