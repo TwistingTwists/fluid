@@ -71,8 +71,8 @@ defmodule Fluid.Model.Warehouse do
                changeset,
                fn
                  changeset, {:ok, warehouse} ->
-                   Logger.debug(warehouse)
-                   Logger.debug("warehouse in after_transaction")
+                   # Logger.debug(warehouse)
+                   # Logger.debug("warehouse in after_transaction")
 
                    if is_integer(warehouse.count_pool) and warehouse.count_pool < 1 do
                      Logger.error("Pool Count should be greater than one.")

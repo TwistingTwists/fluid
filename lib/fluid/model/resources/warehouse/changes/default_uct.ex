@@ -25,8 +25,23 @@ defmodule Fluid.Model.Warehouse.Changes.AddDefaultUCT do
   end
 
   def process_tanks(tank_args, changeset) when is_list(tank_args) do
-    # if given tank_args does not have any uct -> add one
+    changeset =
+      if Enum.any?(tank_args, fn
+           %Tank{location_type: location_type} = _tank when location_type != :in_wh -> true
+           _ -> false
+         end) do
+        Ash.Changeset.add_error(changeset,
+          field: :tanks,
+          message: """
+          Expected: Warehouse cannot have a tank whose location_type is not `:in_wh`.
+          Got: #{inspect(tank_args)}
+          """
+        )
+      else
+        changeset
+      end
 
+    # if given tank_args does not have any uct -> add one
     if Enum.any?(tank_args, fn
          # checking for uct
          %Tank{location_type: :in_wh, capacity_type: :uncapped} = _tank -> true
