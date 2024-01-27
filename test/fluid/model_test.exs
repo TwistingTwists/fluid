@@ -17,10 +17,9 @@ defmodule Fluid.ModelTest do
 
     # one tank of each type - sorted by id of their creation
     tanks = Factory.tanks()
+    pools = Factory.pools()
 
-    [world: world, warehouse: warehouse, tanks: tanks]
-
-    # tanks: tanks, pools: pools]
+    [world: world, warehouse: warehouse, tanks: tanks, pools: pools]
   end
 
   describe "Warehouse:Name" do
@@ -149,15 +148,44 @@ defmodule Fluid.ModelTest do
     @tag :running
     test "WH:create: default pool is created if not provided",
          %{world: _setup_world, warehouse: warehouse} do
-      # only the default uct is present in the default warehouse
+      # only the default pool is present in the default warehouse
       [pool] = warehouse.pools
       wh_id = warehouse.id
 
-      # also asserts that uct is `:regular`
       assert %{warehouse_id: ^wh_id, location_type: :in_wh} = pool
 
       # check if calculations are working properly
       assert warehouse.count_pool >= 1
+    end
+
+    @tag tested: true
+    # @tag :running
+    test "WH:create: with given pool list while creating a warehouse. it is added as it is to WH",
+         %{world: _setup_world, tanks: tanks, pools: pools} do
+      # filter out standalone pools
+      pools =
+        Enum.filter(pools, fn
+          %Tank{
+            location_type: :in_wh
+          } ->
+            true
+
+          _ ->
+            false
+        end)
+
+      assert {:ok, warehouse} = Fluid.Model.create_warehouse(name: "WH:create with given pools", pools: pools)
+
+      pool_ids =
+        pools
+        |> Enum.map(& &1.id)
+
+      wh_tank_ids =
+        warehouse.pools
+        |> Enum.sort_by(& &1.id, :asc)
+        |> Enum.map(& &1.id)
+
+      assert pool_ids == wh_tank_ids
     end
 
     # read all worlds
