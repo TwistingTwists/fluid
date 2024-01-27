@@ -23,8 +23,6 @@ defmodule Fluid.ModelTest do
   end
 
   describe "Warehouse:Name" do
-    # @tag tested: true
-    @tag :running
     test "create: warehouse cannot have duplicate name",
          %{world: _setup_world, warehouse: warehouse} do
       assert {:error, error} = Fluid.Model.create_warehouse(name: warehouse.name)
@@ -45,8 +43,6 @@ defmodule Fluid.ModelTest do
   end
 
   describe "warehouse(WH) has one and only one UCT" do
-    # @tag tested: true
-    @tag :running
     test "WH:create: default UCT is created if not provided",
          %{world: _setup_world, warehouse: warehouse} do
       # only the default uct is present in the default warehouse
@@ -66,8 +62,6 @@ defmodule Fluid.ModelTest do
       assert warehouse.count_uncapped_tank == 1
     end
 
-    # @tag tested: true
-    @tag :running
     test "WH:create: if UCT is given in tank list while creating a warehouse. it is added as it is to WH",
          %{world: _setup_world, warehouse: _warehouse, tanks: tanks} do
       # filter out standalone tanks
@@ -105,8 +99,6 @@ defmodule Fluid.ModelTest do
       assert tank_ids == wh_tank_ids
     end
 
-    # @tag tested: true
-    @tag :running
     test "WH:create: if no UCT is given in tank list while creating a warehouse, default UCT is added to WH ",
          %{world: _setup_world, warehouse: _warehouse, tanks: tanks} do
       # filter out standalone tanks
@@ -145,8 +137,6 @@ defmodule Fluid.ModelTest do
       assert tanks_in_wh == length(tank_ids) + 1
     end
 
-    # @tag tested: true
-    @tag :running
     test "WH:create: default pool is created if not provided",
          %{world: _setup_world, warehouse: warehouse} do
       # only the default pool is present in the default warehouse
@@ -159,8 +149,6 @@ defmodule Fluid.ModelTest do
       assert warehouse.count_pool >= 1
     end
 
-    # @tag tested: true
-    @tag :running
     test "WH:create: with given pool list while creating a warehouse. it is added as it is to WH",
          %{world: _setup_world, tanks: _tanks, pools: pools} do
       # filter out standalone pools
