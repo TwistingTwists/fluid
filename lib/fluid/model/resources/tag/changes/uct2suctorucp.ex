@@ -1,13 +1,13 @@
 defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
   use Ash.Resource.Change
 
-  alias Fluid.Model.World
-  alias Fluid.Model.Warehouse
+  # alias Fluid.Model.World
+  # alias Fluid.Model.Warehouse
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
   require Logger
 
-  def change(changeset, _opts, context) do
+  def change(changeset, _opts, _context) do
     source = Ash.Changeset.get_argument(changeset, :source)
     dest = Ash.Changeset.get_argument(changeset, :destination)
 

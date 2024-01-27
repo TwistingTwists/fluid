@@ -4,9 +4,9 @@ defmodule Fluid.Model do
   * World, Warehouse, Tank, Tag
   """
   alias Fluid.Model.Warehouse
-  alias Fluid.Model.Pool
-  alias Fluid.Model.Tank
-  alias Fluid.Model.Tag
+  # alias Fluid.Model.Pool
+  # alias Fluid.Model.Tank
+  # alias Fluid.Model.Tag
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
@@ -25,6 +25,12 @@ defmodule Fluid.Model do
     |> Ash.Changeset.for_create(:create, params, opts)
     |> Fluid.Model.Api.create()
   end
+
+  # add_tank
+  # add_pool
+  # connect(capped_tank_wh1, capped_pool_wh2)
+  # >> Run just the last test
+  #
 
   # def create_tank_standalone(%Fluid.Model.World{} = world, params, opts \\ []) do
   #   params =

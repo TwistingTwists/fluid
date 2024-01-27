@@ -6,11 +6,12 @@ defmodule Fluid.Model.Tag do
 
   with constraints modelled as changesets
   """
-  alias Fluid.Model.Tank
-  alias Fluid.Model.Warehouse
-  alias Fluid.Model.World
 
-  alias __MODULE__
+  # alias Fluid.Model.Tank
+  # alias Fluid.Model.Warehouse
+  # alias Fluid.Model.World
+  # alias __MODULE__
+
   require Logger
 
   use Ash.Resource,
