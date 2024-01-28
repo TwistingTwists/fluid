@@ -1,10 +1,12 @@
 defmodule Fluid.MixProject do
   use Mix.Project
 
+  @version "0.1.2"
+
   def project do
     [
       app: :fluid,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.16",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -27,9 +29,6 @@ defmodule Fluid.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Specifies your project dependencies.
-  #
-  # Type `mix help deps` for examples and options.
   defp deps do
     [
       {:phoenix, "~> 1.7.10"},
@@ -62,7 +61,11 @@ defmodule Fluid.MixProject do
       {:ash_phoenix, "~> 1.1"},
       {:spark, "~>  1.1.54"},
       {:ash_oban, "~> 0.1.13"},
-      {:oban, "~> 2.17"}
+      {:oban, "~> 2.17"},
+
+      # gitops - automatic changelog
+      {:git_ops, "~> 2.6.0", only: [:dev]}
+      # {:git_hooks, "~> 0.7.0", only: [:dev], runtime: false}
 
       # {:ash, github: "ash-project/ash", override: true},
       # {:ash_postgres, github: "ash-project/ash_postgres"},
@@ -72,12 +75,6 @@ defmodule Fluid.MixProject do
     ]
   end
 
-  # Aliases are shortcuts or tasks specific to the current project.
-  # For example, to install project dependencies and perform other setup tasks, run:
-  #
-  #     $ mix setup
-  #
-  # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
