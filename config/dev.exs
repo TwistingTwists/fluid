@@ -80,7 +80,7 @@ config :git_ops,
   ],
   tags: [
     # Only add commits to the changelog that has the "backend" tag
-    allowed: ["backend"],
+    allowed: ["backend", "feat", "fix"],
     # Filter out or not commits that don't contain tags
     allow_untagged?: true
   ],
