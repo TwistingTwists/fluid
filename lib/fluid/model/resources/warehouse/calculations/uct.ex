@@ -1,7 +1,7 @@
 defmodule Fluid.Model.Warehouse.Calculations.UCT do
   use Ash.Calculation
 
-  require Logger
+  # require Logger
 
   # alias Fluid.Repo
 
@@ -34,11 +34,11 @@ defmodule Fluid.Model.Warehouse.Calculations.UCT do
   defp do_calculate(tanks) do
     Enum.count(tanks, fn
       %{location_type: :in_wh, capacity_type: :uncapped} ->
-        1
+        true
 
-      tank ->
-        Logger.debug(" Warehouse has tank :  #{inspect(tank)} ")
-        0
+      _tank ->
+        # Logger.debug(" Warehouse has tank :  #{inspect(tank)} ")
+        false
     end)
   end
 end
