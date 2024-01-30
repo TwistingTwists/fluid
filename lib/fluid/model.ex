@@ -4,8 +4,9 @@ defmodule Fluid.Model do
   * World, Warehouse, Tank, Tag
   """
   alias Fluid.Model.Warehouse
+  # alias Common.Results
   # alias Fluid.Model.Pool
-  # alias Fluid.Model.Tank
+  alias Fluid.Model.Tank
   # alias Fluid.Model.Tag
 
   def create_world(params, opts \\ []) do
@@ -16,6 +17,8 @@ defmodule Fluid.Model do
     Fluid.Model.World
     |> Ash.Changeset.for_create(:create, params, opts)
     |> Fluid.Model.Api.create()
+
+    # |> Results.wrap()
   end
 
   def create_warehouse(params, opts \\ []) do
@@ -24,6 +27,9 @@ defmodule Fluid.Model do
     Warehouse
     |> Ash.Changeset.for_create(:create, params, opts)
     |> Fluid.Model.Api.create()
+
+    # |> dbg()
+    # |> Results.wrap()
   end
 
   # add_tank
@@ -76,20 +82,20 @@ defmodule Fluid.Model do
   #   |> Fluid.Model.Api.create()
   # end
 
-  # def add_tanks_to_warehouse(%Warehouse{} = warehouse, %Tank{} = tank) do
-  #   add_tanks_to_warehouse(warehouse, [tank])
-  # end
+  def add_tanks_to_warehouse(%Warehouse{} = warehouse, %Tank{} = tank) do
+    add_tanks_to_warehouse(warehouse, [tank])
+  end
 
-  # def add_tanks_to_warehouse(warehouse, tanks) do
-  #   Enum.reduce_while(tanks, nil, fn
-  #     tank, _acc ->
-  #       case Warehouse.add_tank(warehouse, tank) do
-  #         {:ok, updated_warehouse} ->
-  #           {:cont, {:ok, updated_warehouse}}
+  def add_tanks_to_warehouse(warehouse, tanks) do
+    Enum.reduce_while(tanks, nil, fn
+      tank, _acc ->
+        case Warehouse.add_tank(warehouse, tank) do
+          {:ok, updated_warehouse} ->
+            {:cont, {:ok, updated_warehouse}}
 
-  #         {:error, error} ->
-  #           {:halt, {:error, error}}
-  #       end
-  #   end)
-  # end
+          {:error, error} ->
+            {:halt, {:error, error}}
+        end
+    end)
+  end
 end

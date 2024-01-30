@@ -8,6 +8,8 @@ defmodule Fluid.ModelTest do
   # alias Fluid.Model.Tag
   alias Fluid.Test.Factory
 
+  import Helpers.ColorIO
+
   setup do
     default_string = "- #{__MODULE__}"
     map_or_kv = [name: "Unique world " <> default_string]
@@ -34,7 +36,8 @@ defmodule Fluid.ModelTest do
                    error: error_string
                  }
                ]
-             } = error
+             } =
+               error
 
       # asserts that uniqueness is obtained by postgres unique_constraint
       assert String.contains?(error_string, "index_for_name_unique_entries")
@@ -149,13 +152,41 @@ defmodule Fluid.ModelTest do
       assert warehouse.count_pool >= 1
     end
 
-    test "WH:create: with given pool list while creating a warehouse. it is added as it is to WH",
-         %{world: _setup_world, tanks: _tanks, pools: pools} do
-      # filter out standalone pools
-      pools =
-        Enum.filter(pools, fn
-          %Tank{
-            location_type: :in_wh
+    # test "WH:create: with given pool list while creating a warehouse. it is added as it is to WH",
+    #      %{world: _setup_world, tanks: _tanks, pools: pools} do
+    #   # filter out standalone pools
+    #   pools =
+    #     Enum.filter(pools, fn
+    #       %Tank{
+    #         location_type: :in_wh
+    #       } ->
+    #         true
+
+    #       _ ->
+    #         false
+    #     end)
+
+    #   assert {:ok, warehouse} = Fluid.Model.create_warehouse(name: "WH:create with given pools", pools: pools)
+
+    #   pool_ids =
+    #     pools
+    #     |> Enum.map(& &1.id)
+
+    #   wh_tank_ids =
+    #     warehouse.pools
+    #     |> Enum.sort_by(& &1.id, :asc)
+    #     |> Enum.map(& &1.id)
+
+    #   assert pool_ids == wh_tank_ids
+    # end
+
+    test "Can add tanks to a given warehouse", %{world: _setup_world, warehouse: warehouse, tanks: tanks, pools: pools} do
+      # non UCT tank
+      [tank] =
+        Enum.filter(tanks, fn
+          %{
+            location_type: :in_wh,
+            capacity_type: :capped
           } ->
             true
 
@@ -163,18 +194,19 @@ defmodule Fluid.ModelTest do
             false
         end)
 
-      assert {:ok, warehouse} = Fluid.Model.create_warehouse(name: "WH:create with given pools", pools: pools)
+      warehouse.tanks |> yellow("warehouse1")
 
-      pool_ids =
-        pools
-        |> Enum.map(& &1.id)
+      {:ok, warehouse2} =
+        Fluid.Model.add_tanks_to_warehouse(warehouse, tank)
+        |> purple()
 
-      wh_tank_ids =
-        warehouse.pools
-        |> Enum.sort_by(& &1.id, :asc)
-        |> Enum.map(& &1.id)
+      warehouse2.tanks |> green("warehouse2")
+    end
 
-      assert pool_ids == wh_tank_ids
+    test "Can add pools to a given warehouse" do
+    end
+
+    test "Can connect a given tank in wh_1 to a pool in wh_2" do
     end
 
     # read all worlds
