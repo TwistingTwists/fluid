@@ -63,6 +63,17 @@ defmodule Fluid.Model.Warehouse do
       change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks}
       change manage_relationship(:tank, :tanks, type: :append)
     end
+
+    update :add_pool do
+      argument :pool, Fluid.Model.Pool, allow_nil?: false
+
+      change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
+
+      change {Fluid.Model.Changes.AddArgToRelationship, arg: :pool, rel: :pools}
+      # change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks}
+
+      change manage_relationship(:pool, :pools, type: :append)
+    end
   end
 
   changes do
@@ -107,6 +118,7 @@ defmodule Fluid.Model.Warehouse do
     define :update
 
     define :add_tank, args: [:tank]
+    define :add_pool, args: [:pool]
   end
 
   postgres do
