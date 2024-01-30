@@ -5,7 +5,7 @@ defmodule Fluid.Model do
   """
   alias Fluid.Model.Warehouse
   # alias Common.Results
-  # alias Fluid.Model.Pool
+  alias Fluid.Model.Pool
   alias Fluid.Model.Tank
   # alias Fluid.Model.Tag
 
@@ -90,6 +90,23 @@ defmodule Fluid.Model do
     Enum.reduce_while(tanks, nil, fn
       tank, _acc ->
         case Warehouse.add_tank(warehouse, tank) do
+          {:ok, updated_warehouse} ->
+            {:cont, {:ok, updated_warehouse}}
+
+          {:error, error} ->
+            {:halt, {:error, error}}
+        end
+    end)
+  end
+
+  def add_pools_to_warehouse(%Warehouse{} = warehouse, %Pool{} = pool) do
+    add_pools_to_warehouse(warehouse, [pool])
+  end
+
+  def add_pools_to_warehouse(warehouse, pools) do
+    Enum.reduce_while(pools, nil, fn
+      tank, _acc ->
+        case Warehouse.add_pool(warehouse, tank) do
           {:ok, updated_warehouse} ->
             {:cont, {:ok, updated_warehouse}}
 

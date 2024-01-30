@@ -8,7 +8,7 @@ defmodule Fluid.ModelTest do
   # alias Fluid.Model.Tag
   alias Fluid.Test.Factory
 
-  import Helpers.ColorIO
+  # import Helpers.ColorIO
 
   setup do
     default_string = "- #{__MODULE__}"
@@ -180,7 +180,7 @@ defmodule Fluid.ModelTest do
     #   assert pool_ids == wh_tank_ids
     # end
 
-    test "Can add tanks to a given warehouse", %{world: _setup_world, warehouse: warehouse, tanks: tanks, pools: pools} do
+    test "Can add tanks to a given warehouse", %{world: _setup_world, warehouse: warehouse, tanks: tanks} do
       # non UCT tank
       [tank] =
         Enum.filter(tanks, fn
@@ -194,16 +194,65 @@ defmodule Fluid.ModelTest do
             false
         end)
 
-      warehouse.tanks |> yellow("warehouse1")
+      assert {:ok, %{tanks: tanks}} =
+               Fluid.Model.add_tanks_to_warehouse(warehouse, tank)
 
-      {:ok, warehouse2} =
-        Fluid.Model.add_tanks_to_warehouse(warehouse, tank)
-        |> purple()
+      # |> purple()
 
-      warehouse2.tanks |> green("warehouse2")
+      assert Enum.all?(tanks, fn
+               %{
+                 location_type: :in_wh,
+                 capacity_type: capacity
+               }
+               when capacity in [:capped, :uncapped] ->
+                 true
+
+               _ ->
+                 false
+             end)
+
+      # sanity check on calculations
+      assert warehouse.count_uncapped_tank == 1
+
+      # warehouse2.tanks |> green("warehouse2")
     end
 
-    test "Can add pools to a given warehouse" do
+    test "Can add pools to a given warehouse", %{world: _setup_world, warehouse: warehouse, pools: pools} do
+      # fixed pool
+      [pool] =
+        Enum.filter(pools, fn
+          %{
+            location_type: :in_wh,
+            capacity_type: :fixed
+          } ->
+            true
+
+          _ ->
+            false
+        end)
+
+      assert {:ok, %{pools: pools_result} = _warehouse2} =
+               Fluid.Model.add_pools_to_warehouse(warehouse, pool)
+
+      # |> purple()
+
+      # warehouse2.pools |> green("warehouse2")
+
+      assert Enum.all?(pools_result, fn
+               %{
+                 location_type: :in_wh,
+                 capacity_type: capacity
+               }
+               when capacity in [:fixed, :uncapped] ->
+                 true
+
+               _ ->
+                 false
+             end)
+
+      # sanity check on calculations
+      assert warehouse.count_uncapped_tank == 1
+      assert warehouse.count_pool == 1
     end
 
     test "Can connect a given tank in wh_1 to a pool in wh_2" do

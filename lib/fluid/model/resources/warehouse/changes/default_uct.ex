@@ -75,8 +75,9 @@ defmodule Fluid.Model.Warehouse.Changes.AddDefaultUCT do
       # add existing tanks from the data
       # ([tank] ++ tank_args ++ changeset.data.tanks)
       all_tanks =
-        ([tank] ++ tank_args)
-        |> green("#{__MODULE__}")
+        [tank] ++ tank_args
+
+      # |> green("#{__MODULE__}")
 
       Ash.Changeset.set_argument(changeset, tank_rel_atom, all_tanks)
     end
