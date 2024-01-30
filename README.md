@@ -27,4 +27,10 @@ warehouse - classes
 4. `mix test --trace`
 
 ### Format of commit message to generate automatic changelog
+1. add to mix.exs
+    `{:git_ops, "~> 2.6.0", only: [:dev]}`
+    * add to dev.exs
+    * mix deps.get
+2. run `mix git_ops.message_hook`
+3. mix git_ops.release --initial
 https://gist.github.com/stephenparish/9941e89d80e2bc58a153#format-of-the-commit-message
