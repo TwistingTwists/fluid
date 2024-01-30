@@ -47,7 +47,7 @@ defmodule Fluid.Model.Warehouse do
 
       change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
 
-      change Fluid.Model.Warehouse.Changes.AddDefaultUCT
+      change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tanks, rel: :tanks}
       change Fluid.Model.Warehouse.Changes.AddDefaultPool
 
       change manage_relationship(:tanks, type: :append_and_remove)
@@ -60,8 +60,8 @@ defmodule Fluid.Model.Warehouse do
       change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
 
       # change {Fluid.Model.Changes.AddArgToRelationship, arg: :tank, rel: :tanks}
-      change Fluid.Model.Warehouse.Changes.OnlyOneUCT
-      change manage_relationship(:tank, :tanks, type: :append_and_remove)
+      change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks}
+      change manage_relationship(:tank, :tanks, type: :append)
     end
   end
 
