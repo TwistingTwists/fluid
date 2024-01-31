@@ -8,7 +8,7 @@ defmodule Fluid.ModelTest do
   # alias Fluid.Model.Tag
   alias Fluid.Test.Factory
 
-  import Helpers.ColorIO
+  # import Helpers.ColorIO
 
   setup do
     default_string = "- #{__MODULE__}"
@@ -29,7 +29,8 @@ defmodule Fluid.ModelTest do
          %{world: _setup_world, warehouse: warehouse} do
       assert {:error, error} =
                Fluid.Model.create_warehouse(name: warehouse.name)
-               |> purple("new error is ")
+
+      # |> purple("new error is ")
 
       assert %Fluid.Error.RepoError{
                class: :create_error,
