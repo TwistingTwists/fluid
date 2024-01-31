@@ -275,6 +275,22 @@ defmodule Fluid.ModelTest do
       assert %{source: %{"warehouse_id" => ^warehouse_1_id}, destination: %{"warehouse_id" => ^warehouse_2_id}} = tag
     end
 
+    # test "cannot connect a given tank and warehouse in same pool", %{
+    #   world: _setup_world,
+    #   warehouse: warehouse_1
+    # } do
+    #   {:ok, warehouse_2} =
+    #     Fluid.Model.create_warehouse(name: "warehouse_tag_test ")
+
+    #   [uct] = warehouse_1.tanks
+    #   [ucp] = warehouse_2.pools
+    #   warehouse_1_id = warehouse_1.id
+    #   warehouse_2_id = warehouse_2.id
+
+    #   assert {:ok, tag} = Fluid.Model.connect(uct, ucp)
+    #   assert %{source: %{"warehouse_id" => ^warehouse_1_id}, destination: %{"warehouse_id" => ^warehouse_2_id}} = tag
+    # end
+
     # read all worlds
     # Fluid.Model.read(World)
 
