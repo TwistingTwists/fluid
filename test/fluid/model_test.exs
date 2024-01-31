@@ -8,7 +8,7 @@ defmodule Fluid.ModelTest do
   # alias Fluid.Model.Tag
   alias Fluid.Test.Factory
 
-  # import Helpers.ColorIO
+  import Helpers.ColorIO
 
   setup do
     default_string = "- #{__MODULE__}"
@@ -27,15 +27,20 @@ defmodule Fluid.ModelTest do
   describe "Warehouse:Name" do
     test "create: warehouse cannot have duplicate name",
          %{world: _setup_world, warehouse: warehouse} do
-      assert {:error, error} = Fluid.Model.create_warehouse(name: warehouse.name)
+      assert {:error, error} =
+               Fluid.Model.create_warehouse(name: warehouse.name)
+               |> purple("new error is ")
 
-      # Ash.Error is leaky. Convert it into our own Error.
-      assert %Ash.Error.Unknown{
-               errors: [
-                 %Ash.Error.Unknown.UnknownError{
-                   error: error_string
-                 }
-               ]
+      assert %Fluid.Error.RepoError{
+               class: :create_error,
+               target: "warehouse",
+               error: %{
+                 errors: [
+                   %{
+                     error: error_string
+                   }
+                 ]
+               }
              } =
                error
 

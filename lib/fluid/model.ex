@@ -27,9 +27,16 @@ defmodule Fluid.Model do
     Warehouse
     |> Ash.Changeset.for_create(:create, params, opts)
     |> Fluid.Model.Api.create()
+    |> or_error("warehouse")
 
     # |> dbg()
     # |> Results.wrap()
+  end
+
+  def or_error({:ok, val}, _target), do: {:ok, val}
+
+  def or_error({:error, error}, target) do
+    {:error, Fluid.Error.RepoError.exception(error: error, target: target)}
   end
 
   # add_tank
