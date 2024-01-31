@@ -180,7 +180,11 @@ defmodule Fluid.ModelTest do
     #   assert pool_ids == wh_tank_ids
     # end
 
-    test "Can add tanks to a given warehouse", %{world: _setup_world, warehouse: warehouse, tanks: tanks} do
+    test "WH:add_tanks_to_warehouse - add tanks to a given warehouse", %{
+      world: _setup_world,
+      warehouse: warehouse,
+      tanks: tanks
+    } do
       # non UCT tank
       [tank] =
         Enum.filter(tanks, fn
@@ -255,7 +259,20 @@ defmodule Fluid.ModelTest do
       assert warehouse.count_pool == 1
     end
 
-    test "Can connect a given tank in wh_1 to a pool in wh_2" do
+    test "Can connect a given tank in wh_1 to a pool in wh_2", %{
+      world: _setup_world,
+      warehouse: warehouse_1
+    } do
+      {:ok, warehouse_2} =
+        Fluid.Model.create_warehouse(name: "warehouse_tag_test ")
+
+      [uct] = warehouse_1.tanks
+      [ucp] = warehouse_2.pools
+      warehouse_1_id = warehouse_1.id
+      warehouse_2_id = warehouse_2.id
+
+      assert {:ok, tag} = Fluid.Model.connect(uct, ucp)
+      assert %{source: %{"warehouse_id" => ^warehouse_1_id}, destination: %{"warehouse_id" => ^warehouse_2_id}} = tag
     end
 
     # read all worlds

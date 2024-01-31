@@ -7,7 +7,7 @@ defmodule Fluid.Model do
   # alias Common.Results
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
-  # alias Fluid.Model.Tag
+  alias Fluid.Model.Tag
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
@@ -114,5 +114,9 @@ defmodule Fluid.Model do
             {:halt, {:error, error}}
         end
     end)
+  end
+
+  def connect(%Tank{} = tank, %Pool{} = pool) do
+    Tag.create(tank, pool)
   end
 end
