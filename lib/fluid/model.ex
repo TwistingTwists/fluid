@@ -9,6 +9,7 @@ defmodule Fluid.Model do
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
   alias Fluid.Model.Tag
+  import Helpers.ColorIO
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
@@ -135,64 +136,131 @@ defmodule Fluid.Model do
   #
   """
   def check_circularity(list_of_warehouses) when list_of_warehouses != [] do
+    list_of_warehouses
+    |> calculate_feeder_and_unconnected_nodes
+    |> run_euler_algorithm()
+
+    # |> classify_determinate_indeterminate(list_of_warehouses)
+    # |> purple("list_of_warehouses")
+  end
+
+  def calculate_feeder_and_unconnected_nodes(list_of_warehouses) do
+    # base case starts with all tags / connections
     all_tags = Tag.read_all!()
-    import Helpers.ColorIO
+    calculate_feeder_and_unconnected_nodes(list_of_warehouses, all_tags)
+  end
 
-    for wh <- list_of_warehouses do
-      {wh.name, wh.id} |> blue("wh.name")
+  def calculate_feeder_and_unconnected_nodes(list_of_warehouses, all_tags) do
+    for wh <- list_of_warehouses, reduce: {%{}, all_tags} do
+      {wh_acc, tag_acc} ->
+        {wh.name, wh.id} |> blue("wh.name")
 
-      tank_ids = Enum.map(wh.tanks, & &1.id)
+        tank_ids = Enum.map(wh.tanks, & &1.id)
 
-      inbound_connections =
-        Enum.reduce(all_tags, [], fn tag, acc ->
-          if tag.source["id"] in tank_ids do
-            [tag | acc]
-          else
-            acc
-          end
-        end)
+        inbound_connections =
+          Enum.reduce(all_tags, [], fn tag, acc ->
+            if tag.source["id"] in tank_ids do
+              [tag | acc]
+            else
+              acc
+            end
+          end)
 
-      # |> purple("inbound_connections")
+        # |> purple("inbound_connections")
 
-      pool_ids = Enum.map(wh.pools, & &1.id)
+        pool_ids = Enum.map(wh.pools, & &1.id)
 
-      # outbound are always from  CP -> CT or UCP -> UCT
-      outbound_connections =
-        Enum.reduce(all_tags, [], fn tag, acc ->
-          if tag.destination["id"] in pool_ids do
-            [tag | acc]
-          else
-            acc
-          end
-        end)
+        # outbound are always from  CP -> CT or UCP -> UCT
+        outbound_connections =
+          Enum.reduce(all_tags, [], fn tag, acc ->
+            if tag.destination["id"] in pool_ids do
+              [tag | acc]
+            else
+              acc
+            end
+          end)
 
-      # |> orange("outbound_connections")
+        # |> orange("outbound_connections")
 
-      {length(inbound_connections), length(outbound_connections)} |> green("\n\n connections: {in, out}")
-      # arrow concept?
+        {length(inbound_connections), length(outbound_connections)} |> green("\n\n connections: {in, out}")
+        # arrow concept?
 
-      is_feeder_node =
-        if inbound_connections == [] and length(outbound_connections) >= 1, do: true, else: false
+        is_feeder_node =
+          if inbound_connections == [] and length(outbound_connections) >= 1, do: true, else: false
 
-      is_unconnected_node =
-        if inbound_connections == [] and outbound_connections == [], do: true, else: false
+        is_unconnected_node =
+          if inbound_connections == [] and outbound_connections == [], do: true, else: false
 
-      is_feeder_node |> purple("is_feeder_node")
-      is_unconnected_node |> orange("is_unconnected_node")
+        is_feeder_node |> purple("is_feeder_node")
+        is_unconnected_node |> orange("is_unconnected_node")
+
+        new_wh_acc =
+          Map.put(wh_acc, wh.id, %{
+            is_feeder_node: is_feeder_node,
+            is_unconnected_node: is_unconnected_node,
+            outbound_connections: outbound_connections,
+            inbound_connections: inbound_connections,
+            id: wh.id,
+            wh: wh
+          })
+
+        {new_wh_acc, tag_acc}
     end
-
-    # warehouses =
-    #   Enum.reject(list_of_warehouses, fn wh ->
-    #     # remove all the feeder_nodes and unconnected_nodes from the world
-    #     is_feeder_node || is_unconnected_node
-    #   end)
-
-    # run_euler_algorithm(list_of_warehouses)
   end
 
-  def run_euler_algorithm([wh]) do
+  def run_euler_algorithm({_wh_map, []}) do
+    IO.puts("\n\n")
+    []
   end
 
-  def run_euler_algorithm([wh | tail]) do
+  def run_euler_algorithm({list_of_warehouses_map, tags_list}) when map_size(list_of_warehouses_map) >= 1 do
+    {after_wh_list, after_tags} =
+      for {wh_id, wh_map} <- list_of_warehouses_map, reduce: {list_of_warehouses_map, tags_list} do
+        {wh_acc, tags_acc} ->
+          case wh_map do
+            %{is_feeder_node: true, is_unconnected_node: false, outbound_connections: outbound_connections} ->
+              # remove all the outbound connections from the warehouse (node)
+              left_tags =
+                Enum.reject(tags_acc, fn tag ->
+                  tag.id in outbound_connections
+                end)
+
+              # delete the feeder nodes
+              {Map.delete(wh_acc, wh_id), left_tags}
+
+            %{is_feeder_node: false, is_unconnected_node: true, outbound_connections: outbound_connections} ->
+              # remove all the outbound connections from the warehouse (node)
+              left_tags =
+                Enum.reject(tags_acc, fn tag ->
+                  tag.id in outbound_connections
+                end)
+
+              # delete the unconnected nodes
+              {Map.delete(wh_acc, wh_id), left_tags}
+
+            %{is_feeder_node: false, is_unconnected_node: false} ->
+              {wh_acc, tags_acc}
+          end
+      end
+
+    IO.puts("\n\n")
+
+    IO.puts(
+      "Euler Algo: before_ml_map: #{map_size(list_of_warehouses_map)} , after_wl_map: #{map_size(after_wh_list)} "
+    )
+
+    # if no nodes were deleted => do not run_euler_algorithm() further
+    if map_size(after_wh_list) < map_size(list_of_warehouses_map) do
+      after_wh_list
+      |> Enum.map(fn {_wh_id, %{wh: wh}} -> wh end)
+      |> calculate_feeder_and_unconnected_nodes(after_tags)
+      |> run_euler_algorithm()
+    else
+      after_wh_list
+    end
+  end
+
+  def run_euler_algorithm({wl_map, tags}) do
+    tags |> red("#{map_size(wl_map)}: wl_map, tags: #{length(tags)}")
   end
 end
