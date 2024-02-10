@@ -32,7 +32,8 @@ defmodule Fluid.Model.Warehouse do
     defaults [:update]
 
     read :read_all do
-      primary? true
+      primary?(true)
+      prepare(build(load: [:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
     end
 
     read :read_by_id do

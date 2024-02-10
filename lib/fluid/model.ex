@@ -128,4 +128,71 @@ defmodule Fluid.Model do
   def connect(%Tank{} = tank, %Pool{} = pool) do
     Tag.create(tank, pool)
   end
+
+  @doc """
+  # assume: list_of_warehouses = all belong to same world
+  # todo iterate over all warehouses.
+  #
+  """
+  def check_circularity(list_of_warehouses) when list_of_warehouses != [] do
+    all_tags = Tag.read_all!()
+    import Helpers.ColorIO
+
+    for wh <- list_of_warehouses do
+      {wh.name, wh.id} |> blue("wh.name")
+
+      tank_ids = Enum.map(wh.tanks, & &1.id)
+
+      inbound_connections =
+        Enum.reduce(all_tags, [], fn tag, acc ->
+          if tag.source["id"] in tank_ids do
+            [tag | acc]
+          else
+            acc
+          end
+        end)
+
+      # |> purple("inbound_connections")
+
+      pool_ids = Enum.map(wh.pools, & &1.id)
+
+      # outbound are always from  CP -> CT or UCP -> UCT
+      outbound_connections =
+        Enum.reduce(all_tags, [], fn tag, acc ->
+          if tag.destination["id"] in pool_ids do
+            [tag | acc]
+          else
+            acc
+          end
+        end)
+
+      # |> orange("outbound_connections")
+
+      {length(inbound_connections), length(outbound_connections)} |> green("\n\n connections: {in, out}")
+      # arrow concept?
+
+      is_feeder_node =
+        if inbound_connections == [] and length(outbound_connections) >= 1, do: true, else: false
+
+      is_unconnected_node =
+        if inbound_connections == [] and outbound_connections == [], do: true, else: false
+
+      is_feeder_node |> purple("is_feeder_node")
+      is_unconnected_node |> orange("is_unconnected_node")
+    end
+
+    # warehouses =
+    #   Enum.reject(list_of_warehouses, fn wh ->
+    #     # remove all the feeder_nodes and unconnected_nodes from the world
+    #     is_feeder_node || is_unconnected_node
+    #   end)
+
+    # run_euler_algorithm(list_of_warehouses)
+  end
+
+  def run_euler_algorithm([wh]) do
+  end
+
+  def run_euler_algorithm([wh | tail]) do
+  end
 end
