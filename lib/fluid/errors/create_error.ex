@@ -1,4 +1,4 @@
-defmodule Fluid.Error.RepoError do
+defmodule Fluid.Error.ModelError do
   @moduledoc """
   Unwrap all the repo errors in this module
 

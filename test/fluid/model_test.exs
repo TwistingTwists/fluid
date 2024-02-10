@@ -32,7 +32,7 @@ defmodule Fluid.ModelTest do
 
       # |> purple("new error is ")
 
-      assert %Fluid.Error.RepoError{
+      assert %Fluid.Error.ModelError{
                class: :create_error,
                target: "warehouse",
                error: %{
