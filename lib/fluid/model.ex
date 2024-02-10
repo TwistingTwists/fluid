@@ -4,6 +4,7 @@ defmodule Fluid.Model do
   * World, Warehouse, Tank, Tag
   """
   alias Fluid.Model.Warehouse
+  alias Fluid.Model.World
   # alias Common.Results
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
@@ -21,6 +22,7 @@ defmodule Fluid.Model do
     # |> Results.wrap()
   end
 
+  # TODO relate warehouse to a world. as of now, all warehouses do not belong to a world
   def create_warehouse(params, opts \\ []) do
     params = Map.new(params)
 
@@ -36,7 +38,7 @@ defmodule Fluid.Model do
   def or_error({:ok, val}, _target), do: {:ok, val}
 
   def or_error({:error, error}, target) do
-    {:error, Fluid.Error.RepoError.exception(error: error, target: target)}
+    {:error, Fluid.Error.ModelError.exception(error: error, target: target)}
   end
 
   # add_tank
