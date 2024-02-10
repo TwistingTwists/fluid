@@ -1,5 +1,5 @@
 [
-  import_deps: [:ecto, :ecto_sql, :phoenix, :ash, :ash_postgres],
+  import_deps: [:ecto, :ecto_sql, :phoenix, :ash, :ash_postgres, :ash_oban, :ash_state_machine, :ash_admin],
   line_length: 120,
   # :typedstruct],
   subdirectories: ["priv/*/migrations"],
