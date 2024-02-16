@@ -24,6 +24,8 @@ defmodule Fluid.CircularityTest do
 
   use Fluid.DataCase, async: true
 
+  alias Fluid.Model
+
   describe "Circularity" do
     setup do
       ####### world having circularity #####
@@ -80,19 +82,20 @@ defmodule Fluid.CircularityTest do
       [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]]
     end
 
-    test "world with circularity", warehouses: warehouses do
-      assert(false)
-    end
-
-    test "world with circularity ", warehouses: warehouses do
+    test "world with circularity ", %{warehouses: warehouses} do
       # indeterminate warehouses - 2, 3, 4, 5
       # determinate warehouses - 1, 6
 
+      [wh_1, wh_2, wh_3, wh_4, wh_5, wh_6] = warehouses
+      wh_1_id = wh_1.id
       # API
       # %Model.Circularity{deterministic: deterministic, indeterministic: indeterministic, errors: errors} = Flow.Model.circularity_analysis(warehouses)
+      assert %{^wh_1_id => wh_1_circularity} = Model.circularity_analysis(warehouses)
+
+      assert %Model.Circularity{is_feeder_node: false} = wh_1_circularity
     end
 
-    test "world without circularity" do
-    end
+    # test "world without circularity" do
+    # end
   end
 end
