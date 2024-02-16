@@ -3,6 +3,7 @@ defmodule Fluid.Model do
   Context layer for operating on models
   * World, Warehouse, Tank, Tag
   """
+  alias __MODULE__
   alias Fluid.Model.Warehouse
   alias Fluid.Model.World
   # alias Common.Results
@@ -135,7 +136,7 @@ defmodule Fluid.Model do
   # todo iterate over all warehouses.
   #
   """
-  def check_circularity(list_of_warehouses) when list_of_warehouses != [] do
+  def circularity_analysis(list_of_warehouses) when list_of_warehouses != [] do
     list_of_warehouses
     |> calculate_feeder_and_unconnected_nodes
     |> run_euler_algorithm()
@@ -151,9 +152,12 @@ defmodule Fluid.Model do
   end
 
   def calculate_feeder_and_unconnected_nodes(list_of_warehouses, all_tags) do
+    # "calculate_feeder_and_unconnected_nodes with: all_tags = #{length(all_tags)}) "
+    # |> green()
+
     for wh <- list_of_warehouses, reduce: {%{}, all_tags} do
       {wh_acc, tag_acc} ->
-        {wh.name, wh.id} |> blue("wh.name")
+        # {wh.name, wh.id} |> blue("wh.name")
 
         tank_ids = Enum.map(wh.tanks, & &1.id)
 
@@ -171,8 +175,10 @@ defmodule Fluid.Model do
         pool_ids = Enum.map(wh.pools, & &1.id)
 
         # outbound are always from  CP -> CT or UCP -> UCT
+        # todo what if two tanks are connected?
         outbound_connections =
           Enum.reduce(all_tags, [], fn tag, acc ->
+            # if tag.source["id"] in pool_ids or tag.source["id"] in tank_ids
             if tag.destination["id"] in pool_ids do
               [tag | acc]
             else
@@ -182,7 +188,7 @@ defmodule Fluid.Model do
 
         # |> orange("outbound_connections")
 
-        {length(inbound_connections), length(outbound_connections)} |> green("\n\n connections: {in, out}")
+        # {length(inbound_connections), length(outbound_connections)} |> green("\n\n connections: {in, out}")
         # arrow concept?
 
         is_feeder_node =
@@ -191,18 +197,23 @@ defmodule Fluid.Model do
         is_unconnected_node =
           if inbound_connections == [] and outbound_connections == [], do: true, else: false
 
-        is_feeder_node |> purple("is_feeder_node")
-        is_unconnected_node |> orange("is_unconnected_node")
+        # is_feeder_node |> purple("is_feeder_node")
+        # is_unconnected_node |> orange("is_unconnected_node")
 
         new_wh_acc =
-          Map.put(wh_acc, wh.id, %{
-            is_feeder_node: is_feeder_node,
-            is_unconnected_node: is_unconnected_node,
-            outbound_connections: outbound_connections,
-            inbound_connections: inbound_connections,
-            id: wh.id,
-            wh: wh
-          })
+          Map.put(
+            wh_acc,
+            wh.id,
+            Model.Circularity.create!(%{
+              is_feeder_node: is_feeder_node,
+              is_unconnected_node: is_unconnected_node,
+              outbound_connections: outbound_connections,
+              inbound_connections: inbound_connections,
+              wh_id: wh.id,
+              name: wh.name,
+              wh: wh
+            })
+          )
 
         {new_wh_acc, tag_acc}
     end
@@ -217,23 +228,37 @@ defmodule Fluid.Model do
     {after_wh_list, after_tags} =
       for {wh_id, wh_map} <- list_of_warehouses_map, reduce: {list_of_warehouses_map, tags_list} do
         {wh_acc, tags_acc} ->
+          # {wh_map.name, wh_id} |> orange("processing: ")
+
+          # {wh_map.is_feeder_node, wh_map.is_unconnected_node}
+          # |> purple(" {wh_map.is_feeder_node, wh_map.is_unconnected_node}")
+
           case wh_map do
             %{is_feeder_node: true, is_unconnected_node: false, outbound_connections: outbound_connections} ->
               # remove all the outbound connections from the warehouse (node)
+              outbound_connections_ids = Enum.map(outbound_connections, & &1.id)
+
               left_tags =
                 Enum.reject(tags_acc, fn tag ->
-                  tag.id in outbound_connections
+                  tag.id in outbound_connections_ids
                 end)
+
+              # IO.puts("\n\n")
+              # orange("left_tags: #{length(left_tags)}")
 
               # delete the feeder nodes
               {Map.delete(wh_acc, wh_id), left_tags}
 
             %{is_feeder_node: false, is_unconnected_node: true, outbound_connections: outbound_connections} ->
+              outbound_connections_ids = Enum.map(outbound_connections, & &1.id)
               # remove all the outbound connections from the warehouse (node)
               left_tags =
                 Enum.reject(tags_acc, fn tag ->
-                  tag.id in outbound_connections
+                  tag.id in outbound_connections_ids
                 end)
+
+              # IO.puts("\n\n")
+              # orange("left_tags: #{length(left_tags)}")
 
               # delete the unconnected nodes
               {Map.delete(wh_acc, wh_id), left_tags}
