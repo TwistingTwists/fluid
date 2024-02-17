@@ -86,13 +86,44 @@ defmodule Fluid.CircularityTest do
       # indeterminate warehouses - 2, 3, 4, 5
       # determinate warehouses - 1, 6
 
-      [wh_1, wh_2, wh_3, wh_4, wh_5, wh_6] = warehouses
-      wh_1_id = wh_1.id
+      [%{id: wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}, %{id: wh_id_6}] = warehouses
       # API
-      # %Model.Circularity{deterministic: deterministic, indeterministic: indeterministic, errors: errors} = Flow.Model.circularity_analysis(warehouses)
-      assert %{^wh_1_id => wh_1_circularity} = Model.circularity_analysis(warehouses)
+      %{total: total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
 
-      assert %Model.Circularity{is_feeder_node: false} = wh_1_circularity
+      ###########################################################################
+      # assertions related to deletion of feeder nodes and unconnectd nodes
+      refute Map.has_key?(circularity, wh_id_1)
+
+      assert Map.has_key?(circularity, wh_id_2)
+      assert Map.has_key?(circularity, wh_id_3)
+      assert Map.has_key?(circularity, wh_id_4)
+      assert Map.has_key?(circularity, wh_id_5)
+
+      refute Map.has_key?(circularity, wh_id_6)
+
+      ###########################################################################
+      # assertions related to feeder_nodes
+
+      assert %{is_feeder_node: true} = circularity[wh_id_1]
+
+      assert Map.has_key?(circularity, wh_id_2)
+      assert Map.has_key?(circularity, wh_id_3)
+      assert Map.has_key?(circularity, wh_id_4)
+      assert Map.has_key?(circularity, wh_id_5)
+
+      refute Map.has_key?(circularity, wh_id_6)
+
+      ###########################################################################
+      # assertions related to unconnected_nodes
+
+      ###########################################################################
+      # assertions related to outbound_connection_count
+      ###########################################################################
+      # assertions related to inbound_connection_count
+      ###########################################################################
+      # assertions related to determinate classes
+      ###########################################################################
+      # assertions related to indeterminate classes
     end
 
     # test "world without circularity" do
