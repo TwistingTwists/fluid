@@ -131,100 +131,112 @@ defmodule Fluid.Model do
     Tag.create(tank, pool)
   end
 
+  # def connect(%Pool{} = pool, %Tank{} = tank) do
+  #   Tag.create(pool, tank)
+  # end
+
   @doc """
   # assume: list_of_warehouses = all belong to same world
   # todo iterate over all warehouses.
   #
   """
   def circularity_analysis(list_of_warehouses) when list_of_warehouses != [] do
-    list_of_warehouses
+    %{total: list_of_warehouses}
     |> calculate_feeder_and_unconnected_nodes
     |> run_euler_algorithm()
 
-    # |> classify_determinate_indeterminate(list_of_warehouses)
+    # |> classify_determinate_indeterminate()
+
     # |> purple("list_of_warehouses")
   end
 
-  def calculate_feeder_and_unconnected_nodes(list_of_warehouses) do
+  def calculate_feeder_and_unconnected_nodes(%{total: list_of_warehouses}) do
     # base case starts with all tags / connections
     all_tags = Tag.read_all!()
-    calculate_feeder_and_unconnected_nodes(list_of_warehouses, all_tags)
+
+    # we start with every warehouse being indeterminate. And keep deleting determinate from that list
+    args = %{total: list_of_warehouses, indeterminate: list_of_warehouses}
+    calculate_feeder_and_unconnected_nodes(args, all_tags)
   end
 
-  def calculate_feeder_and_unconnected_nodes(list_of_warehouses, all_tags) do
+  def calculate_feeder_and_unconnected_nodes(%{total: total_wh, indeterminate: list_of_warehouses}, all_tags) do
     # "calculate_feeder_and_unconnected_nodes with: all_tags = #{length(all_tags)}) "
     # |> green()
 
-    for wh <- list_of_warehouses, reduce: {%{}, all_tags} do
-      {wh_acc, tag_acc} ->
-        # {wh.name, wh.id} |> blue("wh.name")
+    {new_wh_acc, tag_acc} =
+      for wh <- list_of_warehouses, reduce: {%{}, all_tags} do
+        {wh_acc, tag_acc} ->
+          # {wh.name, wh.id} |> blue("wh.name")
 
-        tank_ids = Enum.map(wh.tanks, & &1.id)
+          tank_ids = Enum.map(wh.tanks, & &1.id)
 
-        inbound_connections =
-          Enum.reduce(all_tags, [], fn tag, acc ->
-            if tag.source["id"] in tank_ids do
-              [tag | acc]
-            else
-              acc
-            end
-          end)
+          inbound_connections =
+            Enum.reduce(all_tags, [], fn tag, acc ->
+              if tag.source["id"] in tank_ids do
+                [tag | acc]
+              else
+                acc
+              end
+            end)
 
-        # |> purple("inbound_connections")
+          # |> purple("inbound_connections")
 
-        pool_ids = Enum.map(wh.pools, & &1.id)
+          pool_ids = Enum.map(wh.pools, & &1.id)
 
-        # outbound are always from  CP -> CT or UCP -> UCT
-        # todo what if two tanks are connected?
-        outbound_connections =
-          Enum.reduce(all_tags, [], fn tag, acc ->
-            # if tag.source["id"] in pool_ids or tag.source["id"] in tank_ids
-            if tag.destination["id"] in pool_ids do
-              [tag | acc]
-            else
-              acc
-            end
-          end)
+          # outbound are always from  CP -> CT or UCP -> UCT
+          # todo what if two tanks are connected?
+          outbound_connections =
+            Enum.reduce(all_tags, [], fn tag, acc ->
+              # if tag.source["id"] in pool_ids or tag.source["id"] in tank_ids
+              if tag.destination["id"] in pool_ids do
+                [tag | acc]
+              else
+                acc
+              end
+            end)
 
-        # |> orange("outbound_connections")
+          # |> orange("outbound_connections")
 
-        # {length(inbound_connections), length(outbound_connections)} |> green("\n\n connections: {in, out}")
-        # arrow concept?
+          # {length(inbound_connections), length(outbound_connections)} |> green("\n\n connections: {in, out}")
+          # arrow concept?
 
-        is_feeder_node =
-          if inbound_connections == [] and length(outbound_connections) >= 1, do: true, else: false
+          is_feeder_node =
+            if inbound_connections == [] and length(outbound_connections) >= 1, do: true, else: false
 
-        is_unconnected_node =
-          if inbound_connections == [] and outbound_connections == [], do: true, else: false
+          is_unconnected_node =
+            if inbound_connections == [] and outbound_connections == [], do: true, else: false
 
-        # is_feeder_node |> purple("is_feeder_node")
-        # is_unconnected_node |> orange("is_unconnected_node")
+          # is_feeder_node |> purple("is_feeder_node")
+          # is_unconnected_node |> orange("is_unconnected_node")
 
-        new_wh_acc =
-          Map.put(
-            wh_acc,
-            wh.id,
-            Model.Circularity.create!(%{
-              is_feeder_node: is_feeder_node,
-              is_unconnected_node: is_unconnected_node,
-              outbound_connections: outbound_connections,
-              inbound_connections: inbound_connections,
-              wh_id: wh.id,
-              name: wh.name,
-              wh: wh
-            })
-          )
+          new_wh_acc =
+            Map.put(
+              wh_acc,
+              wh.id,
+              Model.Circularity.create!(%{
+                is_feeder_node: is_feeder_node,
+                is_unconnected_node: is_unconnected_node,
+                outbound_connections: outbound_connections,
+                inbound_connections: inbound_connections,
+                wh_id: wh.id,
+                name: wh.name,
+                wh: wh
+              })
+            )
 
-        {new_wh_acc, tag_acc}
-    end
+          {new_wh_acc, tag_acc}
+      end
+
+    {%{total: total_wh, indeterminate: new_wh_acc}, tag_acc}
   end
 
-  def run_euler_algorithm({_wh_map, []}) do
+  def run_euler_algorithm({wh_map, []}) do
     IO.puts("\n\n")
-    []
+    wh_map
   end
 
-  def run_euler_algorithm({list_of_warehouses_map, tags_list}) when map_size(list_of_warehouses_map) >= 1 do
+  def run_euler_algorithm({%{total: total_wh, indeterminate: list_of_warehouses_map}, tags_list})
+      when map_size(list_of_warehouses_map) >= 1 do
     {after_wh_list, after_tags} =
       for {wh_id, wh_map} <- list_of_warehouses_map, reduce: {list_of_warehouses_map, tags_list} do
         {wh_acc, tags_acc} ->
@@ -276,16 +288,20 @@ defmodule Fluid.Model do
 
     # if no nodes were deleted => do not run_euler_algorithm() further
     if map_size(after_wh_list) < map_size(list_of_warehouses_map) do
-      after_wh_list
-      |> Enum.map(fn {_wh_id, %{wh: wh}} -> wh end)
-      |> calculate_feeder_and_unconnected_nodes(after_tags)
+      indeterminate_wh_list =
+        after_wh_list
+        |> Enum.map(fn {_wh_id, %{wh: wh}} -> wh end)
+
+      warehouse_current_status = %{total: total_wh, indeterminate: indeterminate_wh_list}
+
+      calculate_feeder_and_unconnected_nodes(warehouse_current_status, after_tags)
       |> run_euler_algorithm()
     else
-      after_wh_list
+      %{total: total_wh, indeterminate: after_wh_list}
     end
   end
 
-  def run_euler_algorithm({wl_map, tags}) do
-    tags |> red("#{map_size(wl_map)}: wl_map, tags: #{length(tags)}")
-  end
+  # def run_euler_algorithm({wl_map, tags}) do
+  #   tags |> red("#{map_size(wl_map)}: wl_map, tags: #{length(tags)}")
+  # end
 end
