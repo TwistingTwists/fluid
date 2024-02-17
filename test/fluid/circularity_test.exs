@@ -1,5 +1,9 @@
 defmodule Fluid.CircularityTest do
-  """
+  @moduledoc """
+
+  ###########################################################################
+  Euler Algorithm
+
   1. FeederNodes , UnconnectedNodes in world.
     -> determinate
   2. Everything else
@@ -7,26 +11,14 @@ defmodule Fluid.CircularityTest do
   3. Eliminate Feeder nodes and arrows away from them
   4. => some nodes now are unconnected in the world => Eliminate Unconnected nodes
   5. Repeat one.
-  """
 
-  """
-  Determinate Class
-
-  1. 0 , 1 , 2
-
-  """
-
-  """
-  Indeterminate Class
-
-  1. A B C (can have mutliple classes)
   """
 
   use Fluid.DataCase, async: true
 
   alias Fluid.Model
 
-  describe "Circularity" do
+  describe "world with circularity -" do
     setup do
       ####### world having circularity #####
       {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1 circularity ")
@@ -82,48 +74,79 @@ defmodule Fluid.CircularityTest do
       [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]]
     end
 
-    test "world with circularity ", %{warehouses: warehouses} do
+    test "identifies indeterminate nodes", %{warehouses: warehouses} do
       # indeterminate warehouses - 2, 3, 4, 5
       # determinate warehouses - 1, 6
 
-      [%{id: wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}, %{id: wh_id_6}] = warehouses
+      [%{id: _wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}, %{id: _wh_id_6}] = warehouses
       # API
-      %{total: total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
-
+      # total-> all
+      %{total: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
+      # import Helpers.ColorIO
+      # circularity |> Map.values() |> Map.new(& {&1.wh_id, %{determinate_class: determinate_class}}) |> purple("in test")
       ###########################################################################
-      # assertions related to deletion of feeder nodes and unconnectd nodes
-      refute Map.has_key?(circularity, wh_id_1)
-
+      # assertions related to list of indeterminate nodes
       assert Map.has_key?(circularity, wh_id_2)
       assert Map.has_key?(circularity, wh_id_3)
       assert Map.has_key?(circularity, wh_id_4)
       assert Map.has_key?(circularity, wh_id_5)
 
-      refute Map.has_key?(circularity, wh_id_6)
-
-      ###########################################################################
-      # assertions related to feeder_nodes
-
-      assert %{is_feeder_node: true} = circularity[wh_id_1]
-
-      assert Map.has_key?(circularity, wh_id_2)
-      assert Map.has_key?(circularity, wh_id_3)
-      assert Map.has_key?(circularity, wh_id_4)
-      assert Map.has_key?(circularity, wh_id_5)
-
-      refute Map.has_key?(circularity, wh_id_6)
-
-      ###########################################################################
-      # assertions related to unconnected_nodes
-
-      ###########################################################################
-      # assertions related to outbound_connection_count
-      ###########################################################################
-      # assertions related to inbound_connection_count
-      ###########################################################################
-      # assertions related to determinate classes
       ###########################################################################
       # assertions related to indeterminate classes
+
+      # assert %{indeterminate_class: []} = circularity[wh_id_2]
+      # A - can two pools be connected?
+
+      # Class A = every WH that is not of Determinate Class that contains at least one CP and/or UCP that receives water from a WH of Determinate Class
+      # 1. If there are no WHs of Determinate Class, classify any random WH as Class A
+
+      # Class B = every WH that is not of Determinate Class that contains at least one CP and/or UCP that receives water from a WH of Class A
+
+      # assert %{indeterminate_class: []} = circularity[wh_id_2]
+      # assert %{indeterminate_class: []} = circularity[wh_id_2]
+      # assert %{indeterminate_class: []} = circularity[wh_id_2]
+
+      ###########################################################################
+      # assertions related to determinate classes
+
+      # 1. Can connection be bidreictional ?
+      #   * Pool -> Tank:
+      #       # WITHIN WAREHOUSE
+      #       # FP = all the connections are within the WH
+      #       FP(1) ->  CT(1) -> UCT(1) -> UCP(2)
+      #       FP(1) ->  CT(1) -> UCT(1) -> ST
+      #       CP(1) -> CT(1) -> UCT(1)
+
+      #       FP(1) -> 50% CT(1) + 25% UCT(1) + 25% CP(1)
+
+      #       # Another warehouse
+      #       > CT(1) -> CP(2)
+      #       > CT(1) -> ST (standalone)
+      #       # is the tank connected to standalone or Pool in another warehouse : Gist of Classification
+
+      #       UCT(1) -> UCP(2)
+      ###########################################################################
+
+      # Class 0 = every WH that contains no CPs or UCPs
+      # i.e. WH with only FP
+
+      # Class 1 = every WH that contains at least one CP and/or UCP, where all of its CPs and UCPs receive water only from one or more WHs of Class 0
+      #
+      # Class 2 = every WH that contains at least one CP and/or UCP that receives water from one or more WHs of Class 1, where all of its CPs and UCPs receive water only from one or more WHs of Class 1 or below
+    end
+
+    test "identifies determinate nodes", %{warehouses: warehouses} do
+      # indeterminate warehouses - 2, 3, 4, 5
+      # determinate warehouses - 1, 6
+
+      [%{id: wh_id_1}, %{id: _wh_id_2}, %{id: _wh_id_3}, %{id: _wh_id_4}, %{id: _wh_id_5}, %{id: wh_id_6}] = warehouses
+
+      # total-> all
+      %{total: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
+      ###########################################################################
+      # assertions related to list of determinate nodes
+      refute Map.has_key?(circularity, wh_id_1)
+      refute Map.has_key?(circularity, wh_id_6)
     end
 
     # test "world without circularity" do

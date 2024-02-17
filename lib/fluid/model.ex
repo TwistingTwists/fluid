@@ -5,12 +5,12 @@ defmodule Fluid.Model do
   """
   alias __MODULE__
   alias Fluid.Model.Warehouse
-  alias Fluid.Model.World
+  # alias Fluid.Model.World
   # alias Common.Results
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
   alias Fluid.Model.Tag
-  import Helpers.ColorIO
+  # import Helpers.ColorIO
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
@@ -280,11 +280,11 @@ defmodule Fluid.Model do
           end
       end
 
-    IO.puts("\n\n")
+    # IO.puts("\n\n")
 
-    IO.puts(
-      "Euler Algo: before_ml_map: #{map_size(list_of_warehouses_map)} , after_wl_map: #{map_size(after_wh_list)} "
-    )
+    # IO.puts(
+    #   "Euler Algo: before_ml_map: #{map_size(list_of_warehouses_map)} , after_wl_map: #{map_size(after_wh_list)} "
+    # )
 
     # if no nodes were deleted => do not run_euler_algorithm() further
     if map_size(after_wh_list) < map_size(list_of_warehouses_map) do
