@@ -141,7 +141,7 @@ defmodule Fluid.Model do
   #
   """
   def circularity_analysis(list_of_warehouses) when list_of_warehouses != [] do
-    %{total: list_of_warehouses}
+    %{all: list_of_warehouses}
     |> calculate_feeder_and_unconnected_nodes
     |> run_euler_algorithm()
 
@@ -150,16 +150,19 @@ defmodule Fluid.Model do
     # |> purple("list_of_warehouses")
   end
 
-  def calculate_feeder_and_unconnected_nodes(%{total: list_of_warehouses}) do
+  def calculate_feeder_and_unconnected_nodes(%{all: list_of_warehouses}) do
     # base case starts with all tags / connections
     all_tags = Tag.read_all!()
 
     # we start with every warehouse being indeterminate. And keep deleting determinate from that list
-    args = %{total: list_of_warehouses, indeterminate: list_of_warehouses}
+    args = %{all: list_of_warehouses, indeterminate: list_of_warehouses}
     calculate_feeder_and_unconnected_nodes(args, all_tags)
   end
 
-  def calculate_feeder_and_unconnected_nodes(%{total: total_wh, indeterminate: list_of_warehouses}, all_tags) do
+  def calculate_feeder_and_unconnected_nodes(
+        %{all: total_wh, indeterminate: list_of_warehouses},
+        all_tags
+      ) do
     # "calculate_feeder_and_unconnected_nodes with: all_tags = #{length(all_tags)}) "
     # |> green()
 
@@ -197,11 +200,15 @@ defmodule Fluid.Model do
 
           # |> orange("outbound_connections")
 
-          # {length(inbound_connections), length(outbound_connections)} |> green("\n\n connections: {in, out}")
+          # {length(inbound_connections), length(outbound_connections)}
+          # |> green("\n\n connections: {in, out}")
+
           # arrow concept?
 
           is_feeder_node =
-            if inbound_connections == [] and length(outbound_connections) >= 1, do: true, else: false
+            if inbound_connections == [] and length(outbound_connections) >= 1,
+              do: true,
+              else: false
 
           is_unconnected_node =
             if inbound_connections == [] and outbound_connections == [], do: true, else: false
@@ -227,16 +234,14 @@ defmodule Fluid.Model do
           {new_wh_acc, tag_acc}
       end
 
-    {%{total: total_wh, indeterminate: new_wh_acc}, tag_acc}
+    {%{all: total_wh, indeterminate: new_wh_acc}, tag_acc}
   end
 
-  def run_euler_algorithm({wh_map, []}) do
-    IO.puts("\n\n")
-    wh_map
-  end
+  # If there are no edges left + if there are some warehouses in indeterminate list => all must be unconnected
+  # :up: is not being used directly in the algorithm. But it is implied.
 
-  def run_euler_algorithm({%{total: total_wh, indeterminate: list_of_warehouses_map}, tags_list})
-      when map_size(list_of_warehouses_map) >= 1 do
+  def run_euler_algorithm({%{all: total_wh, indeterminate: list_of_warehouses_map}, tags_list}) do
+    # when map_size(list_of_warehouses_map) >= 1 do
     {after_wh_list, after_tags} =
       for {wh_id, wh_map} <- list_of_warehouses_map, reduce: {list_of_warehouses_map, tags_list} do
         {wh_acc, tags_acc} ->
@@ -246,7 +251,11 @@ defmodule Fluid.Model do
           # |> purple(" {wh_map.is_feeder_node, wh_map.is_unconnected_node}")
 
           case wh_map do
-            %{is_feeder_node: true, is_unconnected_node: false, outbound_connections: outbound_connections} ->
+            %{
+              is_feeder_node: true,
+              is_unconnected_node: false,
+              outbound_connections: outbound_connections
+            } ->
               # remove all the outbound connections from the warehouse (node)
               outbound_connections_ids = Enum.map(outbound_connections, & &1.id)
 
@@ -261,19 +270,27 @@ defmodule Fluid.Model do
               # delete the feeder nodes
               {Map.delete(wh_acc, wh_id), left_tags}
 
-            %{is_feeder_node: false, is_unconnected_node: true, outbound_connections: outbound_connections} ->
-              outbound_connections_ids = Enum.map(outbound_connections, & &1.id)
-              # remove all the outbound connections from the warehouse (node)
-              left_tags =
-                Enum.reject(tags_acc, fn tag ->
-                  tag.id in outbound_connections_ids
-                end)
+            %{
+              is_feeder_node: false,
+              is_unconnected_node: true,
+              inbound_connections: _inbound_connections,
+              outbound_connections: _outbound_connections
+            } ->
+              # outbound_connections_ids = Enum.map(outbound_connections, & &1.id)
+              # # remove all the outbound connections from the warehouse (node)
+              # left_tags =
+              #   Enum.reject(tags_acc, fn tag ->
+              #     tag.id in outbound_connections_ids
+              #   end)
 
-              # IO.puts("\n\n")
+              # IO.inspect(
+              #   "\n\n unconnected node: IN = #{Enum.count(inbound_connections)}, OUT = #{Enum.count(outbound_connections)}"
+              # )
+
               # orange("left_tags: #{length(left_tags)}")
 
               # delete the unconnected nodes
-              {Map.delete(wh_acc, wh_id), left_tags}
+              {Map.delete(wh_acc, wh_id), tags_acc}
 
             %{is_feeder_node: false, is_unconnected_node: false} ->
               {wh_acc, tags_acc}
@@ -292,16 +309,18 @@ defmodule Fluid.Model do
         after_wh_list
         |> Enum.map(fn {_wh_id, %{wh: wh}} -> wh end)
 
-      warehouse_current_status = %{total: total_wh, indeterminate: indeterminate_wh_list}
+      warehouse_current_status = %{all: total_wh, indeterminate: indeterminate_wh_list}
+
+      # {map_size(list_of_warehouses_map), map_size(after_wh_list)}
+      # |> yellow("RUNNING AGAIN Euler Algo: {before, after}")
 
       calculate_feeder_and_unconnected_nodes(warehouse_current_status, after_tags)
       |> run_euler_algorithm()
     else
-      %{total: total_wh, indeterminate: after_wh_list}
+      # {map_size(list_of_warehouses_map), map_size(after_wh_list)}
+      # |> purple("halting Euler Algo: {before, after}")
+
+      %{all: total_wh, indeterminate: after_wh_list}
     end
   end
-
-  # def run_euler_algorithm({wl_map, tags}) do
-  #   tags |> red("#{map_size(wl_map)}: wl_map, tags: #{length(tags)}")
-  # end
 end
