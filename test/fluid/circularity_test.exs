@@ -17,8 +17,9 @@ defmodule Fluid.CircularityTest do
   use Fluid.DataCase, async: true
 
   alias Fluid.Model
+  # import Helpers.ColorIO
 
-  describe "world with circularity -" do
+  describe "world with circularity - mix determinate and indeterminate - " do
     setup do
       ####### world having circularity #####
       {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1 circularity ")
@@ -74,14 +75,24 @@ defmodule Fluid.CircularityTest do
       [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]]
     end
 
-    test "identifies indeterminate nodes", %{warehouses: warehouses} do
+    test "identifies - indeterminate nodes ", %{
+      warehouses: warehouses
+    } do
       # indeterminate warehouses - 2, 3, 4, 5
       # determinate warehouses - 1, 6
 
-      [%{id: _wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}, %{id: _wh_id_6}] = warehouses
+      [
+        %{id: _wh_id_1},
+        %{id: wh_id_2},
+        %{id: wh_id_3},
+        %{id: wh_id_4},
+        %{id: wh_id_5},
+        %{id: _wh_id_6}
+      ] = warehouses
+
       # API
       # total-> all
-      %{total: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
+      %{all: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
       # import Helpers.ColorIO
       # circularity |> Map.values() |> Map.new(& {&1.wh_id, %{determinate_class: determinate_class}}) |> purple("in test")
       ###########################################################################
@@ -135,21 +146,262 @@ defmodule Fluid.CircularityTest do
       # Class 2 = every WH that contains at least one CP and/or UCP that receives water from one or more WHs of Class 1, where all of its CPs and UCPs receive water only from one or more WHs of Class 1 or below
     end
 
-    test "identifies determinate nodes", %{warehouses: warehouses} do
+    test "identifies - determinate nodes ", %{
+      warehouses: warehouses
+    } do
       # indeterminate warehouses - 2, 3, 4, 5
       # determinate warehouses - 1, 6
 
-      [%{id: wh_id_1}, %{id: _wh_id_2}, %{id: _wh_id_3}, %{id: _wh_id_4}, %{id: _wh_id_5}, %{id: wh_id_6}] = warehouses
+      [
+        %{id: wh_id_1},
+        %{id: _wh_id_2},
+        %{id: _wh_id_3},
+        %{id: _wh_id_4},
+        %{id: _wh_id_5},
+        %{id: wh_id_6}
+      ] = warehouses
 
-      # total-> all
-      %{total: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
+      %{all: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
       ###########################################################################
       # assertions related to list of determinate nodes
       refute Map.has_key?(circularity, wh_id_1)
       refute Map.has_key?(circularity, wh_id_6)
     end
-
-    # test "world without circularity" do
-    # end
   end
+
+  describe "world with circularity - ALL determinate -  " do
+    setup do
+      ####### world having circularity - ALL determinate nodes #####
+      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1_0 circularity ")
+      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2_0 circularity ")
+      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3_0 circularity ")
+      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4_0 circularity ")
+      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5_0 circularity ")
+      # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_62 circularity ")
+
+      # [uct_1] = warehouse_1.tanks
+      [uct_2] = warehouse_2.tanks
+      [uct_3] = warehouse_3.tanks
+      [uct_4] = warehouse_4.tanks
+      [uct_5] = warehouse_5.tanks
+      # [uct_6] = warehouse_6.tanks
+
+      [ucp_1] = warehouse_1.pools
+      [ucp_2] = warehouse_2.pools
+      # [ucp_3] = warehouse_3.pools
+      [ucp_4] = warehouse_4.pools
+      # [ucp_5] = warehouse_5.pools
+      # [ucp_6] = warehouse_6.pools
+
+      # add fixed pools to warehouses
+      fp_1 = Model.Pool.create!(%{capacity_type: :fixed, location_type: :in_wh})
+      fp_5 = Model.Pool.create!(%{capacity_type: :fixed, location_type: :in_wh})
+
+      Model.add_pools_to_warehouse(warehouse_1, fp_1)
+      # green("added FP to WH1")
+
+      Model.add_pools_to_warehouse(warehouse_5, fp_5)
+      # green("added FP to WH5")
+
+      # add capped tanks
+      ct_2 =
+        Model.Tank.create!(%{capacity_type: :capped, location_type: :in_wh})
+
+      # |> yellow("ct_2")
+
+      Model.add_tanks_to_warehouse(warehouse_2, ct_2)
+      # |> green("added CT to WH2")
+
+      # outbound connections from 1
+      {:ok, _} = Fluid.Model.connect(uct_2, ucp_1)
+      # {:ok, _} = Fluid.Model.connect(ct_2, fp_1)
+      {:ok, _} = Fluid.Model.connect(uct_4, ucp_1)
+
+      # outbound connections from 2
+      {:ok, _} = Fluid.Model.connect(uct_3, ucp_2)
+
+      # outbound connections from 4
+      {:ok, _} = Fluid.Model.connect(uct_5, ucp_4)
+
+      # NO outbound connections from 3 and 5
+
+      # diagram for above connections
+      # ```mermaid
+      # graph TD;
+      #     WH_1-->WH_2;
+      #     WH_1-->WH_4;
+      #     WH_2-->WH_3;
+      #     WH_4-->WH_5;
+      # ```
+
+      [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5]]
+      # |> yellow("all warehouses")
+    end
+
+    test "identifies - ONLY determinate nodes ", %{warehouses: warehouses} do
+      #
+      %{all: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
+
+      [%{id: wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}] = warehouses
+
+      refute Map.has_key?(circularity, wh_id_1)
+      refute Map.has_key?(circularity, wh_id_2)
+      refute Map.has_key?(circularity, wh_id_3)
+      refute Map.has_key?(circularity, wh_id_4)
+      refute Map.has_key?(circularity, wh_id_5)
+    end
+  end
+
+  describe "world with circularity - ALL indeterminate -  " do
+    setup do
+      ####### world having circularity - ALL determinate nodes #####
+      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1_1 circularity ")
+      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2_1 circularity ")
+      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3_1 circularity ")
+      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4_1 circularity ")
+      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5_1 circularity ")
+      # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_62 circularity ")
+
+      [uct_1] = warehouse_1.tanks
+      [uct_2] = warehouse_2.tanks
+      [uct_3] = warehouse_3.tanks
+      [uct_4] = warehouse_4.tanks
+      [uct_5] = warehouse_5.tanks
+      # [uct_6] = warehouse_6.tanks
+
+      [ucp_1] = warehouse_1.pools
+      [ucp_2] = warehouse_2.pools
+      [ucp_3] = warehouse_3.pools
+      [ucp_4] = warehouse_4.pools
+      [ucp_5] = warehouse_5.pools
+      # [ucp_6] = warehouse_6.pools
+
+      # outbound connections from 1
+      {:ok, _} = Fluid.Model.connect(uct_2, ucp_1)
+
+      # outbound connections from 2
+      {:ok, _} = Fluid.Model.connect(uct_3, ucp_2)
+
+      # outbound connections from 3
+      {:ok, _} = Fluid.Model.connect(uct_4, ucp_3)
+
+      # outbound connections from 4
+      {:ok, _} = Fluid.Model.connect(uct_5, ucp_4)
+
+      # outbound connections from 5
+      {:ok, _} = Fluid.Model.connect(uct_1, ucp_5)
+
+      # diagram for above connections
+      # ```mermaid
+      # graph TD;
+      #     WH_1-->WH_2;
+      #     WH_2-->WH_3;
+      #     WH_3-->WH_4;
+      #     WH_4-->WH_5;
+      #     WH_5-->WH_1;
+      # ```
+
+      [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5]]
+      # |> yellow("all warehouses")
+    end
+
+    test "identifies - ONLY indeterminate nodes ", %{warehouses: warehouses} do
+      #
+      %{all: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
+
+      [%{id: wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}] = warehouses
+
+      assert Map.has_key?(circularity, wh_id_1)
+      assert Map.has_key?(circularity, wh_id_2)
+      assert Map.has_key?(circularity, wh_id_3)
+      assert Map.has_key?(circularity, wh_id_4)
+      assert Map.has_key?(circularity, wh_id_5)
+    end
+  end
+
+  # describe "Sub Classfication - Determinate - " do
+  #   setup do
+  #     ####### world having circularity - ALL determinate nodes #####
+  #     {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_12 circularity ")
+  #     {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_22 circularity ")
+  #     {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_32 circularity ")
+  #     {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_42 circularity ")
+  #     {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_52 circularity ")
+  #     # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_62 circularity ")
+
+  #     # [uct_1] = warehouse_1.tanks
+  #     [uct_2] = warehouse_2.tanks
+  #     [uct_3] = warehouse_3.tanks
+  #     [uct_4] = warehouse_4.tanks
+  #     [uct_5] = warehouse_5.tanks
+  #     # [uct_6] = warehouse_6.tanks
+
+  #     [ucp_1] = warehouse_1.pools
+  #     [ucp_2] = warehouse_2.pools
+  #     # [ucp_3] = warehouse_3.pools
+  #     [ucp_4] = warehouse_4.pools
+  #     # [ucp_5] = warehouse_5.pools
+  #     # [ucp_6] = warehouse_6.pools
+
+  #     # add fixed pools to warehouses
+  #     fp_1 = Model.Pool.create!(%{capacity_type: :fixed, location_type: :in_wh})
+  #     fp_5 = Model.Pool.create!(%{capacity_type: :fixed, location_type: :in_wh})
+
+  #     Model.add_pools_to_warehouse(warehouse_1, fp_1)
+  #     green("added FP to WH1")
+
+  #     Model.add_pools_to_warehouse(warehouse_5, fp_5)
+  #     green("added FP to WH5")
+
+  #     # add capped tanks
+  #     ct_2 =
+  #       Model.Tank.create!(%{capacity_type: :capped, location_type: :in_wh})
+  #       |> yellow("ct_2")
+
+  #     Model.add_tanks_to_warehouse(warehouse_2, ct_2)
+  #     |> green("added CT to WH2")
+
+  #     # outbound connections from 1
+  #     {:ok, _} = Fluid.Model.connect(uct_2, ucp_1)
+  #     # {:ok, _} = Fluid.Model.connect(ct_2, fp_1)
+  #     {:ok, _} = Fluid.Model.connect(uct_4, ucp_1)
+
+  #     # outbound connections from 2
+  #     {:ok, _} = Fluid.Model.connect(uct_3, ucp_2)
+
+  #     # outbound connections from 4
+  #     {:ok, _} = Fluid.Model.connect(uct_5, ucp_4)
+
+  #     # NO outbound connections from 3 and 5
+
+  #     # diagram for above connections
+  #     # ```mermaid
+  #     # graph TD;
+  #     #     WH_1-->WH_2;
+  #     #     WH_1-->WH_4;
+  #     #     WH_2-->WH_3;
+  #     #     WH_4-->WH_5;
+  #     # ```
+
+  #     [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5]]
+  #     # |> yellow("all warehouses")
+  #   end
+
+  #   #   test "determinate nodes - 0,1,2", %{warehouses: warehouses} do
+  #   #     %{all: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
+
+  #   #     [%{id: wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}] = warehouses
+
+  #   #     refute Map.has_key?(circularity, wh_id_1)
+  #   #     refute Map.has_key?(circularity, wh_id_2)
+  #   #     refute Map.has_key?(circularity, wh_id_3)
+  #   #     refute Map.has_key?(circularity, wh_id_4)
+  #   #     refute Map.has_key?(circularity, wh_id_5)
+
+  #   #     # Model.classify_determinate(warehouses)
+  #   #   end
+
+  #   # test "indeterminate nodes - A, B, C" do
+  #   # end
+  # end
 end
