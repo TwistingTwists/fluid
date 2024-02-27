@@ -10,7 +10,7 @@ defmodule Fluid.Model do
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
   alias Fluid.Model.Tag
-  # import Helpers.ColorIO
+  import Helpers.ColorIO
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
@@ -62,34 +62,6 @@ defmodule Fluid.Model do
 
   #   World
   #   |> Ash.Changeset.for_create(:create_tank, params, opts)
-  #   |> Fluid.Model.Api.create()
-  # end
-
-  # def create_tank_in_warehouse(%Warehouse{} = warehouse, params, opts \\ []) do
-  #   params =
-  #     params
-  #     |> Map.new()
-  #     |> Map.merge(%{
-  #       location_type: :in_wh
-  #       # make no assumption about :capacity_type of tank
-  #     })
-
-  #   Warehouse
-  #   |> Ash.Changeset.for_create(:udpate_with_tank, warehouse, params, opts)
-  #   |> Fluid.Model.Api.create()
-  # end
-
-  # def create_pool_in_warehouse(%Warehouse{} = warehouse, params, opts \\ []) do
-  #   params =
-  #     params
-  #     |> Map.new()
-  #     |> Map.merge(%{
-  #       location_type: :in_wh
-  #       # make no assumption about :capacity_type of pool
-  #     })
-
-  #   Warehouse
-  #   |> Ash.Changeset.for_create(:create_pool, warehouse, params, opts)
   #   |> Fluid.Model.Api.create()
   # end
 
@@ -155,12 +127,12 @@ defmodule Fluid.Model do
     all_tags = Tag.read_all!()
 
     # we start with every warehouse being indeterminate. And keep deleting determinate from that list
-    args = %{all: list_of_warehouses, indeterminate: list_of_warehouses}
+    args = %{all: list_of_warehouses, indeterminate: list_of_warehouses, determinate: list_of_warehouses}
     calculate_feeder_and_unconnected_nodes(args, all_tags)
   end
 
   def calculate_feeder_and_unconnected_nodes(
-        %{all: total_wh, indeterminate: list_of_warehouses},
+        %{all: total_wh, indeterminate: list_of_warehouses, determinate: determinate_wh_map},
         all_tags
       ) do
     # "calculate_feeder_and_unconnected_nodes with: all_tags = #{length(all_tags)}) "
@@ -234,13 +206,13 @@ defmodule Fluid.Model do
           {new_wh_acc, tag_acc}
       end
 
-    {%{all: total_wh, indeterminate: new_wh_acc}, tag_acc}
+    {%{all: total_wh, indeterminate: new_wh_acc, determinate: determinate_wh_map}, tag_acc}
   end
 
   # If there are no edges left + if there are some warehouses in indeterminate list => all must be unconnected
   # :up: is not being used directly in the algorithm. But it is implied.
 
-  def run_euler_algorithm({%{all: total_wh, indeterminate: list_of_warehouses_map}, tags_list}) do
+  def run_euler_algorithm({%{all: total_wh, indeterminate: list_of_warehouses_map, determinate: determinate_wh_map}, tags_list}) do
     # when map_size(list_of_warehouses_map) >= 1 do
     {after_wh_list, after_tags} =
       for {wh_id, wh_map} <- list_of_warehouses_map, reduce: {list_of_warehouses_map, tags_list} do
@@ -303,13 +275,26 @@ defmodule Fluid.Model do
     #   "Euler Algo: before_ml_map: #{map_size(list_of_warehouses_map)} , after_wl_map: #{map_size(after_wh_list)} "
     # )
 
+    # if wh_id is in indeterminate_circularity list => reject it from determinate_wh_map
+    determinate_wh_map =
+      Enum.reject(list_of_warehouses_map, fn {wh_id, _wh_map} ->
+        if after_wh_list[wh_id] do
+          true
+        end
+      end)
+      |> Enum.into(%{})
+
     # if no nodes were deleted => do not run_euler_algorithm() further
     if map_size(after_wh_list) < map_size(list_of_warehouses_map) do
       indeterminate_wh_list =
         after_wh_list
         |> Enum.map(fn {_wh_id, %{wh: wh}} -> wh end)
 
-      warehouse_current_status = %{all: total_wh, indeterminate: indeterminate_wh_list}
+      warehouse_current_status = %{
+        all: total_wh,
+        indeterminate: indeterminate_wh_list,
+        determinate: determinate_wh_map
+      }
 
       # {map_size(list_of_warehouses_map), map_size(after_wh_list)}
       # |> yellow("RUNNING AGAIN Euler Algo: {before, after}")
@@ -320,7 +305,9 @@ defmodule Fluid.Model do
       # {map_size(list_of_warehouses_map), map_size(after_wh_list)}
       # |> purple("halting Euler Algo: {before, after}")
 
-      %{all: total_wh, indeterminate: after_wh_list}
+      %{all: total_wh, indeterminate: after_wh_list, determinate: determinate_wh_map}
+    end
+  end
     end
   end
 end
