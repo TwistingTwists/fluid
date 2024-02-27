@@ -17,7 +17,7 @@ defmodule Fluid.CircularityTest do
   use Fluid.DataCase, async: true
 
   alias Fluid.Model
-  # import Helpers.ColorIO
+  import Helpers.ColorIO
 
   describe "world with circularity - mix determinate and indeterminate - " do
     setup do
@@ -306,16 +306,17 @@ defmodule Fluid.CircularityTest do
     end
 
     test "identifies - ONLY indeterminate nodes ", %{warehouses: warehouses} do
-      #
-      %{all: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
+      %{all: _total_wh, indeterminate: indeterminate_circularity, determinate: %{}} =
+        Model.circularity_analysis(warehouses)
 
+      # determinate |> Enum.map(fn {k, _v} -> k end) |> red("determiante #{__MODULE__} ")
       [%{id: wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}] = warehouses
 
-      assert Map.has_key?(circularity, wh_id_1)
-      assert Map.has_key?(circularity, wh_id_2)
-      assert Map.has_key?(circularity, wh_id_3)
-      assert Map.has_key?(circularity, wh_id_4)
-      assert Map.has_key?(circularity, wh_id_5)
+      assert Map.has_key?(indeterminate_circularity, wh_id_1)
+      assert Map.has_key?(indeterminate_circularity, wh_id_2)
+      assert Map.has_key?(indeterminate_circularity, wh_id_3)
+      assert Map.has_key?(indeterminate_circularity, wh_id_4)
+      assert Map.has_key?(indeterminate_circularity, wh_id_5)
     end
   end
 
