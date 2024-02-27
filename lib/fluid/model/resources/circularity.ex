@@ -16,8 +16,11 @@ defmodule Fluid.Model.Circularity do
 
     attribute(:is_feeder_node, :boolean, default: nil)
     attribute(:is_unconnected_node, :boolean, default: nil)
-    attribute(:determinate_classes, {:array, :string}, default: [])
-    attribute(:indeterminate_classes, {:array, :string}, default: [])
+    # representing as ascii value for easier code.
+    # "0" is 48 and so on
+    # "A" is 65 and so on
+    attribute(:determinate_classes, {:array, :integer}, default: [])
+    attribute(:indeterminate_classes, {:array, :integer}, default: [])
   end
 
   actions do
