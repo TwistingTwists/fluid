@@ -1,0 +1,1 @@
+MIX_ENV=test mix test "$1" --trace

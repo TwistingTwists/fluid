@@ -82,14 +82,24 @@ defmodule Fluid.Model do
     end)
   end
 
+  def add_pools_to_warehouse(%Warehouse{} = warehouse, {:params, pool_opts})
+      when is_list(pool_opts) do
+    pools =
+      Enum.map(pool_opts, fn pool_option ->
+        Model.Pool.create!(pool_option)
+      end)
+
+    add_pools_to_warehouse(warehouse, pools)
+  end
+
   def add_pools_to_warehouse(%Warehouse{} = warehouse, %Pool{} = pool) do
     add_pools_to_warehouse(warehouse, [pool])
   end
 
   def add_pools_to_warehouse(warehouse, pools) do
     Enum.reduce_while(pools, nil, fn
-      tank, _acc ->
-        case Warehouse.add_pool(warehouse, tank) do
+      pool, _acc ->
+        case Warehouse.add_pool(warehouse, pool) do
           {:ok, updated_warehouse} ->
             {:cont, {:ok, updated_warehouse}}
 
@@ -127,7 +137,7 @@ defmodule Fluid.Model do
     all_tags = Tag.read_all!()
 
     # we start with every warehouse being indeterminate. And keep deleting determinate from that list
-    args = %{all: list_of_warehouses, indeterminate: list_of_warehouses, determinate: list_of_warehouses}
+    args = %{all: list_of_warehouses, indeterminate: list_of_warehouses, determinate: %{}}
     calculate_feeder_and_unconnected_nodes(args, all_tags)
   end
 
@@ -206,6 +216,14 @@ defmodule Fluid.Model do
           {new_wh_acc, tag_acc}
       end
 
+    determinate_wh_map
+    |> Enum.map(fn {_k, v} -> v.name end)
+    |> yellow("determinate_circularity #{__ENV__.file}:#{__ENV__.line}")
+
+    new_wh_acc
+    |> Enum.map(fn {_k, v} -> v.name end)
+    |> blue("indeterminate_circularity #{__ENV__.file}:#{__ENV__.line}")
+
     {%{all: total_wh, indeterminate: new_wh_acc, determinate: determinate_wh_map}, tag_acc}
   end
 
@@ -276,13 +294,23 @@ defmodule Fluid.Model do
     # )
 
     # if wh_id is in indeterminate_circularity list => reject it from determinate_wh_map
-    determinate_wh_map =
+    updated_determinate_wh_map =
       Enum.reject(list_of_warehouses_map, fn {wh_id, _wh_map} ->
         if after_wh_list[wh_id] do
           true
         end
       end)
       |> Enum.into(%{})
+
+    determinate_wh_map = Map.merge(determinate_wh_map, updated_determinate_wh_map)
+
+    determinate_wh_map
+    |> Enum.map(fn {_k, v} -> v.name end)
+    |> yellow("determinate_circularity #{__ENV__.file}:#{__ENV__.line}")
+
+    after_wh_list
+    |> Enum.map(fn {_k, v} -> v.name end)
+    |> blue("indeterminate_circularity #{__ENV__.file}:#{__ENV__.line}")
 
     # if no nodes were deleted => do not run_euler_algorithm() further
     if map_size(after_wh_list) < map_size(list_of_warehouses_map) do
@@ -308,6 +336,216 @@ defmodule Fluid.Model do
       %{all: total_wh, indeterminate: after_wh_list, determinate: determinate_wh_map}
     end
   end
+
+  def classify(%{all: all_wh_map, indeterminate: indeterminate_wh_map, determinate: determinate_wh_map} = wh_map) do
+    # calculate the determinate map from all and indeterminate_wh_map
+    # determinate_wh_map =
+    #   for wh <- all_wh_map, reduce: %{} do
+    #     determinate_map_acc ->
+    #       wh_id = wh.id
+    #       wh_id |> purple("wh_id")
+
+    #       case Map.get(indeterminate_wh_map, wh_id) do
+    #         nil -> Map.put(determinate_map_acc, wh_id, wh)
+    #         _ -> determinate_map_acc
+    #       end
+    #   end
+
+    # Map.merge(wh_map, %{determinate: determinate_wh_map})
+
+    all_wh_map |> Enum.map(fn v -> v.name end) |> yellow("all_wh_map #{__ENV__.file}:#{__ENV__.line}")
+
+    determinate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> yellow("determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
+    indeterminate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> blue("indeterminate_wh_map #{__ENV__.file}:#{__ENV__.line}")
+
+    %{determinate: determinate_classified} = classify_determinate(wh_map)
+    Map.merge(wh_map, %{determinate: determinate_classified})
+  end
+
+  # def classify_determinate(%{all: _all_wh_list, determinate: determinate_wh_map} = wh_circularity_map) do
+  #   classification_map =
+  #     Enum.reduce(determinate_wh_map, %{done: %{}, remaining: determinate_wh_map}, fn
+  #       {wh_id, %Model.Circularity{determinate_classes: determinate_classes, wh: wh} = wh_circularity},
+  #       %{done: done_acc, remaining: remaining_acc} = acc ->
+  #         # classify_0 => NO CP / UCP => indirectly means with ONLY FP
+  #         is_class_0? =
+  #           Enum.all?(wh.pools, fn
+  #             %{capacity_type: capacity} when capacity not in [:uncapped, :capped] -> true
+  #             _ -> false
+  #           end)
+
+  #         # accumulate now
+  #         if is_class_0? do
+  #           wh_circularity =
+  #             Map.put(wh_circularity, :determinate_classes, [?0] ++ wh_circularity.determinate_classes)
+
+  #           %{done: Map.put(done_acc, wh_id, wh_circularity), remaining: Map.drop(remaining_acc, wh_id)}
+  #         else
+  #           acc
+  #         end
+  #     end)
+
+  #   sub_classify(wh_circularity_map, classification_map, ?0)
+  #   # determinate_wh_list
+  #   # ascii value of "0" = 48
+  #   # |> Enum.with_index(48 + 1)
+  #   # |> Enum.reduce( %{done: classify_0, rem: determinate_wh_list -- classify_0} , fn {counter, x} ->
+  #   # %{done: done, rem: remaining} = classify_sub_classes(remaining, %{prev_class: counter})
+  #   #
+  #   # end )
+  #   # classify_1 => deriving from class_0 only
+  #   #
+  # end
+
+  def classify_determinate(%{all: _all_wh_list, determinate: determinate_wh_map} = wh_circularity_map) do
+    determinate_classified =
+      determinate_wh_map
+      |> Map.new(fn
+        {wh_id, %Model.Circularity{determinate_classes: _determinate_classes, wh: wh} = wh_circularity} ->
+          # classify_0 => NO CP / UCP => indirectly means with ONLY FP
+          is_class_0? =
+            Enum.all?(wh.pools, fn
+              %{capacity_type: capacity} when capacity not in [:uncapped, :capped] -> true
+              _ -> false
+            end)
+
+          # add determinate_classes to wh
+          wh_circularity =
+            if is_class_0? do
+              Map.put(wh_circularity, :determinate_classes, [?0] ++ wh_circularity.determinate_classes)
+            else
+              wh_circularity
+            end
+
+          {wh_id, wh_circularity}
+      end)
+      |> subclassify_further(?0)
+
+    determinate_classified
+    |> Enum.map(fn {_k, circularity} -> {circularity.name, circularity.determinate_classes} end)
+    |> Enum.into(%{})
+    |> blue("#{__ENV__.file}:#{__ENV__.line}")
+
+    Map.merge(wh_circularity_map, %{determinate: determinate_classified})
+  end
+
+  @doc """
+  wh_with_prev_class : all wh of prev_class
+  prev_class_dest_ids : extract ids from wh_with_prev_class
+
+  rest_determinate_wh_map : determinate_wh_map -- wh_with_prev_class : this map has to be analysed for further classfication
+
+  > Finally, merge both `rest_determinate_wh_map` and `wh_with_prev_class` to return original map
+  Map.merge(updated_rest_determinate_wh_map, wh_with_prev_class)
+
+  """
+  def subclassify_further(determinate_wh_map, prev_class) do
+    determinate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> log("determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
+    prev_class |> red("prev calss #{__ENV__.file}:#{__ENV__.line}")
+    # works like Enum.filter
+    wh_with_prev_class =
+      for {wh_id, %Model.Circularity{determinate_classes: determinate_classes} = circularity} <- determinate_wh_map,
+          prev_class in determinate_classes,
+          into: %{} do
+        {wh_id, circularity}
+      end
+
+    wh_with_prev_class |> Enum.map(fn {k, _v} -> k end) |> red("wh_with_prev_class #{__ENV__.file}:#{__ENV__.line}")
+
+    # Enum.filter(determinate_wh_map, fn
+    #   {_wh_id, %Model.Circularity{determinate_classes: determinate_classes}} ->
+    #     if prev_class in determinate_classes do
+    #       {prev_class} |> red("prev_class")
+    #       true
+    #     end
+    # end)
+    # |> Enum.into(%{})
+
+    # works like Enum.filter
+    rest_determinate_wh_map =
+      for {wh_id, %Model.Circularity{determinate_classes: []} = circularity} <- determinate_wh_map,
+          into: %{} do
+        {wh_id, circularity}
+      end
+
+    rest_determinate_wh_map
+    # |> Enum.map(fn {_k, v} -> v.name end)
+    |> yellow("rest_determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
+
+    # Enum.filter(determinate_wh_map, fn
+    #   {_wh_id, %Model.Circularity{determinate_classes: []} = _circularity} ->
+    #     true
+
+    #   _ ->
+    #     false
+    # end)
+    # |> Enum.into(%{})
+
+    prev_class_dest_ids =
+      for {_wh_id, %{outbound_connections: outbound_connections}} <- wh_with_prev_class, into: [] do
+        Enum.map(outbound_connections, & &1.id)
+      end
+
+    prev_class_dest_ids |> purple("prev_class_dest_ids #{__ENV__.file}:#{__ENV__.line}")
+
+    # subclassify rest of the circularity structs
+    updated_rest_determinate_wh_map =
+      for {wh_id,
+           %Model.Circularity{
+             determinate_classes: _determinate_classes,
+             wh: wh,
+             inbound_connections: inbound_connections
+           } = wh_circularity} <- rest_determinate_wh_map,
+          into: %{} do
+        # wh.name |> purple("wh name #{__ENV__.file}:#{__ENV__.line}")
+        # class 1 = every WH that contains at least one CP and/or UCP, where all of its CPs
+        # and UCPs receive water only from one or more WHs of Class 0
+        has_a_cp_or_ucp? =
+          Enum.all?(wh.pools, fn
+            %{capacity_type: capacity} when capacity in [:uncapped, :capped] -> true
+            _ -> false
+          end)
+
+        inbound_connections_from_prev_class? =
+          Enum.all?(inbound_connections, fn tag ->
+            tag.source["id"] in prev_class_dest_ids
+          end)
+
+        if has_a_cp_or_ucp? and inbound_connections_from_prev_class? do
+          {wh_id,
+           Map.put(
+             wh_circularity,
+             :determinate_classes,
+             [prev_class + 1] ++ wh_circularity.determinate_classes
+           )}
+        else
+          # don't change anything.
+          {wh_id, wh_circularity}
+        end
+      end
+
+    # remember to return the entire determinate_wh_map by doing Map.merge
+    determinate_wh_map = Map.merge(updated_rest_determinate_wh_map, wh_with_prev_class)
+
+    # decide whether or not to do further recursion
+    # if there are empty determinate_classes in any warehouse's circularity struct, => further recursion needed
+    further_subclassify? =
+      Enum.any?(updated_rest_determinate_wh_map, fn
+        {_wh_id,
+         %Model.Circularity{
+           determinate_classes: []
+         }} ->
+          true
+
+        _ ->
+          false
+      end)
+
+    if further_subclassify? do
+      red("calling for further subclassify_further: #{prev_class + 1}")
+      subclassify_further(determinate_wh_map, prev_class + 1)
+    else
+      determinate_wh_map
     end
   end
 end
