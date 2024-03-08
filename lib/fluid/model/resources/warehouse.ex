@@ -8,28 +8,28 @@ defmodule Fluid.Model.Warehouse do
     data_layer: AshPostgres.DataLayer
 
   attributes do
-    uuid_primary_key :id
+    uuid_primary_key(:id)
 
-    attribute :name, :string, allow_nil?: false
+    attribute(:name, :string, allow_nil?: false)
 
     # attribute :name, :string, allow_nil?: false
-    create_timestamp :created_at
-    update_timestamp :updated_at
+    create_timestamp(:created_at)
+    update_timestamp(:updated_at)
   end
 
   relationships do
-    belongs_to :world, Fluid.Model.World
-    has_many :tanks, Fluid.Model.Tank
-    has_many :pools, Fluid.Model.Pool
+    belongs_to(:world, Fluid.Model.World)
+    has_many(:tanks, Fluid.Model.Tank)
+    has_many(:pools, Fluid.Model.Pool)
   end
 
   calculations do
-    calculate :count_uncapped_tank, :integer, {Warehouse.Calculations.UCT, field: :tanks}
-    calculate :count_pool, :integer, {Warehouse.Calculations.Pool, field: :pools}
+    calculate(:count_uncapped_tank, :integer, {Warehouse.Calculations.UCT, field: :tanks})
+    calculate(:count_pool, :integer, {Warehouse.Calculations.Pool, field: :pools})
   end
 
   actions do
-    defaults [:update]
+    defaults([:update])
 
     read :read_all do
       primary?(true)
@@ -37,93 +37,96 @@ defmodule Fluid.Model.Warehouse do
     end
 
     read :read_by_id do
-      get_by [:id]
+      prepare(build(load: [:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
+      get_by([:id])
     end
 
     create :create do
-      primary? true
+      primary?(true)
 
-      argument :tanks, {:array, Fluid.Model.Tank}, allow_nil?: true
-      argument :pools, {:array, Fluid.Model.Pool}, allow_nil?: true
+      argument(:tanks, {:array, Fluid.Model.Tank}, allow_nil?: true)
+      argument(:pools, {:array, Fluid.Model.Pool}, allow_nil?: true)
 
-      change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
+      change(load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
 
-      change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tanks, rel: :tanks}
-      change Fluid.Model.Warehouse.Changes.AddDefaultPool
+      change({Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tanks, rel: :tanks})
+      # change Fluid.Model.Warehouse.Changes.AddDefaultPool
 
-      change manage_relationship(:tanks, type: :append_and_remove)
-      change manage_relationship(:pools, type: :append_and_remove)
+      change(manage_relationship(:tanks, type: :append_and_remove))
+      change(manage_relationship(:pools, type: :append_and_remove))
     end
 
     update :add_tank do
-      argument :tank, Fluid.Model.Tank, allow_nil?: false
+      argument(:tank, Fluid.Model.Tank, allow_nil?: false)
 
-      change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
+      change(load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
 
       # change {Fluid.Model.Changes.AddArgToRelationship, arg: :tank, rel: :tanks}
-      change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks}
-      change manage_relationship(:tank, :tanks, type: :append)
+      change({Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks})
+      change(manage_relationship(:tank, :tanks, type: :append))
     end
 
     update :add_pool do
-      argument :pool, Fluid.Model.Pool, allow_nil?: false
+      argument(:pool, Fluid.Model.Pool, allow_nil?: false)
 
-      change load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool])
+      change(load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
 
-      change {Fluid.Model.Changes.AddArgToRelationship, arg: :pool, rel: :pools}
+      change({Fluid.Model.Changes.AddArgToRelationship, arg: :pool, rel: :pools})
       # change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks}
 
-      change manage_relationship(:pool, :pools, type: :append)
+      change(manage_relationship(:pool, :pools, type: :append))
     end
   end
 
   changes do
-    change fn changeset, opts ->
-             Ash.Changeset.after_transaction(
-               changeset,
-               fn
-                 changeset, {:ok, warehouse} ->
-                   # Logger.debug(warehouse)
-                   # Logger.debug("warehouse in after_transaction")
+    change(
+      fn changeset, opts ->
+        Ash.Changeset.after_transaction(
+          changeset,
+          fn
+            changeset, {:ok, warehouse} ->
+              # Logger.debug(warehouse)
+              # Logger.debug("warehouse in after_transaction")
 
-                   if is_integer(warehouse.count_pool) and warehouse.count_pool < 1 do
-                     Logger.error("Pool Count should be greater than one.")
+              if is_integer(warehouse.count_pool) and warehouse.count_pool < 1 do
+                Logger.error("Pool Count should be greater than one.")
 
-                     # Ash.Changeset.add_errors(changeset, :pools , "Pool Count should be greater than one.")
-                     {:error, changeset}
-                   else
-                     Logger.debug("warehouse in after_transaction: ok warehouse")
+                # Ash.Changeset.add_errors(changeset, :pools , "Pool Count should be greater than one.")
+                {:error, changeset}
+              else
+                Logger.debug("warehouse in after_transaction: ok warehouse")
 
-                     {:ok, warehouse}
-                   end
+                {:ok, warehouse}
+              end
 
-                 changeset, error ->
-                   Logger.debug("warehouse in after_transaction error : #{inspect(error)}")
+            changeset, error ->
+              Logger.debug("warehouse in after_transaction error : #{inspect(error)}")
 
-                   {:error, error}
-               end
-             )
-           end,
-           on: [:create]
+              {:error, error}
+          end
+        )
+      end,
+      on: [:create]
+    )
   end
 
   code_interface do
-    define_for Fluid.Model.Api
+    define_for(Fluid.Model.Api)
 
     # define :create, args: [:tanks, :pools]
-    define :create
+    define(:create)
 
-    define :read_all
-    define :read_by_id, args: [:id]
+    define(:read_all)
+    define(:read_by_id, args: [:id])
 
-    define :update
+    define(:update)
 
-    define :add_tank, args: [:tank]
-    define :add_pool, args: [:pool]
+    define(:add_tank, args: [:tank])
+    define(:add_pool, args: [:pool])
   end
 
   postgres do
-    table "warehouses"
-    repo Fluid.Repo
+    table("warehouses")
+    repo(Fluid.Repo)
   end
 end

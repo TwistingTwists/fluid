@@ -1,56 +1,73 @@
-# defmodule Fluid.WarehouseTest do
-#   use Fluid.DataCase, async: false
+defmodule Fluid.WarehouseTest do
+  use Fluid.DataCase, async: false
 
-#   alias Fluid.Model.World
-#   alias Fluid.Model.Warehouse
-#   alias Fluid.Model.Pool
-#   alias Fluid.Model.Tank
-#   alias Fluid.Model.Tag
+  alias Fluid.Model
+  alias Fluid.Model.Warehouse
 
-#   describe "WareHouse Struct Validations" do
-#     @tag testing: true
-#     test "warehouse(WH) has one and only one UCT - with default tank" do
-#       # create the UCT when creating the warehouse.
-#       {:ok, warehouse} =
-#         Warehouse.create(%{name: "test warehouse - tanks"})
+  describe "add pool to warehouse" do
+    test " - verify database persistence" do
+      {:ok, %{id: wh_id} = warehouse_1} =
+        Fluid.Model.create_warehouse(name: "warehouse_1 wh ")
 
-#       assert warehouse.count_uncapped_tank == 1
+      {:ok, pool} =
+        Model.Pool.create(%{
+          location_type: :in_wh,
+          capacity_type: :uncapped
+        })
 
-#       # try to add one more tank and it should not succeed
-#       {:ok, tank} =
-#         Tank.create(%{
-#           location_type: :in_wh,
-#           capacity_type: :uncapped
-#         })
+      {:ok, updated_warehouse} = Warehouse.add_pool(warehouse_1, pool)
+      %{count_pool: count_pool, count_uncapped_tank: count_uncapped_tank, pools: pools} = updated_warehouse
 
-#       assert {:error, error} =
-#                Warehouse.add_tank(warehouse, tank)
+      assert %{id: ^wh_id} = updated_warehouse
 
-#       assert %{
-#                errors: [
-#                  %Ash.Error.Changes.InvalidAttribute{
-#                    field: :tanks
-#                  }
-#                ]
-#              } = error
-#     end
+      assert %{count_pool: ^count_pool, count_uncapped_tank: ^count_uncapped_tank, pools: ^pools} = Warehouse.read_by_id!(wh_id)
+    end
+  end
 
-#     @tag tested: true
-#     test "warehouse(WH) a unique name" do
-#       # create the UCT when creating the warehouse.
-#       {:ok, warehouse} = Warehouse.create(%{name: "test warehouse"})
+  #   describe "WareHouse Struct Validations" do
+  #     @tag testing: true
+  #     test "warehouse(WH) has one and only one UCT - with default tank" do
+  #       # create the UCT when creating the warehouse.
+  #       {:ok, warehouse} =
+  #         Warehouse.create(%{name: "test warehouse - tanks"})
 
-#       assert {:error, error} =
-#                Warehouse.create(%{name: "test warehouse"})
-#     end
+  #       assert warehouse.count_uncapped_tank == 1
 
-#     @tag tested: true
-#     test "warehouse (WH) has at least one pool" do
-#       {:ok, warehouse} =
-#         Warehouse.create(%{name: "test warehouse - pools"})
+  #       # try to add one more tank and it should not succeed
+  #       {:ok, tank} =
+  #         Tank.create(%{
+  #           location_type: :in_wh,
+  #           capacity_type: :uncapped
+  #         })
 
-#       assert warehouse.count_pool >= 1
-#       # assert pool struct
-#     end
-#   end
-# end
+  #       assert {:error, error} =
+  #                Warehouse.add_tank(warehouse, tank)
+
+  #       assert %{
+  #                errors: [
+  #                  %Ash.Error.Changes.InvalidAttribute{
+  #                    field: :tanks
+  #                  }
+  #                ]
+  #              } = error
+  #     end
+
+  #     @tag tested: true
+  #     test "warehouse(WH) a unique name" do
+  #       # create the UCT when creating the warehouse.
+  #       {:ok, warehouse} = Warehouse.create(%{name: "test warehouse"})
+
+  #       assert {:error, error} =
+  #                Warehouse.create(%{name: "test warehouse"})
+  #     end
+
+  #     @tag tested: true
+  #     test "warehouse (WH) has at least one pool" do
+  #       {:ok, warehouse} =
+  #         Warehouse.create(%{name: "test warehouse - pools"})
+
+  #       assert warehouse.count_pool >= 1
+  #       # assert pool struct
+  #     end
+  #   end
+end
