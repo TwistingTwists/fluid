@@ -154,10 +154,12 @@ defmodule Fluid.Model do
           # {wh.name, wh.id} |> blue("wh.name")
 
           tank_ids = Enum.map(wh.tanks, & &1.id)
+          pool_ids = Enum.map(wh.pools, & &1.id)
+          tank_or_pool_ids = tank_ids ++ pool_ids
 
           inbound_connections =
             Enum.reduce(all_tags, [], fn tag, acc ->
-              if tag.source["id"] in tank_ids do
+              if tag.destination["id"] in tank_or_pool_ids do
                 [tag | acc]
               else
                 acc
@@ -166,14 +168,11 @@ defmodule Fluid.Model do
 
           # |> purple("inbound_connections")
 
-          pool_ids = Enum.map(wh.pools, & &1.id)
-
           # outbound are always from  CP -> CT or UCP -> UCT
           # todo what if two tanks are connected?
           outbound_connections =
             Enum.reduce(all_tags, [], fn tag, acc ->
-              # if tag.source["id"] in pool_ids or tag.source["id"] in tank_ids
-              if tag.destination["id"] in pool_ids do
+              if tag.source["id"] in tank_or_pool_ids do
                 [tag | acc]
               else
                 acc
@@ -362,41 +361,6 @@ defmodule Fluid.Model do
     Map.merge(wh_map, %{determinate: determinate_classified})
   end
 
-  # def classify_determinate(%{all: _all_wh_list, determinate: determinate_wh_map} = wh_circularity_map) do
-  #   classification_map =
-  #     Enum.reduce(determinate_wh_map, %{done: %{}, remaining: determinate_wh_map}, fn
-  #       {wh_id, %Model.Circularity{determinate_classes: determinate_classes, wh: wh} = wh_circularity},
-  #       %{done: done_acc, remaining: remaining_acc} = acc ->
-  #         # classify_0 => NO CP / UCP => indirectly means with ONLY FP
-  #         is_class_0? =
-  #           Enum.all?(wh.pools, fn
-  #             %{capacity_type: capacity} when capacity not in [:uncapped, :capped] -> true
-  #             _ -> false
-  #           end)
-
-  #         # accumulate now
-  #         if is_class_0? do
-  #           wh_circularity =
-  #             Map.put(wh_circularity, :determinate_classes, [?0] ++ wh_circularity.determinate_classes)
-
-  #           %{done: Map.put(done_acc, wh_id, wh_circularity), remaining: Map.drop(remaining_acc, wh_id)}
-  #         else
-  #           acc
-  #         end
-  #     end)
-
-  #   sub_classify(wh_circularity_map, classification_map, ?0)
-  #   # determinate_wh_list
-  #   # ascii value of "0" = 48
-  #   # |> Enum.with_index(48 + 1)
-  #   # |> Enum.reduce( %{done: classify_0, rem: determinate_wh_list -- classify_0} , fn {counter, x} ->
-  #   # %{done: done, rem: remaining} = classify_sub_classes(remaining, %{prev_class: counter})
-  #   #
-  #   # end )
-  #   # classify_1 => deriving from class_0 only
-  #   #
-  # end
-
   def classify_determinate(%{all: _all_wh_list, determinate: determinate_wh_map} = wh_circularity_map) do
     determinate_classified =
       determinate_wh_map
@@ -471,15 +435,6 @@ defmodule Fluid.Model do
     rest_determinate_wh_map
     # |> Enum.map(fn {_k, v} -> v.name end)
     |> yellow("rest_determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
-
-    # Enum.filter(determinate_wh_map, fn
-    #   {_wh_id, %Model.Circularity{determinate_classes: []} = _circularity} ->
-    #     true
-
-    #   _ ->
-    #     false
-    # end)
-    # |> Enum.into(%{})
 
     prev_class_dest_ids =
       for {_wh_id, %{outbound_connections: outbound_connections}} <- wh_with_prev_class, into: [] do
