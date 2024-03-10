@@ -126,8 +126,7 @@ defmodule Fluid.Model do
     %{all: list_of_warehouses}
     |> calculate_feeder_and_unconnected_nodes
     |> run_euler_algorithm()
-
-    # |> preserve_original_connection_list()
+    |> preserve_original_connection_list()
 
     # |> classify_determinate_indeterminate()
 
@@ -352,13 +351,9 @@ defmodule Fluid.Model do
              inbound_connections: inbound_connections
            } = wh_circularity} <- rest_determinate_wh_map,
           into: %{} do
-        wh = Model.Warehouse.read_by_id!(wh_id)
-
-        inbound_connections = calculate_inbound_connections(wh)
-
-        inbound_connections
-        |> Enum.map(&tag_to_repr/1)
-        |> green(" #{__ENV__.file}:#{__ENV__.line}")
+        # inbound_connections
+        # |> Enum.map(&tag_to_repr/1)
+        # |> green(" #{__ENV__.file}:#{__ENV__.line}")
 
         # class 1 = every WH that contains at least one CP and/or UCP, where all of its CPs
         # and UCPs receive water only from one or more WHs of Class 0
@@ -389,7 +384,8 @@ defmodule Fluid.Model do
                   has_incoming_from_previous_class? = source_wh_for_pool in wh_with_prev_class_ids
                   has_incoming_from_previous_class? && acc
                 end)
-                |> IO.inspect(label: "#{__ENV__.file}:#{__ENV__.line}")
+
+                # |> IO.inspect(label: "#{__ENV__.file}:#{__ENV__.line}")
               end
 
             %{id: _pool_id} ->
@@ -405,7 +401,8 @@ defmodule Fluid.Model do
              :determinate_classes,
              [prev_class + 1] ++ wh_circularity.determinate_classes
            )}
-          |> purple("#{__ENV__.file}:#{__ENV__.line}")
+
+          # |> purple("#{__ENV__.file}:#{__ENV__.line}")
         else
           # don't change anything.
 
@@ -431,7 +428,7 @@ defmodule Fluid.Model do
       end)
 
     if further_subclassify? do
-      red("calling for further subclassify_further: #{prev_class + 1}")
+      # red("calling for further subclassify_further: #{prev_class + 1}")
       subclassify_further(determinate_wh_map, prev_class + 1)
     else
       determinate_wh_map
