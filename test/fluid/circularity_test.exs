@@ -14,12 +14,12 @@ defmodule Fluid.CircularityTest do
 
   """
 
-  use Fluid.DataCase, async: true
+  use Fluid.DataCase, async: false
 
   alias Fluid.Model
   import Helpers.ColorIO
 
-  describe "world with circularity - mix determinate and indeterminate - " do
+  describe "circularity - mix determinate and indeterminate - " do
     setup do
       ####### world having circularity #####
       {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1 circularity ")
@@ -47,147 +47,71 @@ defmodule Fluid.CircularityTest do
       {:ok, warehouse_6} =
         Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      # [uct_1] = warehouse_1.tanks
+      [uct_1] = warehouse_1.tanks
       [uct_2] = warehouse_2.tanks
       [uct_3] = warehouse_3.tanks
       [uct_4] = warehouse_4.tanks
-      [uct_5] = warehouse_5.tanks
-      [uct_6] = warehouse_6.tanks
-      [ucp_1] = warehouse_1.pools
+      # [uct_5] = warehouse_5.tanks
+      # [uct_6] = warehouse_6.tanks
 
+      # [ucp_1] = warehouse_1.pools
       [ucp_2] = warehouse_2.pools
-      # [ucp_3] = warehouse_3.pools
+      [ucp_3] = warehouse_3.pools
       [ucp_4] = warehouse_4.pools
       [ucp_5] = warehouse_5.pools
-      # [ucp_6] = warehouse_6.pools
+      [ucp_6] = warehouse_6.pools
 
       # outbound connections from 1
-      {:ok, _} = Fluid.Model.connect(uct_5, ucp_1)
-      {:ok, _} = Fluid.Model.connect(uct_2, ucp_1)
-      {:ok, _} = Fluid.Model.connect(uct_6, ucp_1)
+      {:ok, _} = Fluid.Model.connect(uct_1, ucp_5)
+      {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
+      {:ok, _} = Fluid.Model.connect(uct_1, ucp_6)
 
       # outbound connections from 2
-      {:ok, _} = Fluid.Model.connect(uct_3, ucp_2)
-      {:ok, _} = Fluid.Model.connect(uct_4, ucp_2)
+      {:ok, _} = Fluid.Model.connect(uct_2, ucp_3)
 
       # outbound connections from 3
-      {:ok, _} = Fluid.Model.connect(uct_5, ucp_4)
+      {:ok, _} = Fluid.Model.connect(uct_3, ucp_4)
 
-      # outbound connections from 5
-      {:ok, _} = Fluid.Model.connect(uct_2, ucp_5)
+      # outbound connections from 4
+      {:ok, _} = Fluid.Model.connect(uct_4, ucp_2)
+      {:ok, _} = Fluid.Model.connect(uct_4, ucp_5)
 
-      # NO outbound connections from 3 and 6
+      # NO outbound connections from 5 and 6
+      warehouses = [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
 
-      # diagram for above connections
-      # ```mermaid
-      # graph TD;
-      #     WH_1-->WH_2;
-      #     WH_1-->WH_5;
-      #     WH_1-->WH_6;
-      #     WH_2-->WH_3;
-      #     WH_2-->WH_4;
-      #     WH_4-->WH_5;
-      #     WH_5-->WH_2;
-      # ```
-
-      [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]]
+      %{circularity_analysis: Model.circularity_analysis(warehouses), warehouses: warehouses}
     end
 
-    test "identifies - indeterminate nodes ", %{
-      warehouses: warehouses
-    } do
-      # indeterminate warehouses - 2, 3, 4, 5
-      # determinate warehouses - 1, 6
+    # determinate warehouses - 1, 6
+    for n <- [1, 6] do
+      test "identify -  wh #{n} as determinate  ", %{
+        warehouses: warehouses,
+        circularity_analysis: %{indeterminate: indeterminate, determinate: determinate}
+      } do
+        warehouse_num = unquote(n)
+        wh_id = Enum.at(warehouses, warehouse_num - 1).id
 
-      [
-        %{id: _wh_id_1},
-        %{id: wh_id_2},
-        %{id: wh_id_3},
-        %{id: wh_id_4},
-        %{id: wh_id_5},
-        %{id: _wh_id_6}
-      ] = warehouses
-
-      # API
-      # total-> all
-      %{all: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
-      # import Helpers.ColorIO
-      # circularity |> Map.values() |> Map.new(& {&1.wh_id, %{determinate_class: determinate_class}}) |> purple("in test")
-      ###########################################################################
-      # assertions related to list of indeterminate nodes
-      assert Map.has_key?(circularity, wh_id_2)
-      assert Map.has_key?(circularity, wh_id_3)
-      assert Map.has_key?(circularity, wh_id_4)
-      assert Map.has_key?(circularity, wh_id_5)
-
-      ###########################################################################
-      # assertions related to indeterminate classes
-
-      # assert %{indeterminate_class: []} = circularity[wh_id_2]
-      # A - can two pools be connected?
-
-      # Class A = every WH that is not of Determinate Class that contains at least one CP and/or UCP that receives water from a WH of Determinate Class
-      # 1. If there are no WHs of Determinate Class, classify any random WH as Class A
-
-      # Class B = every WH that is not of Determinate Class that contains at least one CP and/or UCP that receives water from a WH of Class A
-
-      # assert %{indeterminate_class: []} = circularity[wh_id_2]
-      # assert %{indeterminate_class: []} = circularity[wh_id_2]
-      # assert %{indeterminate_class: []} = circularity[wh_id_2]
-
-      ###########################################################################
-      # assertions related to determinate classes
-
-      # 1. Can connection be bidreictional ?
-      #   * Pool -> Tank:
-      #       # WITHIN WAREHOUSE
-      #       # FP = all the connections are within the WH
-      #       FP(1) ->  CT(1) -> UCT(1) -> UCP(2)
-      #       FP(1) ->  CT(1) -> UCT(1) -> ST
-      #       CP(1) -> CT(1) -> UCT(1)
-
-      #       FP(1) -> 50% CT(1) + 25% UCT(1) + 25% CP(1)
-
-      #       # Another warehouse
-      #       > CT(1) -> CP(2)
-      #       > CT(1) -> ST (standalone)
-      #       # is the tank connected to standalone or Pool in another warehouse : Gist of Classification
-
-      #       UCT(1) -> UCP(2)
-      ###########################################################################
-
-      # Class 0 = every WH that contains no CPs or UCPs
-      # i.e. WH with only FP
-
-      # Class 1 = every WH that contains at least one CP and/or UCP, where all of its CPs and UCPs receive water only from one or more WHs of Class 0
-      #
-      # Class 2 = every WH that contains at least one CP and/or UCP that receives water from one or more WHs of Class 1, where all of its CPs and UCPs receive water only from one or more WHs of Class 1 or below
+        refute Map.has_key?(indeterminate, wh_id)
+        assert Map.has_key?(determinate, wh_id)
+      end
     end
 
-    test "identifies - determinate nodes ", %{
-      warehouses: warehouses
-    } do
-      # indeterminate warehouses - 2, 3, 4, 5
-      # determinate warehouses - 1, 6
+    # indeterminate warehouses - 2, 3, 4, 5
+    for n <- [2, 3, 4, 5] do
+      test "identify -  wh #{n} as indeterminate  ", %{
+        warehouses: warehouses,
+        circularity_analysis: %{indeterminate: indeterminate, determinate: determinate}
+      } do
+        warehouse_num = unquote(n)
+        wh_id = Enum.at(warehouses, warehouse_num - 1).id
 
-      [
-        %{id: wh_id_1},
-        %{id: _wh_id_2},
-        %{id: _wh_id_3},
-        %{id: _wh_id_4},
-        %{id: _wh_id_5},
-        %{id: wh_id_6}
-      ] = warehouses
-
-      %{all: _total_wh, indeterminate: circularity} = Model.circularity_analysis(warehouses)
-      ###########################################################################
-      # assertions related to list of determinate nodes
-      refute Map.has_key?(circularity, wh_id_1)
-      refute Map.has_key?(circularity, wh_id_6)
+        assert Map.has_key?(indeterminate, wh_id)
+        refute Map.has_key?(determinate, wh_id)
+      end
     end
   end
 
-  describe "world with circularity - ALL determinate -  " do
+  describe "circularity - ALL determinate -  " do
     setup do
       ####### world having circularity - ALL determinate nodes #####
       {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1_0 circularity ")
@@ -254,8 +178,8 @@ defmodule Fluid.CircularityTest do
       # |> yellow("all warehouses")
     end
 
-    test "identifies - ONLY determinate nodes ", %{warehouses: warehouses} do
-      %{all: _total_wh, indeterminate: indeterminate_circularity, determinate: determinate_circularity} =
+    test "identify - ONLY determinate nodes ", %{warehouses: warehouses} do
+      %{all: _total_wh, indeterminate: indeterminate_circularity, determinate: _determinate_circularity} =
         Model.circularity_analysis(warehouses)
 
       [%{id: wh_id_1}, %{id: wh_id_2}, %{id: wh_id_3}, %{id: wh_id_4}, %{id: wh_id_5}] = warehouses
@@ -266,50 +190,110 @@ defmodule Fluid.CircularityTest do
       refute Map.has_key?(indeterminate_circularity, wh_id_4)
       refute Map.has_key?(indeterminate_circularity, wh_id_5)
     end
+  end
 
-    test "classify determinate nodes - 1,2,3,4,5", %{warehouses: warehouses} do
-      results = Model.circularity_analysis(warehouses)
+  describe "circularity - ALL determinate - subclassify - " do
+    setup do
+      ####### world having circularity - ALL determinate nodes #####
+      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1_0 circularity ")
+      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2_0 circularity ")
+      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3_0 circularity ")
+      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4_0 circularity ")
+      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5_0 circularity ")
 
-      %{all: _total_wh, indeterminate: indeterminate_circularity, determinate: determinate_circularity} = results
+      {:ok, warehouse_1} =
+        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :fixed, location_type: :in_wh}]})
 
-      red("#{String.duplicate("*", 20)}\n")
+      {:ok, warehouse_2} =
+        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      determinate_circularity
-      |> Enum.map(fn {_k, v} -> {v.name, Enum.map(v.outbound_connections, &tag_to_repr/1)} end)
-      |> yellow("determinate_circularity outbound #{__ENV__.file}:#{__ENV__.line}")
+      {:ok, warehouse_3} =
+        Model.add_pools_to_warehouse(warehouse_3, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      red("#{String.duplicate("*", 20)}")
+      {:ok, warehouse_4} =
+        Model.add_pools_to_warehouse(warehouse_4, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      determinate_circularity
-      |> Enum.map(fn {_k, v} -> {v.name, Enum.map(v.inbound_connections, &tag_to_repr/1)} end)
-      |> yellow("determinate_circularity inbound #{__ENV__.file}:#{__ENV__.line}")
+      {:ok, warehouse_5} =
+        Model.add_pools_to_warehouse(warehouse_5, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      # indeterminate_circularity
-      # |> Enum.map(fn {_k, v} -> v.name end)
-      # |> blue("indeterminate_circularity #{__ENV__.file}:#{__ENV__.line}")
+      [uct_1] = warehouse_1.tanks
+      [uct_2] = warehouse_2.tanks
+      [uct_3] = warehouse_3.tanks
+      # [uct_4] = warehouse_4.tanks
+      # [uct_5] = warehouse_5.tanks
+      # [uct_6] = warehouse_6.tanks
 
-      %{indeterminate: indeterminate_wh_map, determinate: determinate_wh_map} =
-        Model.classify(results)
+      # [fp_1] = warehouse_1.pools
+      [ucp_2] = warehouse_2.pools
+      [ucp_3] = warehouse_3.pools
+      [ucp_4] = warehouse_4.pools
+      [ucp_5] = warehouse_5.pools
+      # [ucp_6] = warehouse_6.pools
 
-      # |> Map.keys()
-      # |> purple("classify #{__ENV__.file}:#{__ENV__.line}")
+      # outbound connections from 1
+      {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
+      {:ok, _} = Fluid.Model.connect(uct_1, ucp_4)
 
-      determinate_wh_map
-      |> Enum.map(fn {_k, circularity} -> {circularity.name, circularity.determinate_classes} end)
-      |> Enum.into(%{})
-      |> purple("determinate_wh_map determinate classes #{__ENV__.file}:#{__ENV__.line}")
+      # outbound connections from 2
+      {:ok, _} = Fluid.Model.connect(uct_2, ucp_3)
 
-      indeterminate_wh_map
-      |> Enum.map(fn {_k, circularity} -> {circularity.name, circularity.determinate_classes} end)
-      |> Enum.into(%{})
-      |> purple("indeterminate_wh_map determinate_classes #{__ENV__.file}:#{__ENV__.line}")
+      # outbound connections from 3
+      {:ok, _} = Fluid.Model.connect(uct_3, ucp_5)
+
+      # NO outbound connections from 4 and 5
+
+      # diagram for above connections
+      # ```mermaid
+      # graph TD;
+      #     WH_1-->WH_2;
+      #     WH_1-->WH_4;
+      #     WH_2-->WH_3;
+      #     WH_4-->WH_5;
+      # ```
+
+      # [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5]]
+      warehouses = [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5]
+      circularity_analysis = Model.circularity_analysis(warehouses)
+      classification = circularity_analysis |> Model.classify()
+
+      %{circularity_analysis: circularity_analysis, classification: classification, warehouses: warehouses}
     end
 
-    def tag_to_repr(%{source: %{"warehouse_id" => in_id}, destination: %{"warehouse_id" => out_id}} = _tag) do
-      """
-      #{Model.Warehouse.read_by_id!(in_id).name} => #{Model.Warehouse.read_by_id!(out_id).name}
-      """
+    test "warehouse 1 has class 0", %{classification: classification, warehouses: warehouses} do
+      %{determinate: determinate_wh_map} = classification
+      wh_id = Enum.at(warehouses, 0).id
+      assert ?0 in Map.get(determinate_wh_map, wh_id).determinate_classes
     end
+
+    test "warehouse 2 has class 1", %{classification: classification, warehouses: warehouses} do
+      %{determinate: determinate_wh_map} = classification
+      wh_id = Enum.at(warehouses, 1).id
+      assert ?1 in Map.get(determinate_wh_map, wh_id).determinate_classes
+    end
+
+    test "warehouse 3 has class 2", %{classification: classification, warehouses: warehouses} do
+      %{determinate: determinate_wh_map} = classification
+      wh_id = Enum.at(warehouses, 2).id
+      assert ?2 in Map.get(determinate_wh_map, wh_id).determinate_classes
+    end
+
+    test "warehouse 4 has class 1", %{classification: classification, warehouses: warehouses} do
+      %{determinate: determinate_wh_map} = classification
+      wh_id = Enum.at(warehouses, 3).id
+      assert ?1 in Map.get(determinate_wh_map, wh_id).determinate_classes
+    end
+
+    test "warehouse 5 has class 3", %{classification: classification, warehouses: warehouses} do
+      %{determinate: determinate_wh_map} = classification
+      wh_id = Enum.at(warehouses, 4).id
+      assert ?3 in Map.get(determinate_wh_map, wh_id).determinate_classes
+    end
+  end
+
+  def tag_to_repr(%{source: %{"warehouse_id" => in_id}, destination: %{"warehouse_id" => out_id}} = _tag) do
+    """
+    #{Model.Warehouse.read_by_id!(in_id).name} => #{Model.Warehouse.read_by_id!(out_id).name}
+    """
   end
 
   # describe "world with circularity - ALL indeterminate -  " do
