@@ -10,7 +10,7 @@ defmodule Fluid.Model do
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
   alias Fluid.Model.Tag
-  import Helpers.ColorIO
+  # import Helpers.ColorIO
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
@@ -232,13 +232,13 @@ defmodule Fluid.Model do
 
     determinate_wh_map = Map.merge(determinate_wh_map, updated_determinate_wh_map)
 
-    determinate_wh_map
-    |> Enum.map(fn {_k, v} -> v.name end)
-    |> yellow("determinate_circularity #{__ENV__.file}:#{__ENV__.line}")
+    # determinate_wh_map
+    # |> Enum.map(fn {_k, v} -> v.name end)
+    # |> yellow("determinate_circularity #{__ENV__.file}:#{__ENV__.line}")
 
-    after_wh_list
-    |> Enum.map(fn {_k, v} -> v.name end)
-    |> blue("indeterminate_circularity #{__ENV__.file}:#{__ENV__.line}")
+    # after_wh_list
+    # |> Enum.map(fn {_k, v} -> v.name end)
+    # |> blue("indeterminate_circularity #{__ENV__.file}:#{__ENV__.line}")
 
     # if no nodes were deleted => do not run_euler_algorithm() further
     if map_size(after_wh_list) < map_size(list_of_warehouses_map) do
@@ -259,7 +259,7 @@ defmodule Fluid.Model do
     end
   end
 
-  def classify(%{all: all_wh_map, indeterminate: indeterminate_wh_map, determinate: determinate_wh_map} = wh_map) do
+  def classify(%{all: _all_wh_map, indeterminate: _indeterminate_wh_map, determinate: _determinate_wh_map} = wh_map) do
     %{determinate: determinate_classified} = classify_determinate(wh_map)
     Map.merge(wh_map, %{determinate: determinate_classified})
   end
