@@ -441,6 +441,10 @@ defmodule Fluid.Model do
     """
   end
 
+  @doc """
+  Given a warehouse, in a world, calculate all the connections 
+  todo ensure the world id matches when you read all tags
+  """
   def calculate_outbound_connections(%Model.Warehouse{} = wh, all_tags \\ nil) do
     all_tags =
       if all_tags do
@@ -462,6 +466,9 @@ defmodule Fluid.Model do
     end)
   end
 
+  @doc """
+  todo ensure the world id matches when you read all tags
+  """
   def calculate_inbound_connections(%Model.Warehouse{} = wh, all_tags \\ nil) do
     all_tags =
       if all_tags do
