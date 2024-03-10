@@ -24,6 +24,32 @@ defmodule Fluid.WarehouseTest do
     end
   end
 
+  describe "warehouse aggregates and calculations" do
+    setup do
+      {:ok, warehouse_1} =
+        Fluid.Model.create_warehouse(name: "warehouse_1 wh ")
+
+      {:ok, warehouse_1} =
+        Model.add_pools_to_warehouse(
+          warehouse_1,
+          {:params,
+           [
+             %{capacity_type: :fixed, location_type: :in_wh},
+             %{capacity_type: :capped, location_type: :in_wh},
+             %{capacity_type: :uncapped, location_type: :in_wh}
+           ]}
+        )
+
+      %{warehouse: warehouse_1}
+    end
+
+    test "aggregates and calcs", %{warehouse: warehouse_1} do
+      assert warehouse_1.count_ucp_cp == 2
+      assert warehouse_1.count_pool == 3
+      assert warehouse_1.count_uncapped_tank == 1
+    end
+  end
+
   #   describe "WareHouse Struct Validations" do
   #     @tag testing: true
   #     test "warehouse(WH) has one and only one UCT - with default tank" do
