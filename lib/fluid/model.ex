@@ -127,6 +127,8 @@ defmodule Fluid.Model do
     |> calculate_feeder_and_unconnected_nodes
     |> run_euler_algorithm()
 
+    # |> preserve_original_connection_list()
+
     # |> classify_determinate_indeterminate()
 
     # |> purple("list_of_warehouses")
@@ -138,6 +140,7 @@ defmodule Fluid.Model do
 
     # we start with every warehouse being indeterminate. And keep deleting determinate from that list
     args = %{all: list_of_warehouses, indeterminate: list_of_warehouses, determinate: %{}}
+
     calculate_feeder_and_unconnected_nodes(args, all_tags)
   end
 
@@ -151,38 +154,24 @@ defmodule Fluid.Model do
     {new_wh_acc, tag_acc} =
       for wh <- list_of_warehouses, reduce: {%{}, all_tags} do
         {wh_acc, tag_acc} ->
-          # {wh.name, wh.id} |> blue("wh.name")
-
-          tank_ids = Enum.map(wh.tanks, & &1.id)
-          pool_ids = Enum.map(wh.pools, & &1.id)
-          tank_or_pool_ids = tank_ids ++ pool_ids
-
-          inbound_connections =
-            Enum.reduce(all_tags, [], fn tag, acc ->
-              if tag.destination["id"] in tank_or_pool_ids do
-                [tag | acc]
-              else
-                acc
-              end
-            end)
-
-          # |> purple("inbound_connections")
-
+          # Enum.map(inbound_connections, &tag_to_repr/1)
+          # |> purple("inbound_connections : #{wh.name} :  #{__ENV__.file}:#{__ENV__.line}")
           # outbound are always from  CP -> CT or UCP -> UCT
           # todo what if two tanks are connected?
-          outbound_connections =
-            Enum.reduce(all_tags, [], fn tag, acc ->
-              if tag.source["id"] in tank_or_pool_ids do
-                [tag | acc]
-              else
-                acc
-              end
-            end)
 
-          # |> orange("outbound_connections")
+          inbound_connections = calculate_inbound_connections(wh, all_tags)
 
-          # {length(inbound_connections), length(outbound_connections)}
-          # |> green("\n\n connections: {in, out}")
+          # inbound_connections
+          # |> Enum.map(&tag_to_repr/1)
+          # |> green(" inbound :#{wh.name} :  #{__ENV__.file}:#{__ENV__.line}")
+
+          outbound_connections = calculate_outbound_connections(wh, all_tags)
+
+          # outbound_connections
+          # |> Enum.map(&tag_to_repr/1)
+          # |> green(" outbound : #{wh.name} :  #{__ENV__.file}:#{__ENV__.line}")
+
+          # red("#{String.duplicate("*", 20)}\n")
 
           # arrow concept?
 
@@ -193,9 +182,6 @@ defmodule Fluid.Model do
 
           is_unconnected_node =
             if inbound_connections == [] and outbound_connections == [], do: true, else: false
-
-          # is_feeder_node |> purple("is_feeder_node")
-          # is_unconnected_node |> orange("is_unconnected_node")
 
           new_wh_acc =
             Map.put(
@@ -245,6 +231,7 @@ defmodule Fluid.Model do
               is_unconnected_node: false,
               outbound_connections: outbound_connections
             } ->
+              # wh_map.name |> red("is feeder node : #{__ENV__.file}:#{__ENV__.line}")
               # remove all the outbound connections from the warehouse (node)
               outbound_connections_ids = Enum.map(outbound_connections, & &1.id)
 
@@ -337,23 +324,6 @@ defmodule Fluid.Model do
   end
 
   def classify(%{all: all_wh_map, indeterminate: indeterminate_wh_map, determinate: determinate_wh_map} = wh_map) do
-    # calculate the determinate map from all and indeterminate_wh_map
-    # determinate_wh_map =
-    #   for wh <- all_wh_map, reduce: %{} do
-    #     determinate_map_acc ->
-    #       wh_id = wh.id
-    #       wh_id |> purple("wh_id")
-
-    #       case Map.get(indeterminate_wh_map, wh_id) do
-    #         nil -> Map.put(determinate_map_acc, wh_id, wh)
-    #         _ -> determinate_map_acc
-    #       end
-    #   end
-
-    # Map.merge(wh_map, %{determinate: determinate_wh_map})
-
-    all_wh_map |> Enum.map(fn v -> v.name end) |> yellow("all_wh_map #{__ENV__.file}:#{__ENV__.line}")
-
     determinate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> yellow("determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
     indeterminate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> blue("indeterminate_wh_map #{__ENV__.file}:#{__ENV__.line}")
 
@@ -385,12 +355,32 @@ defmodule Fluid.Model do
       end)
       |> subclassify_further(?0)
 
-    determinate_classified
-    |> Enum.map(fn {_k, circularity} -> {circularity.name, circularity.determinate_classes} end)
-    |> Enum.into(%{})
-    |> blue("#{__ENV__.file}:#{__ENV__.line}")
+    # determinate_classified
+    # |> Enum.map(fn {_k, circularity} -> {circularity.name, circularity.determinate_classes} end)
+    # |> Enum.into(%{})
+    # |> blue("#{__ENV__.file}:#{__ENV__.line}")
 
     Map.merge(wh_circularity_map, %{determinate: determinate_classified})
+  end
+
+  def preserve_original_connection_list(%{all: all, determinate: determinate, indeterminate: indeterminate}) do
+    updated_determinate =
+      for {wh_id, circularity} <- determinate, into: %{} do
+        wh = Model.Warehouse.read_by_id!(wh_id)
+        inbound_connections = calculate_inbound_connections(wh)
+        outbound_connections = calculate_outbound_connections(wh)
+        {wh_id, Map.merge(circularity, %{inbound_connections: inbound_connections, outbound_connections: outbound_connections})}
+      end
+
+    updated_indeterminate =
+      for {wh_id, circularity} <- indeterminate, into: %{} do
+        wh = Model.Warehouse.read_by_id!(wh_id)
+        inbound_connections = calculate_inbound_connections(wh)
+        outbound_connections = calculate_outbound_connections(wh)
+        {wh_id, Map.merge(circularity, %{inbound_connections: inbound_connections, outbound_connections: outbound_connections})}
+      end
+
+    %{all: all, determinate: updated_determinate, indeterminate: updated_indeterminate}
   end
 
   @doc """
@@ -406,7 +396,6 @@ defmodule Fluid.Model do
   def subclassify_further(determinate_wh_map, prev_class) do
     determinate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> log("determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
     prev_class |> red("prev calss #{__ENV__.file}:#{__ENV__.line}")
-    # works like Enum.filter
     wh_with_prev_class =
       for {wh_id, %Model.Circularity{determinate_classes: determinate_classes} = circularity} <- determinate_wh_map,
           prev_class in determinate_classes,
@@ -414,34 +403,18 @@ defmodule Fluid.Model do
         {wh_id, circularity}
       end
 
-    wh_with_prev_class |> Enum.map(fn {k, _v} -> k end) |> red("wh_with_prev_class #{__ENV__.file}:#{__ENV__.line}")
+    wh_with_prev_class_ids = Enum.map(wh_with_prev_class, fn {wh_id, _circularity} -> wh_id end)
 
-    # Enum.filter(determinate_wh_map, fn
-    #   {_wh_id, %Model.Circularity{determinate_classes: determinate_classes}} ->
-    #     if prev_class in determinate_classes do
-    #       {prev_class} |> red("prev_class")
-    #       true
-    #     end
-    # end)
-    # |> Enum.into(%{})
-
-    # works like Enum.filter
     rest_determinate_wh_map =
       for {wh_id, %Model.Circularity{determinate_classes: []} = circularity} <- determinate_wh_map,
           into: %{} do
         {wh_id, circularity}
       end
 
-    rest_determinate_wh_map
-    # |> Enum.map(fn {_k, v} -> v.name end)
-    |> yellow("rest_determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
-
-    prev_class_dest_ids =
-      for {_wh_id, %{outbound_connections: outbound_connections}} <- wh_with_prev_class, into: [] do
-        Enum.map(outbound_connections, & &1.id)
-      end
-
-    prev_class_dest_ids |> purple("prev_class_dest_ids #{__ENV__.file}:#{__ENV__.line}")
+    # prev_class_dest_ids =
+    #   for {_wh_id, %{outbound_connections: outbound_connections}} <- wh_with_prev_class, into: [] do
+    #     Enum.map(outbound_connections, & &1.id)
+    #   end
 
     # subclassify rest of the circularity structs
     updated_rest_determinate_wh_map =
@@ -452,35 +425,76 @@ defmodule Fluid.Model do
              inbound_connections: inbound_connections
            } = wh_circularity} <- rest_determinate_wh_map,
           into: %{} do
-        # wh.name |> purple("wh name #{__ENV__.file}:#{__ENV__.line}")
+        wh.name |> orange("wh name #{__ENV__.file}:#{__ENV__.line}")
+        inbound_connections |> orange("inbound shape ")
+        wh = Model.Warehouse.read_by_id!(wh_id)
+
+        inbound_connections = calculate_inbound_connections(wh)
+
+        inbound_connections
+        |> Enum.map(&tag_to_repr/1)
+        |> green(" #{__ENV__.file}:#{__ENV__.line}")
+
         # class 1 = every WH that contains at least one CP and/or UCP, where all of its CPs
         # and UCPs receive water only from one or more WHs of Class 0
-        has_a_cp_or_ucp? =
-          Enum.all?(wh.pools, fn
+
+        count_ucp_cp =
+          Enum.count(wh.pools, fn
             %{capacity_type: capacity} when capacity in [:uncapped, :capped] -> true
             _ -> false
           end)
 
-        inbound_connections_from_prev_class? =
-          Enum.all?(inbound_connections, fn tag ->
-            tag.source["id"] in prev_class_dest_ids
+        ucp_cp_water_from_prev_class =
+          Enum.filter(wh.pools, fn
+            %{id: pool_id, capacity_type: capacity} when capacity in [:uncapped, :capped] ->
+              # a pool may receive water from many sources
+              inbound_connections_for_pool =
+                Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)
+
+              # inbound_connections_for_pool
+              # |> Enum.map(&tag_to_repr/1)
+              # |> green(" #{__ENV__.file}:#{__ENV__.line}")
+
+              # every CP / UCP pool must receive water from somewhere.
+              if inbound_connections_for_pool == [] do
+                false
+              else
+                Enum.reduce(inbound_connections_for_pool, true, fn %Model.Tag{source: %{"warehouse_id" => source_wh_for_pool}},
+                                                                   acc ->
+                  has_incoming_from_previous_class? = source_wh_for_pool in wh_with_prev_class_ids
+                  has_incoming_from_previous_class? && acc
+                end)
+                |> IO.inspect(label: "#{__ENV__.file}:#{__ENV__.line}")
+              end
+
+            %{id: _pool_id} ->
+              false
           end)
 
-        if has_a_cp_or_ucp? and inbound_connections_from_prev_class? do
+        # |> orange(" #{__ENV__.file}:#{__ENV__.line}")
+
+        if length(ucp_cp_water_from_prev_class) == count_ucp_cp do
           {wh_id,
            Map.put(
              wh_circularity,
              :determinate_classes,
              [prev_class + 1] ++ wh_circularity.determinate_classes
            )}
+          |> purple("#{__ENV__.file}:#{__ENV__.line}")
         else
           # don't change anything.
+          red("did not classify this!! What's next? : #{length(ucp_cp_water_from_prev_class)}")
+
           {wh_id, wh_circularity}
         end
       end
 
     # remember to return the entire determinate_wh_map by doing Map.merge
-    determinate_wh_map = Map.merge(updated_rest_determinate_wh_map, wh_with_prev_class)
+    determinate_wh_map = Map.merge(determinate_wh_map, updated_rest_determinate_wh_map)
+
+    determinate_wh_map
+    |> Enum.map(fn {_k, v} -> v.name end)
+    |> yellow(" futher sub decision now  #{__ENV__.file}:#{__ENV__.line}")
 
     # decide whether or not to do further recursion
     # if there are empty determinate_classes in any warehouse's circularity struct, => further recursion needed
@@ -502,5 +516,53 @@ defmodule Fluid.Model do
     else
       determinate_wh_map
     end
+  end
+
+  def tag_to_repr(%{source: %{"warehouse_id" => in_id}, destination: %{"warehouse_id" => out_id}} = _tag) do
+    """
+    #{Model.Warehouse.read_by_id!(in_id).name} => #{Model.Warehouse.read_by_id!(out_id).name}
+    """
+  end
+
+  def calculate_outbound_connections(%Model.Warehouse{} = wh, all_tags \\ nil) do
+    all_tags =
+      if all_tags do
+        all_tags
+      else
+        Model.Tag.read_all!()
+      end
+
+    tank_ids = Enum.map(wh.tanks, & &1.id)
+    pool_ids = Enum.map(wh.pools, & &1.id)
+    tank_or_pool_ids = tank_ids ++ pool_ids
+
+    Enum.reduce(all_tags, [], fn tag, acc ->
+      if tag.source["id"] in tank_or_pool_ids do
+        [tag | acc]
+      else
+        acc
+      end
+    end)
+  end
+
+  def calculate_inbound_connections(%Model.Warehouse{} = wh, all_tags \\ nil) do
+    all_tags =
+      if all_tags do
+        all_tags
+      else
+        Model.Tag.read_all!()
+      end
+
+    tank_ids = Enum.map(wh.tanks, & &1.id)
+    pool_ids = Enum.map(wh.pools, & &1.id)
+    tank_or_pool_ids = tank_ids ++ pool_ids
+
+    Enum.reduce(all_tags, [], fn tag, acc ->
+      if tag.destination["id"] in tank_or_pool_ids do
+        [tag | acc]
+      else
+        acc
+      end
+    end)
   end
 end

@@ -272,28 +272,43 @@ defmodule Fluid.CircularityTest do
 
       %{all: _total_wh, indeterminate: indeterminate_circularity, determinate: determinate_circularity} = results
 
-      # determinate_circularity
-      # |> Enum.map(fn {_k, v} -> v.name end)
-      # |> yellow("determinate_circularity #{__ENV__.file}:#{__ENV__.line}")
+      red("#{String.duplicate("*", 20)}\n")
+
+      determinate_circularity
+      |> Enum.map(fn {_k, v} -> {v.name, Enum.map(v.outbound_connections, &tag_to_repr/1)} end)
+      |> yellow("determinate_circularity outbound #{__ENV__.file}:#{__ENV__.line}")
+
+      red("#{String.duplicate("*", 20)}")
+
+      determinate_circularity
+      |> Enum.map(fn {_k, v} -> {v.name, Enum.map(v.inbound_connections, &tag_to_repr/1)} end)
+      |> yellow("determinate_circularity inbound #{__ENV__.file}:#{__ENV__.line}")
 
       # indeterminate_circularity
       # |> Enum.map(fn {_k, v} -> v.name end)
       # |> blue("indeterminate_circularity #{__ENV__.file}:#{__ENV__.line}")
 
       %{indeterminate: indeterminate_wh_map, determinate: determinate_wh_map} =
-      Model.classify(results)
+        Model.classify(results)
+
       # |> Map.keys()
       # |> purple("classify #{__ENV__.file}:#{__ENV__.line}")
 
       determinate_wh_map
       |> Enum.map(fn {_k, circularity} -> {circularity.name, circularity.determinate_classes} end)
       |> Enum.into(%{})
-      |> purple("indeterminate_wh_map #{__ENV__.file}:#{__ENV__.line}")
+      |> purple("determinate_wh_map determinate classes #{__ENV__.file}:#{__ENV__.line}")
 
       indeterminate_wh_map
       |> Enum.map(fn {_k, circularity} -> {circularity.name, circularity.determinate_classes} end)
       |> Enum.into(%{})
-      |> purple("determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
+      |> purple("indeterminate_wh_map determinate_classes #{__ENV__.file}:#{__ENV__.line}")
+    end
+
+    def tag_to_repr(%{source: %{"warehouse_id" => in_id}, destination: %{"warehouse_id" => out_id}} = _tag) do
+      """
+      #{Model.Warehouse.read_by_id!(in_id).name} => #{Model.Warehouse.read_by_id!(out_id).name}
+      """
     end
   end
 
