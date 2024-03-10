@@ -28,16 +28,24 @@ defmodule Fluid.Model.Warehouse do
     calculate(:count_pool, :integer, {Warehouse.Calculations.Pool, field: :pools})
   end
 
+  aggregates do
+    count :count_ucp_cp, :pools do
+      filter(expr(capacity_type in [:uncapped, :capped]))
+    end
+  end
+
+  @load_fields [:tanks, :pools, :world, :count_uncapped_tank, :count_pool, :count_ucp_cp]
+
   actions do
     defaults([:update])
 
     read :read_all do
       primary?(true)
-      prepare(build(load: [:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
+      prepare(build(load: @load_fields))
     end
 
     read :read_by_id do
-      prepare(build(load: [:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
+      prepare(build(load: @load_fields))
       get_by([:id])
     end
 
@@ -47,7 +55,7 @@ defmodule Fluid.Model.Warehouse do
       argument(:tanks, {:array, Fluid.Model.Tank}, allow_nil?: true)
       argument(:pools, {:array, Fluid.Model.Pool}, allow_nil?: true)
 
-      change(load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
+      change(load(@load_fields))
 
       change({Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tanks, rel: :tanks})
       # change Fluid.Model.Warehouse.Changes.AddDefaultPool
@@ -59,7 +67,7 @@ defmodule Fluid.Model.Warehouse do
     update :add_tank do
       argument(:tank, Fluid.Model.Tank, allow_nil?: false)
 
-      change(load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
+      change(load(@load_fields))
 
       # change {Fluid.Model.Changes.AddArgToRelationship, arg: :tank, rel: :tanks}
       change({Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks})
@@ -69,7 +77,7 @@ defmodule Fluid.Model.Warehouse do
     update :add_pool do
       argument(:pool, Fluid.Model.Pool, allow_nil?: false)
 
-      change(load([:tanks, :pools, :world, :count_uncapped_tank, :count_pool]))
+      change(load(@load_fields))
 
       change({Fluid.Model.Changes.AddArgToRelationship, arg: :pool, rel: :pools})
       # change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks}
