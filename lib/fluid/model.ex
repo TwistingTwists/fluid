@@ -148,33 +148,13 @@ defmodule Fluid.Model do
         %{all: total_wh, indeterminate: list_of_warehouses, determinate: determinate_wh_map},
         all_tags
       ) do
-    # "calculate_feeder_and_unconnected_nodes with: all_tags = #{length(all_tags)}) "
-    # |> green()
-
     {new_wh_acc, tag_acc} =
       for wh <- list_of_warehouses, reduce: {%{}, all_tags} do
         {wh_acc, tag_acc} ->
-          # Enum.map(inbound_connections, &tag_to_repr/1)
-          # |> purple("inbound_connections : #{wh.name} :  #{__ENV__.file}:#{__ENV__.line}")
-          # outbound are always from  CP -> CT or UCP -> UCT
-          # todo what if two tanks are connected?
-
           inbound_connections = calculate_inbound_connections(wh, all_tags)
-
-          # inbound_connections
-          # |> Enum.map(&tag_to_repr/1)
-          # |> green(" inbound :#{wh.name} :  #{__ENV__.file}:#{__ENV__.line}")
-
           outbound_connections = calculate_outbound_connections(wh, all_tags)
 
-          # outbound_connections
-          # |> Enum.map(&tag_to_repr/1)
-          # |> green(" outbound : #{wh.name} :  #{__ENV__.file}:#{__ENV__.line}")
-
-          # red("#{String.duplicate("*", 20)}\n")
-
           # arrow concept?
-
           is_feeder_node =
             if inbound_connections == [] and length(outbound_connections) >= 1,
               do: true,
@@ -201,14 +181,6 @@ defmodule Fluid.Model do
           {new_wh_acc, tag_acc}
       end
 
-    determinate_wh_map
-    |> Enum.map(fn {_k, v} -> v.name end)
-    |> yellow("determinate_circularity #{__ENV__.file}:#{__ENV__.line}")
-
-    new_wh_acc
-    |> Enum.map(fn {_k, v} -> v.name end)
-    |> blue("indeterminate_circularity #{__ENV__.file}:#{__ENV__.line}")
-
     {%{all: total_wh, indeterminate: new_wh_acc, determinate: determinate_wh_map}, tag_acc}
   end
 
@@ -216,22 +188,15 @@ defmodule Fluid.Model do
   # :up: is not being used directly in the algorithm. But it is implied.
 
   def run_euler_algorithm({%{all: total_wh, indeterminate: list_of_warehouses_map, determinate: determinate_wh_map}, tags_list}) do
-    # when map_size(list_of_warehouses_map) >= 1 do
     {after_wh_list, after_tags} =
       for {wh_id, wh_map} <- list_of_warehouses_map, reduce: {list_of_warehouses_map, tags_list} do
         {wh_acc, tags_acc} ->
-          # {wh_map.name, wh_id} |> orange("processing: ")
-
-          # {wh_map.is_feeder_node, wh_map.is_unconnected_node}
-          # |> purple(" {wh_map.is_feeder_node, wh_map.is_unconnected_node}")
-
           case wh_map do
             %{
               is_feeder_node: true,
               is_unconnected_node: false,
               outbound_connections: outbound_connections
             } ->
-              # wh_map.name |> red("is feeder node : #{__ENV__.file}:#{__ENV__.line}")
               # remove all the outbound connections from the warehouse (node)
               outbound_connections_ids = Enum.map(outbound_connections, & &1.id)
 
@@ -239,9 +204,6 @@ defmodule Fluid.Model do
                 Enum.reject(tags_acc, fn tag ->
                   tag.id in outbound_connections_ids
                 end)
-
-              # IO.puts("\n\n")
-              # orange("left_tags: #{length(left_tags)}")
 
               # delete the feeder nodes
               {Map.delete(wh_acc, wh_id), left_tags}
@@ -252,19 +214,6 @@ defmodule Fluid.Model do
               inbound_connections: _inbound_connections,
               outbound_connections: _outbound_connections
             } ->
-              # outbound_connections_ids = Enum.map(outbound_connections, & &1.id)
-              # # remove all the outbound connections from the warehouse (node)
-              # left_tags =
-              #   Enum.reject(tags_acc, fn tag ->
-              #     tag.id in outbound_connections_ids
-              #   end)
-
-              # IO.inspect(
-              #   "\n\n unconnected node: IN = #{Enum.count(inbound_connections)}, OUT = #{Enum.count(outbound_connections)}"
-              # )
-
-              # orange("left_tags: #{length(left_tags)}")
-
               # delete the unconnected nodes
               {Map.delete(wh_acc, wh_id), tags_acc}
 
@@ -272,12 +221,6 @@ defmodule Fluid.Model do
               {wh_acc, tags_acc}
           end
       end
-
-    # IO.puts("\n\n")
-
-    # IO.puts(
-    #   "Euler Algo: before_ml_map: #{map_size(list_of_warehouses_map)} , after_wl_map: #{map_size(after_wh_list)} "
-    # )
 
     # if wh_id is in indeterminate_circularity list => reject it from determinate_wh_map
     updated_determinate_wh_map =
@@ -310,23 +253,14 @@ defmodule Fluid.Model do
         determinate: determinate_wh_map
       }
 
-      # {map_size(list_of_warehouses_map), map_size(after_wh_list)}
-      # |> yellow("RUNNING AGAIN Euler Algo: {before, after}")
-
       calculate_feeder_and_unconnected_nodes(warehouse_current_status, after_tags)
       |> run_euler_algorithm()
     else
-      # {map_size(list_of_warehouses_map), map_size(after_wh_list)}
-      # |> purple("halting Euler Algo: {before, after}")
-
       %{all: total_wh, indeterminate: after_wh_list, determinate: determinate_wh_map}
     end
   end
 
   def classify(%{all: all_wh_map, indeterminate: indeterminate_wh_map, determinate: determinate_wh_map} = wh_map) do
-    determinate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> yellow("determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
-    indeterminate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> blue("indeterminate_wh_map #{__ENV__.file}:#{__ENV__.line}")
-
     %{determinate: determinate_classified} = classify_determinate(wh_map)
     Map.merge(wh_map, %{determinate: determinate_classified})
   end
@@ -354,11 +288,6 @@ defmodule Fluid.Model do
           {wh_id, wh_circularity}
       end)
       |> subclassify_further(?0)
-
-    # determinate_classified
-    # |> Enum.map(fn {_k, circularity} -> {circularity.name, circularity.determinate_classes} end)
-    # |> Enum.into(%{})
-    # |> blue("#{__ENV__.file}:#{__ENV__.line}")
 
     Map.merge(wh_circularity_map, %{determinate: determinate_classified})
   end
@@ -394,8 +323,6 @@ defmodule Fluid.Model do
 
   """
   def subclassify_further(determinate_wh_map, prev_class) do
-    determinate_wh_map |> Enum.map(fn {_k, v} -> v.name end) |> log("determinate_wh_map #{__ENV__.file}:#{__ENV__.line}")
-    prev_class |> red("prev calss #{__ENV__.file}:#{__ENV__.line}")
     wh_with_prev_class =
       for {wh_id, %Model.Circularity{determinate_classes: determinate_classes} = circularity} <- determinate_wh_map,
           prev_class in determinate_classes,
@@ -425,8 +352,6 @@ defmodule Fluid.Model do
              inbound_connections: inbound_connections
            } = wh_circularity} <- rest_determinate_wh_map,
           into: %{} do
-        wh.name |> orange("wh name #{__ENV__.file}:#{__ENV__.line}")
-        inbound_connections |> orange("inbound shape ")
         wh = Model.Warehouse.read_by_id!(wh_id)
 
         inbound_connections = calculate_inbound_connections(wh)
@@ -483,7 +408,6 @@ defmodule Fluid.Model do
           |> purple("#{__ENV__.file}:#{__ENV__.line}")
         else
           # don't change anything.
-          red("did not classify this!! What's next? : #{length(ucp_cp_water_from_prev_class)}")
 
           {wh_id, wh_circularity}
         end
@@ -491,10 +415,6 @@ defmodule Fluid.Model do
 
     # remember to return the entire determinate_wh_map by doing Map.merge
     determinate_wh_map = Map.merge(determinate_wh_map, updated_rest_determinate_wh_map)
-
-    determinate_wh_map
-    |> Enum.map(fn {_k, v} -> v.name end)
-    |> yellow(" futher sub decision now  #{__ENV__.file}:#{__ENV__.line}")
 
     # decide whether or not to do further recursion
     # if there are empty determinate_classes in any warehouse's circularity struct, => further recursion needed
