@@ -18,51 +18,51 @@ defmodule Fluid.Model.Tag do
     data_layer: AshPostgres.DataLayer
 
   attributes do
-    uuid_primary_key :id
+    uuid_primary_key(:id)
 
     # https://github.com/rellen/ash/blob/37b0c4d9d0b3ee144c13293c73636c25cbf9be86/test/type/union_test.exs#L5
-    attribute :source, :map, allow_nil?: false
-    attribute :destination, :map, allow_nil?: false
+    attribute(:source, :map, allow_nil?: false)
+    attribute(:destination, :map, allow_nil?: false)
 
-    create_timestamp :created_at
-    update_timestamp :updated_at
+    create_timestamp(:created_at)
+    update_timestamp(:updated_at)
   end
 
   actions do
-    defaults [:update]
+    defaults([:update])
 
     read :read_all do
-      primary? true
+      primary?(true)
     end
 
     read :read_by_id do
-      get_by [:id]
+      get_by([:id])
     end
 
     create :create do
-      primary? true
+      primary?(true)
       # argument :source, Tank | Pool, allow_nil?: false
-      argument :source, :map, allow_nil?: false
-      argument :destination, :map, allow_nil?: false
+      argument(:source, :map, allow_nil?: false)
+      argument(:destination, :map, allow_nil?: false)
 
-      change Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP
+      change(Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP)
       # change load([:world, :warehouse])
     end
   end
 
   code_interface do
-    define_for Fluid.Model.Api
+    define_for(Fluid.Model.Api)
 
-    define :create, args: [:source, :destination]
+    define(:create, args: [:source, :destination])
 
-    define :read_all
-    define :read_by_id, args: [:id]
+    define(:read_all)
+    define(:read_by_id, args: [:id])
 
-    define :update
+    define(:update)
   end
 
   postgres do
-    table "tags"
-    repo Fluid.Repo
+    table("tags")
+    repo(Fluid.Repo)
   end
 end

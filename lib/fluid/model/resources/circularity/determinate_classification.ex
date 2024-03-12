@@ -53,10 +53,6 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
              inbound_connections: inbound_connections
            } = wh_circularity} <- rest_determinate_wh_map,
           into: %{} do
-        # inbound_connections
-        # |> Enum.map(&tag_to_repr/1)
-        # |> green(" #{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
-
         # class 1 = every WH that contains at least one CP and/or UCP, where all of its CPs
         # and UCPs receive water only from one or more WHs of Class 0
 
@@ -66,10 +62,6 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
               # a pool may receive water from many sources
               inbound_connections_for_pool =
                 Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)
-
-              # inbound_connections_for_pool
-              # |> Enum.map(&tag_to_repr/1)
-              # |> green(" #{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
 
               # every CP / UCP pool must receive water from somewhere.
               if inbound_connections_for_pool == [] do
@@ -86,11 +78,8 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
               false
           end)
 
-        # |> orange(" #{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
-
         if length(ucp_cp_water_from_prev_class) == wh.count_ucp_cp do
           {wh_id, Circularity.Utils.update_determinate_class_for_wh_circularity(wh_circularity, prev_class + 1, true)}
-          # |> purple("#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
         else
           # don't change anything.
           {wh_id, wh_circularity}
@@ -102,7 +91,6 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
 
     # decide whether or not to do further recursion
     if Circularity.Utils.further_subclassify?(updated_rest_determinate_wh_map) do
-      # red("calling for further subclassify_further: #{prev_class + 1}")
       subclassify_further(determinate_wh_map, prev_class + 1)
     else
       determinate_wh_map
