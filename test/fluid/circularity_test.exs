@@ -17,7 +17,7 @@ defmodule Fluid.CircularityTest do
   use Fluid.DataCase, async: false
 
   alias Fluid.Model
-  import Helpers.ColorIO
+  # import Helpers.ColorIO
 
   describe "circularity - mix determinate and indeterminate - " do
     setup do

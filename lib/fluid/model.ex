@@ -10,7 +10,7 @@ defmodule Fluid.Model do
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
   alias Fluid.Model.Tag
-  import Helpers.ColorIO
+  # import Helpers.ColorIO
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
