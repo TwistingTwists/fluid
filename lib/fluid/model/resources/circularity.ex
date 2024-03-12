@@ -5,7 +5,7 @@ defmodule Fluid.Model.Circularity do
   use Ash.Resource
   # , data_layer: :embedded
 
-  import Fluid.Model.Circularity.Utils
+  # import Fluid.Model.Circularity.Utils
   alias Fluid.Model
   alias Fluid.Model.Tag
 
@@ -57,17 +57,11 @@ defmodule Fluid.Model.Circularity do
     {new_wh_acc, tag_acc} =
       for wh <- list_of_warehouses, reduce: {%{}, all_tags} do
         {wh_acc, tag_acc} ->
-          inbound_connections = calculate_inbound_connections(wh, all_tags)
-          outbound_connections = calculate_outbound_connections(wh, all_tags)
+          inbound_connections = Model.Circularity.Utils.calculate_inbound_connections(wh, all_tags)
+          outbound_connections = Model.Circularity.Utils.calculate_outbound_connections(wh, all_tags)
 
-          # arrow concept?
-          is_feeder_node =
-            if inbound_connections == [] and length(outbound_connections) >= 1,
-              do: true,
-              else: false
-
-          is_unconnected_node =
-            if inbound_connections == [] and outbound_connections == [], do: true, else: false
+          is_feeder_node = Model.Circularity.Utils.is_feeder_node(inbound_connections, outbound_connections)
+          is_unconnected_node = Model.Circularity.Utils.is_unconnected_node(inbound_connections, outbound_connections)
 
           new_wh_acc =
             Map.put(
@@ -92,7 +86,6 @@ defmodule Fluid.Model.Circularity do
 
   # If there are no edges left + if there are some warehouses in indeterminate list => all must be unconnected
   # :up: is not being used directly in the algorithm. But it is implied.
-
   def run_euler_algorithm({%{all: total_wh, indeterminate: list_of_warehouses_map, determinate: determinate_wh_map}, tags_list}) do
     {after_wh_list, after_tags} =
       for {wh_id, wh_map} <- list_of_warehouses_map, reduce: {list_of_warehouses_map, tags_list} do
