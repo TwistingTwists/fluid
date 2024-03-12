@@ -251,7 +251,6 @@ defmodule Fluid.CircularityTest do
       #     WH_4-->WH_5;
       # ```
 
-      # [warehouses: [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5]]
       warehouses = [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5]
       circularity_analysis = Model.circularity_analysis(warehouses)
       classification = circularity_analysis |> Model.classify()
@@ -287,6 +286,111 @@ defmodule Fluid.CircularityTest do
       %{determinate: determinate_wh_map} = classification
       wh_id = Enum.at(warehouses, 4).id
       assert ?3 in Map.get(determinate_wh_map, wh_id).determinate_classes
+    end
+  end
+
+  describe "circularity - ALL INdeterminate - subclassify - " do
+    setup do
+      ####### world having circularity - ALL indeterminate nodes #####
+      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "01 warehouse indeterminate")
+      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "02 warehouse indeterminate")
+      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "03 warehouse indeterminate")
+      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "04 warehouse indeterminate")
+      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "05 warehouse indeterminate")
+      {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "06 warehouse indeterminate")
+
+      {:ok, warehouse_1} =
+        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+
+      {:ok, warehouse_2} =
+        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+
+      {:ok, warehouse_3} =
+        Model.add_pools_to_warehouse(warehouse_3, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+
+      {:ok, warehouse_4} =
+        Model.add_pools_to_warehouse(warehouse_4, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+
+      {:ok, warehouse_5} =
+        Model.add_pools_to_warehouse(warehouse_5, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+
+      {:ok, warehouse_6} =
+        Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+
+      [uct_1] = warehouse_1.tanks
+      [uct_2] = warehouse_2.tanks
+      [uct_3] = warehouse_3.tanks
+      [uct_4] = warehouse_4.tanks
+      [uct_5] = warehouse_5.tanks
+      [uct_6] = warehouse_6.tanks
+
+      [ucp_1] = warehouse_1.pools
+      [ucp_2] = warehouse_2.pools
+      [ucp_3] = warehouse_3.pools
+      [ucp_4] = warehouse_4.pools
+      [ucp_5] = warehouse_5.pools
+      [ucp_6] = warehouse_6.pools
+
+      # outbound connections from 1
+      {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
+      {:ok, _} = Fluid.Model.connect(uct_1, ucp_6)
+
+      # outbound connections from 2
+      {:ok, _} = Fluid.Model.connect(uct_2, ucp_3)
+
+      # outbound connections from 3
+      {:ok, _} = Fluid.Model.connect(uct_3, ucp_4)
+
+      # outbound connections from 4
+      {:ok, _} = Fluid.Model.connect(uct_4, ucp_2)
+      {:ok, _} = Fluid.Model.connect(uct_4, ucp_5)
+
+      # outbound connections from 5
+      {:ok, _} = Fluid.Model.connect(uct_5, ucp_1)
+
+      # outbound connections from 6
+      {:ok, _} = Fluid.Model.connect(uct_6, ucp_5)
+
+      # diagram for https://drive.google.com/file/d/1UCsLOjRTrV5pNGOLVhtrmz1fyJu0wxS8/view?usp=sharing
+
+      warehouses = [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
+      circularity_analysis = Model.circularity_analysis(warehouses)
+      classification = circularity_analysis |> Model.classify()
+
+      %{circularity_analysis: circularity_analysis, classification: classification, warehouses: warehouses}
+    end
+
+    test "all WH are indeterminate ", %{circularity_analysis: circularity_analysis} do
+      %{determinate: determinate_wh_map, indeterminate: _indeterminate_wh_map} = circularity_analysis
+      assert map_size(determinate_wh_map) == 0
+    end
+
+    # {"01 warehouse indeterminate", ~c"A"}
+    # {"02 warehouse indeterminate", ~c"B"}
+    # {"03 warehouse indeterminate", ~c"C"} 
+    # {"04 warehouse indeterminate", ~c"D"} 
+    # {"05 warehouse indeterminate", ~c"C"} 
+    # {"06 warehouse indeterminate", ~c"B"} 
+
+    for {n, class} <- %{1 => ?A, 2 => ?B, 3 => ?C, 4 => ?D, 5 => ?C, 6 => ?B} do
+      test " wh_0#{n} - class #{<<class::utf8>>} ", %{classification: classification, warehouses: warehouses} do
+        str_rep = unquote(n)
+
+        warehouses =
+          for %{id: id} = wh <- warehouses, into: %{} do
+            {id, wh.name}
+          end
+
+        %{indeterminate: indeterminate_wh_map} = classification
+
+        {wh_id, circularity} =
+          indeterminate_wh_map
+          |> Enum.sort_by(fn {_k, v} -> v.name end)
+          |> Enum.at(str_rep - 1)
+
+        assert warehouses[wh_id] == "0#{str_rep} warehouse indeterminate"
+        assert circularity.indeterminate_classes == [unquote(class)]
+      end
     end
   end
 
