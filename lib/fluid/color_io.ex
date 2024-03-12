@@ -25,6 +25,9 @@ defmodule Helpers.ColorIO do
   @blue Enum.map(@the_types, fn t -> {t, :cyan} end)
   @purple Enum.map(@the_types, fn t -> {t, IO.ANSI.color(4, 2, 5)} end)
   @orange Enum.map(@the_types, fn t -> {t, IO.ANSI.color(4, 2, 0)} end)
+  @pink Enum.map(@the_types, fn t -> {t, IO.ANSI.color(5, 2, 4)} end)
+  @teal Enum.map(@the_types, fn t -> {t, IO.ANSI.color(1, 5, 5)} end)
+  @brown Enum.map(@the_types, fn t -> {t, IO.ANSI.color(2, 5, 3)} end)
 
   @multi Enum.map(@the_types, fn t ->
            case t do
@@ -49,6 +52,9 @@ defmodule Helpers.ColorIO do
   def orange(data, label \\ ""), do: prnt(data, @orange, label)
   def purple(data, label \\ ""), do: prnt(data, @purple, label)
   def log(data, label \\ ""), do: prnt(data, @multi, label)
+  def pink(data, label \\ ""), do: prnt(data, @pink, label)
+  def teal(data, label \\ ""), do: prnt(data, @teal, label)
+  def brown(data, label \\ ""), do: prnt(data, @brown, label)
 
   defp prnt(data, colors, label) do
     IO.inspect("========= #{label} ========", syntax_colors: colors)
