@@ -43,28 +43,6 @@ defmodule Fluid.Model do
     {:error, Fluid.Error.ModelError.exception(error: error, target: target)}
   end
 
-  # add_tank
-  # add_pool
-  # connect(capped_tank_wh1, capped_pool_wh2)
-  # >> Run just the last test
-  #
-
-  # def create_tank_standalone(%Fluid.Model.World{} = world, params, opts \\ []) do
-  #   params =
-  #     params
-  #     |> Map.new()
-  #     |> dbg()
-  #     # |> Map.merge(%{
-  #     #   location_type: :standalone,
-  #     #   capacity_type: :uncapped
-  #     # })
-  #     |> Map.merge(%{world: world})
-
-  #   World
-  #   |> Ash.Changeset.for_create(:create_tank, params, opts)
-  #   |> Fluid.Model.Api.create()
-  # end
-
   def add_tanks_to_warehouse(%Warehouse{} = warehouse, %Tank{} = tank) do
     add_tanks_to_warehouse(warehouse, [tank])
   end
@@ -130,16 +108,8 @@ defmodule Fluid.Model do
   end
 
   def classify(%{all: _all_wh_map, indeterminate: _indeterminate_wh_map, determinate: _determinate_wh_map} = wh_map) do
-    # %{determinate: determinate_classified} = Model.Circularity.DeterminateClassification.classify_determinate(wh_map)
-    # wh_map = Map.merge(wh_map, %{determinate: determinate_classified})
-
-    # %{indeterminate: classified_indeterminate_wh_map} =
-    # Model.Circularity.IndeterminateClassification.classify_indeterminate(wh_map)
-
     wh_map
     |> Model.Circularity.DeterminateClassification.classify_determinate()
     |> Model.Circularity.IndeterminateClassification.classify_indeterminate()
-
-    # Map.merge(wh_map, %{indeterminate: classified_indeterminate_wh_map})
   end
 end
