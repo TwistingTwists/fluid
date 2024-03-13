@@ -108,21 +108,8 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
           Enum.filter(wh.pools, fn
             %{id: pool_id, capacity_type: capacity} when capacity in [:uncapped, :capped] ->
               # a pool may receive water from many sources
-              inbound_connections_for_pool =
-                Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)
-
               # every CP / UCP pool must receive water from somewhere.
-              if inbound_connections_for_pool == [] do
-                false
-              else
-                pools =
-                  for %Model.Tag{source: %{"warehouse_id" => source_wh_for_pool}} <- inbound_connections_for_pool,
-                      source_wh_for_pool in wh_with_prev_class_ids do
-                    true
-                  end
-
-                length(pools) >= 1
-              end
+              receives_water_from_prev_class?(pool_id, inbound_connections, wh_with_prev_class_ids)
 
             %{id: _pool_id} ->
               false
@@ -163,5 +150,30 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
     else
       indeterminate_classified
     end
+  end
+
+  @doc """
+  if no inbound_connections_for_pool => it doesn't receive water from prev_class
+
+  else  
+    try to find a pool whose source is in the given list wh_with_prev_class_ids
+  """
+  def receives_water_from_prev_class?(pool_id, inbound_connections, wh_with_prev_class_ids) do
+    Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)
+    |> do_receives_water_from_prev_class?(wh_with_prev_class_ids)
+  end
+
+  defp do_receives_water_from_prev_class?([] = _inbound_connections_for_pool, _wh_with_prev_class_ids) do
+    false
+  end
+
+  defp do_receives_water_from_prev_class?(inbound_connections_for_pool, wh_with_prev_class_ids) do
+    pools =
+      for %Model.Tag{source: %{"warehouse_id" => source_wh_for_pool}} <- inbound_connections_for_pool,
+          source_wh_for_pool in wh_with_prev_class_ids do
+        true
+      end
+
+    length(pools) >= 1
   end
 end
