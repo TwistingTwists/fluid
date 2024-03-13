@@ -137,6 +137,34 @@ defmodule Fluid.Model.Circularity.Utils do
   end
 
   @doc """
+  if ucp_cp_water_from_prev_class >= 1 and wh.count_ucp_cp >= 1 do
+    {wh_id,
+      Map.put(
+        wh_circularity,
+        :indeterminate_classes,
+        [prev_class + 1] ++ wh_circularity.indeterminate_classes
+      )}
+  else
+    # don't change anything.
+    {wh_id, wh_circularity}
+  end
+
+  """
+  def update_indeterminate_class_for_wh_circularity(wh_circularity, class_to_insert, ucp_cp_water_from_prev_class, count_ucp_cp)
+      when count_ucp_cp >= 1 and ucp_cp_water_from_prev_class >= 1 do
+    Map.put(wh_circularity, :indeterminate_classes, [class_to_insert] ++ wh_circularity.indeterminate_classes)
+  end
+
+  def update_indeterminate_class_for_wh_circularity(
+        wh_circularity,
+        _class_to_insert,
+        _ucp_cp_water_from_prev_class,
+        _count_ucp_cp
+      ) do
+    wh_circularity
+  end
+
+  @doc """
   decides whether or not to further subclassify.
 
   If there are still warehouse circularity left to classify , go on.
