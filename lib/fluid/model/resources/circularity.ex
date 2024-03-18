@@ -37,7 +37,7 @@ defmodule Fluid.Model.Circularity do
     define(:create)
   end
 
-  # NORMAL MODULE 
+  # NORMAL MODULE
   # --------------------
 
   def calculate_feeder_and_unconnected_nodes(%{all: list_of_warehouses}) do
@@ -47,10 +47,10 @@ defmodule Fluid.Model.Circularity do
     # we start with every warehouse being indeterminate. And keep deleting determinate from that list
     args = %{all: list_of_warehouses, indeterminate: list_of_warehouses, determinate: %{}}
 
-    calculate_feeder_and_unconnected_nodes(args, all_tags)
+    do_calculate_feeder_and_unconnected_nodes(args, all_tags)
   end
 
-  def calculate_feeder_and_unconnected_nodes(
+  defp do_calculate_feeder_and_unconnected_nodes(
         %{all: total_wh, indeterminate: list_of_warehouses, determinate: determinate_wh_map},
         all_tags
       ) do
@@ -152,7 +152,7 @@ defmodule Fluid.Model.Circularity do
         determinate: determinate_wh_map
       }
 
-      calculate_feeder_and_unconnected_nodes(warehouse_current_status, after_tags)
+      do_calculate_feeder_and_unconnected_nodes(warehouse_current_status, after_tags)
       |> run_euler_algorithm()
     else
       %{all: total_wh, indeterminate: after_wh_list, determinate: determinate_wh_map}

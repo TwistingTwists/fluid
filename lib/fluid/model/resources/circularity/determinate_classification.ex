@@ -2,7 +2,7 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
   alias Fluid.Model
   alias Fluid.Model.Circularity
 
-  # Determinate classification 
+  # Determinate classification
   # --------------------------
   def classify_determinate(%{all: _all_wh_list, determinate: determinate_wh_map} = wh_circularity_map) do
     determinate_classified =
@@ -102,11 +102,11 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
     end)
   end
 
-  def maybe_update(wh_circularity, false, _update_fn) do
+  defp maybe_update(wh_circularity, false, _update_fn) do
     wh_circularity
   end
 
-  def maybe_update(_wh_circularity, true, update_fn) do
+  defp maybe_update(_wh_circularity, true, update_fn) do
     update_fn.()
   end
 end
