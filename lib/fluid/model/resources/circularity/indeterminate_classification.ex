@@ -70,7 +70,7 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
     Map.merge(wh_circularity_map, %{indeterminate: indeterminate_classified_sub})
   end
 
-  def subclassify_further_indeterminate(indeterminate_classified, prev_class) do
+  defp subclassify_further_indeterminate(indeterminate_classified, prev_class) do
     # warehouses whose indeterminate_class is given by prev_class. Simple Enum.Filter style
     wh_with_prev_class =
       for {wh_id, %Model.Circularity{indeterminate_classes: indeterminate_classes} = circularity} <- indeterminate_classified,
@@ -147,10 +147,10 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
     length(pools) >= 1
   end
 
-  def warehouse_receives_water_from_prev_class?(
-        %Model.Circularity{wh: wh, inbound_connections: inbound_connections} = _wh_circularity,
-        wh_with_prev_class_ids
-      ) do
+  defp warehouse_receives_water_from_prev_class?(
+         %Model.Circularity{wh: wh, inbound_connections: inbound_connections} = _wh_circularity,
+         wh_with_prev_class_ids
+       ) do
     Enum.count(wh.pools, fn
       %{id: pool_id, capacity_type: capacity} when capacity in [:uncapped, :capped] ->
         # a pool may receive water from many sources
@@ -162,7 +162,7 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
     end)
   end
 
-  def should_further_subclassify?(updated_rest_determinate_wh_map) do
+  defp should_further_subclassify?(updated_rest_determinate_wh_map) do
     Enum.any?(updated_rest_determinate_wh_map, fn
       {_wh_id,
        %Model.Circularity{

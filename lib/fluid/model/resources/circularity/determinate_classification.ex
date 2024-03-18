@@ -49,41 +49,21 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
     updated_rest_determinate_wh_map =
       for {wh_id,
            %Circularity{
-             wh: wh,
-             inbound_connections: inbound_connections
+             wh: wh
            } = wh_circularity} <- rest_determinate_wh_map,
           into: %{} do
         # class 1 = every WH that contains at least one CP and/or UCP, where all of its CPs
         # and UCPs receive water only from one or more WHs of Class 0
 
-        ucp_cp_water_from_prev_class =
-          Enum.filter(wh.pools, fn
-            %{id: pool_id, capacity_type: capacity} when capacity in [:uncapped, :capped] ->
-              # a pool may receive water from many sources
-              inbound_connections_for_pool =
-                Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)
+        ucp_cp_water_from_prev_class = warehouse_receives_water_from_prev_class?(wh_circularity, wh_with_prev_class_ids)
 
-              # every CP / UCP pool must receive water from somewhere.
-              if inbound_connections_for_pool == [] do
-                false
-              else
-                Enum.reduce(inbound_connections_for_pool, true, fn %Model.Tag{source: %{"warehouse_id" => source_wh_for_pool}},
-                                                                   acc ->
-                  has_incoming_from_previous_class? = source_wh_for_pool in wh_with_prev_class_ids
-                  has_incoming_from_previous_class? && acc
-                end)
-              end
+        # if all ucp_cp of a warehouse receive water from a prev_class => condition is true => we update the circularity struct
+        condition = length(ucp_cp_water_from_prev_class) == wh.count_ucp_cp
 
-            %{id: _pool_id} ->
-              false
-          end)
-
-        if length(ucp_cp_water_from_prev_class) == wh.count_ucp_cp do
-          {wh_id, Circularity.Utils.update_determinate_class_for_wh_circularity(wh_circularity, prev_class + 1, true)}
-        else
-          # don't change anything.
-          {wh_id, wh_circularity}
-        end
+        {wh_id,
+         maybe_update(wh_circularity, condition, fn ->
+           Circularity.Utils.update_determinate_class_for_wh_circularity(wh_circularity, prev_class + 1, true)
+         end)}
       end
 
     # remember to return the entire determinate_wh_map by doing Map.merge
@@ -95,5 +75,38 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
     else
       determinate_wh_map
     end
+  end
+
+  defp warehouse_receives_water_from_prev_class?(
+         %Model.Circularity{wh: wh, inbound_connections: inbound_connections} = _wh_circularity,
+         wh_with_prev_class_ids
+       ) do
+    Enum.filter(wh.pools, fn
+      %{id: pool_id, capacity_type: capacity} when capacity in [:uncapped, :capped] ->
+        # a pool may receive water from many sources
+        inbound_connections_for_pool =
+          Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)
+
+        # every CP / UCP pool must receive water from somewhere.
+        if inbound_connections_for_pool == [] do
+          false
+        else
+          Enum.reduce(inbound_connections_for_pool, true, fn %Model.Tag{source: %{"warehouse_id" => source_wh_for_pool}}, acc ->
+            has_incoming_from_previous_class? = source_wh_for_pool in wh_with_prev_class_ids
+            has_incoming_from_previous_class? && acc
+          end)
+        end
+
+      %{id: _pool_id} ->
+        false
+    end)
+  end
+
+  def maybe_update(wh_circularity, false, _update_fn) do
+    wh_circularity
+  end
+
+  def maybe_update(_wh_circularity, true, update_fn) do
+    update_fn.()
   end
 end
