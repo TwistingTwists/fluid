@@ -29,22 +29,17 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
          %Model.Circularity{inbound_connections: inbound_connections, wh: wh} =
              wh_circularity} ->
           # class A =  every WH that is not of Determinate Class that contains at least one CP and/or UCP that receives water from a WH of Determinate Class
-          at_least_one_cp_ucp? =
-            Enum.count(wh.pools, fn
-              %{capacity_type: capacity} when capacity not in [:uncapped, :capped] -> true
-              _ -> false
-            end)
 
-          ucp_cp_water_from_determinate? =
-            Enum.any?(inbound_connections, fn connection -> connection.source["warehouse_id"] in determinate_wh_ids end)
+          ucp_cp_water_from_determinate =
+            Enum.count(inbound_connections, fn connection -> connection.source["warehouse_id"] in determinate_wh_ids end)
 
-          # # add determinate_classes to wh
           wh_circularity =
-            if at_least_one_cp_ucp? >= 1 && ucp_cp_water_from_determinate? do
-              Map.put(wh_circularity, :indeterminate_classes, [?A] ++ wh_circularity.indeterminate_classes)
-            else
-              wh_circularity
-            end
+            Model.Circularity.Utils.update_indeterminate_class_for_wh_circularity(
+              wh_circularity,
+              ?A,
+              ucp_cp_water_from_determinate,
+              wh.count_ucp_cp
+            )
 
           {wh_id, wh_circularity}
       end)
@@ -59,9 +54,7 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
     indeterminate_classified =
       if add_random_class_a? do
         # add class A to a random warehouse circularity
-        indeterminate_classified_list =
-          indeterminate_classified
-          |> Enum.sort_by(fn {_k, v} -> v.name end)
+        indeterminate_classified_list = Enum.sort_by(indeterminate_classified, fn {_k, v} -> v.name end)
 
         {wh_id, wh_circularity} = Enum.at(indeterminate_classified_list, 0)
         # add A to the indeterminate_classes
@@ -77,7 +70,8 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
     Map.merge(wh_circularity_map, %{indeterminate: indeterminate_classified_sub})
   end
 
-  def subclassify_further_indeterminate(indeterminate_classified, prev_class) do
+  defp subclassify_further_indeterminate(indeterminate_classified, prev_class) do
+    # warehouses whose indeterminate_class is given by prev_class. Simple Enum.Filter style
     wh_with_prev_class =
       for {wh_id, %Model.Circularity{indeterminate_classes: indeterminate_classes} = circularity} <- indeterminate_classified,
           prev_class in indeterminate_classes,
@@ -97,48 +91,22 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
     updated_rest_determinate_wh_map =
       for {wh_id,
            %Model.Circularity{
-             wh: wh,
-             inbound_connections: inbound_connections
+             wh: wh
            } = wh_circularity} <- rest_indeterminate_wh_map,
           into: %{} do
         # Class B = every WH that is not of Determinate Class that contains at least one CP and/or UCP 
         # that receives water from a WH of Class A
+        ucp_cp_water_from_prev_class = warehouse_receives_water_from_prev_class?(wh_circularity, wh_with_prev_class_ids)
 
-        ucp_cp_water_from_prev_class =
-          Enum.filter(wh.pools, fn
-            %{id: pool_id, capacity_type: capacity} when capacity in [:uncapped, :capped] ->
-              # a pool may receive water from many sources
-              inbound_connections_for_pool =
-                Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)
+        wh_circularity =
+          Model.Circularity.Utils.update_indeterminate_class_for_wh_circularity(
+            wh_circularity,
+            prev_class + 1,
+            ucp_cp_water_from_prev_class,
+            wh.count_ucp_cp
+          )
 
-              # every CP / UCP pool must receive water from somewhere.
-              if inbound_connections_for_pool == [] do
-                false
-              else
-                pools =
-                  for %Model.Tag{source: %{"warehouse_id" => source_wh_for_pool}} <- inbound_connections_for_pool,
-                      source_wh_for_pool in wh_with_prev_class_ids do
-                    true
-                  end
-
-                length(pools) >= 1
-              end
-
-            %{id: _pool_id} ->
-              false
-          end)
-
-        if length(ucp_cp_water_from_prev_class) >= 1 and wh.count_ucp_cp >= 1 do
-          {wh_id,
-           Map.put(
-             wh_circularity,
-             :indeterminate_classes,
-             [prev_class + 1] ++ wh_circularity.indeterminate_classes
-           )}
-        else
-          # don't change anything.
-          {wh_id, wh_circularity}
-        end
+        {wh_id, wh_circularity}
       end
 
     # remember to return the entire determinate_wh_map by doing Map.merge
@@ -146,22 +114,64 @@ defmodule Fluid.Model.Circularity.IndeterminateClassification do
 
     # decide whether or not to do further recursion
     # if there are empty determinate_classes in any warehouse's circularity struct, => further recursion needed
-    further_subclassify? =
-      Enum.any?(updated_rest_determinate_wh_map, fn
-        {_wh_id,
-         %Model.Circularity{
-           indeterminate_classes: []
-         }} ->
-          true
 
-        _ ->
-          false
-      end)
-
-    if further_subclassify? do
+    if should_further_subclassify?(indeterminate_classified) do
       subclassify_further_indeterminate(indeterminate_classified, prev_class + 1)
     else
       indeterminate_classified
     end
+  end
+
+  @doc """
+  if no inbound_connections_for_pool => it doesn't receive water from prev_class
+
+  else  
+    try to find a pool whose source is in the given list wh_with_prev_class_ids
+  """
+  def receives_water_from_prev_class?(pool_id, inbound_connections, wh_with_prev_class_ids) do
+    Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)
+    |> do_receives_water_from_prev_class?(wh_with_prev_class_ids)
+  end
+
+  defp do_receives_water_from_prev_class?([] = _inbound_connections_for_pool, _wh_with_prev_class_ids) do
+    false
+  end
+
+  defp do_receives_water_from_prev_class?(inbound_connections_for_pool, wh_with_prev_class_ids) do
+    pools =
+      for %Model.Tag{source: %{"warehouse_id" => source_wh_for_pool}} <- inbound_connections_for_pool,
+          source_wh_for_pool in wh_with_prev_class_ids do
+        true
+      end
+
+    length(pools) >= 1
+  end
+
+  defp warehouse_receives_water_from_prev_class?(
+         %Model.Circularity{wh: wh, inbound_connections: inbound_connections} = _wh_circularity,
+         wh_with_prev_class_ids
+       ) do
+    Enum.count(wh.pools, fn
+      %{id: pool_id, capacity_type: capacity} when capacity in [:uncapped, :capped] ->
+        # a pool may receive water from many sources
+        # every CP / UCP pool must receive water from somewhere.
+        receives_water_from_prev_class?(pool_id, inbound_connections, wh_with_prev_class_ids)
+
+      %{id: _pool_id} ->
+        false
+    end)
+  end
+
+  defp should_further_subclassify?(updated_rest_determinate_wh_map) do
+    Enum.any?(updated_rest_determinate_wh_map, fn
+      {_wh_id,
+       %Model.Circularity{
+         indeterminate_classes: []
+       }} ->
+        true
+
+      _ ->
+        false
+    end)
   end
 end
