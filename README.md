@@ -1,4 +1,27 @@
+### module 003 
 
+* (0) More cases where PPS (usually within same wh)
+    couple of hours.
+
+* (a) PPS: set_of(pool) which satisfy two conditions
+    * Tag: from old project
+* (b) bag_of(PPS) has mix of det + indet => "Error (custom) -> UI"
+
+
+
+* Output: 
+    * (a) Identify PPS : Tag : "Can create a bag_of(PPS) from a world"
+    
+    * (c) >= 1 PPS with only determinate_wh
+    * (d) NA : if bag_of(PPS) is all determinate_wh => module c
+    * (e) NA : if bag_of(PPS) is all indeterminate_wh => module PPS_Eval
+    * (f) NA : if bag_of(PPS) is all indeterminate_wh => module WH_Order_module
+
+
+
+### module 004 
+input: unordered list of 
+output: ordered list of warehouses (PPS)
 
 
 
