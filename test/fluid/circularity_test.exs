@@ -14,7 +14,7 @@ defmodule Fluid.CircularityTest do
 
   """
 
-  use Fluid.DataCase, async: false
+  use Fluid.DataCase, async: true
 
   alias Fluid.Model
   # import Helpers.ColorIO
