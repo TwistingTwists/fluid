@@ -10,7 +10,7 @@ defmodule Fluid.Model.Tag do
   # alias Fluid.Model.Tank
   # alias Fluid.Model.Warehouse
   # alias Fluid.Model.World
-  # alias __MODULE__
+  alias __MODULE__
 
   require Logger
 
@@ -24,8 +24,20 @@ defmodule Fluid.Model.Tag do
     attribute(:source, :map, allow_nil?: false)
     attribute(:destination, :map, allow_nil?: false)
 
+    attribute(:user_defined_tag, :string,
+      description:
+        "Tag which contains Primary Tag Rank and Secondary Tag Rank in a tuple format. {:primary_tag_tank, :secondar_tag_rank}. User Input is taken and stored in database."
+    )
+
     create_timestamp(:created_at)
     update_timestamp(:updated_at)
+  end
+
+  calculations do
+    calculate(:tag, :string, {Tag.TagCalculation},
+      description:
+        "Tag which contains Primary Tag Rank and Secondary Tag Rank in a tuple format. {:primary_tag_tank, :secondar_tag_rank}. For all practical use cases, this calculation is used. "
+    )
   end
 
   actions do

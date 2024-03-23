@@ -1,13 +1,13 @@
 [
   import_deps: [
-    :ecto,
-    :ecto_sql,
-    :phoenix,
-    :ash,
-    :ash_postgres,
+    :ash_admin,
     :ash_oban,
+    :ash_postgres,
     :ash_state_machine,
-    :ash_admin
+    :ash,
+    :ecto_sql,
+    :ecto,
+    :phoenix
   ],
   line_length: 130,
   # :typedstruct],
