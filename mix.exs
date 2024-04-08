@@ -62,6 +62,7 @@ defmodule Fluid.MixProject do
       {:spark, "~>  1.1.54"},
       {:ash_oban, "~> 0.1.13"},
       {:oban, "~> 2.17"},
+      {:ash_jason, "~> 0.3.1"},
 
       # gitops - automatic changelog
       {:git_ops, "~> 2.6.0", only: [:dev]}

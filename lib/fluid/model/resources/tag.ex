@@ -60,12 +60,22 @@ defmodule Fluid.Model.Tag do
       change(Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP)
       # change load([:world, :warehouse])
     end
+
+    create :create_reverse do
+      # argument :source, Tank | Pool, allow_nil?: false
+      # argument(:source, :map, allow_nil?: false)
+      # argument(:destination, :map, allow_nil?: false)
+
+      # change(Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP)
+      # change load([:world, :warehouse])
+    end
   end
 
   code_interface do
     define_for(Fluid.Model.Api)
 
     define(:create, args: [:source, :destination])
+    define(:create_reverse, args: [:source, :destination])
 
     define(:read_all)
     define(:read_by_id, args: [:id])
