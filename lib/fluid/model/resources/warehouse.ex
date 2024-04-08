@@ -26,6 +26,23 @@ defmodule Fluid.Model.Warehouse do
   calculations do
     calculate(:count_uncapped_tank, :integer, {Warehouse.Calculations.UCT, field: :tanks})
     calculate(:count_pool, :integer, {Warehouse.Calculations.Pool, field: :pools})
+    # actual structs with data
+
+    calculate(:capped_pools, {:array, :struct}, {Warehouse.Calculations.PoolorTankType, field: :pools, type: :capped},
+      constraints: [items: [instance_of: Fluid.Model.Pool]]
+    )
+
+    calculate(:fixed_pools, {:array, :struct}, {Warehouse.Calculations.PoolorTankType, field: :pools, type: :fixed},
+      constraints: [items: [instance_of: Fluid.Model.Pool]]
+    )
+
+    calculate(:capped_tanks, {:array, :struct}, {Warehouse.Calculations.PoolorTankType, field: :tanks, type: :capped},
+      constraints: [items: [instance_of: Fluid.Model.Tank]]
+    )
+
+    calculate(:fixed_tanks, {:array, :struct}, {Warehouse.Calculations.PoolorTankType, field: :tanks, type: :fixed},
+      constraints: [items: [instance_of: Fluid.Model.Tank]]
+    )
   end
 
   aggregates do
@@ -34,7 +51,18 @@ defmodule Fluid.Model.Warehouse do
     end
   end
 
-  @load_fields [:tanks, :pools, :world, :count_uncapped_tank, :count_pool, :count_ucp_cp]
+  @load_fields [
+    :tanks,
+    :pools,
+    :world,
+    :count_uncapped_tank,
+    :count_pool,
+    :count_ucp_cp,
+    :fixed_tanks,
+    :fixed_pools,
+    :capped_pools,
+    :capped_tanks
+  ]
 
   actions do
     defaults([:update])

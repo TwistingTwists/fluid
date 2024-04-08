@@ -43,6 +43,16 @@ defmodule Fluid.Model do
     {:error, Fluid.Error.ModelError.exception(error: error, target: target)}
   end
 
+  def add_tanks_to_warehouse(%Warehouse{} = warehouse, {:params, tank_opts})
+      when is_list(tank_opts) do
+    tanks =
+      Enum.map(tank_opts, fn tank_option ->
+        Model.Tank.create!(tank_option)
+      end)
+
+    add_tanks_to_warehouse(warehouse, tanks)
+  end
+
   def add_tanks_to_warehouse(%Warehouse{} = warehouse, %Tank{} = tank) do
     add_tanks_to_warehouse(warehouse, [tank])
   end
@@ -91,9 +101,9 @@ defmodule Fluid.Model do
     Tag.create(tank, pool)
   end
 
-  # def connect(%Pool{} = pool, %Tank{} = tank) do
-  #   Tag.create(pool, tank)
-  # end
+  def connect(%Pool{} = pool, %Tank{} = tank) do
+    Tag.create_reverse(pool, tank)
+  end
 
   @doc """
   # todo ensure list_of_warehouses = all belong to same world
@@ -111,5 +121,42 @@ defmodule Fluid.Model do
     wh_map
     |> Model.Circularity.DeterminateClassification.classify_determinate()
     |> Model.Circularity.IndeterminateClassification.classify_indeterminate()
+  end
+
+  ######## PPS analysis ######## 
+  # def pps_analysis(%{determinate: det, indeterminate: indet, all: _all} = classified_warehouses) do
+  #   Enum.reduce(det, [], fn wh_det, acc  ->
+
+  #    end)
+  # end
+
+  def pps_analysis(list_of_wh) when list_of_wh != [] do
+    all_cts =
+      for %Model.Warehouse{tanks: tanks} <- list_of_wh do
+        Enum.filter(tanks, fn
+          %{capacity_type: :capped} -> true
+          _ -> false
+        end)
+      end
+
+    # (a) CT Tags more than one pool 
+
+    for ct <- all_cts do
+      calculate_inbound_connections(ct)
+    end
+
+    # (b)
+  end
+
+  def calculate_inbound_connections(%Model.Tank{} = ct) do
+    all_tags = Model.Tag.read_all!()
+
+    Enum.reduce(all_tags, [], fn tag, acc ->
+      if tag.destination["id"] == ct.id do
+        [tag | acc]
+      else
+        acc
+      end
+    end)
   end
 end
