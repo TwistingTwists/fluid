@@ -45,16 +45,23 @@ defmodule Fluid.PPSTest do
            ]}
         )
 
-      [cp1, cp2] = warehouse.capped_pools
-      [fp1, fp2] = warehouse.fixed_pools
+      [cp_1, cp_2] = warehouse.capped_pools
+      [fp_1, fp_2] = warehouse.fixed_pools
 
-      [ct1, ct2, ct3, ct4] = warehouse.capped_tanks
+      [ct_1, ct_2, ct_3, ct_4] = warehouse.capped_tanks
 
-      warehouse |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
-      # # outbound connections from 1
-      # {:ok, _} = Fluid.Model.connect(uct_1, ucp_5)
-      # {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
-      # {:ok, _} = Fluid.Model.connect(uct_1, ucp_6)
+      # warehouse |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
+      # 
+      {:ok, _} = Fluid.Model.connect(cp_1, ct_1)
+      {:ok, _} = Fluid.Model.connect(cp_1, ct_2)
+      {:ok, _} = Fluid.Model.connect(fp_1, ct_2)
+      {:ok, _} = Fluid.Model.connect(fp_2, ct_3)
+
+      {:ok, _} = Fluid.Model.connect(cp_2, ct_3)
+      {:ok, _} = Fluid.Model.connect(cp_2, ct_4)
+
+      Model.Tag.read_all!()
+      |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
 
       [warehouse: warehouse]
     end
