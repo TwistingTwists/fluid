@@ -112,7 +112,7 @@ defmodule Fluid.Model do
     %{all: list_of_warehouses}
     |> Model.Circularity.calculate_feeder_and_unconnected_nodes()
     |> Model.Circularity.run_euler_algorithm()
-    # since euler algorithm requires to delete the outbound connections from feeder nodes, 
+    # since euler algorithm requires to delete the outbound connections from feeder nodes,
     # we ensure that original tags are restored after euler algorithm
     |> Model.Circularity.Utils.preserve_original_connection_list()
   end
@@ -123,7 +123,7 @@ defmodule Fluid.Model do
     |> Model.Circularity.IndeterminateClassification.classify_indeterminate()
   end
 
-  ######## PPS analysis ######## 
+  ######## PPS analysis ########
   # def pps_analysis(%{determinate: det, indeterminate: indet, all: _all} = classified_warehouses) do
   #   Enum.reduce(det, [], fn wh_det, acc  ->
 
@@ -131,21 +131,16 @@ defmodule Fluid.Model do
   # end
 
   def pps_analysis(list_of_wh) when list_of_wh != [] do
-    all_cts =
-      for %Model.Warehouse{tanks: tanks} <- list_of_wh do
-        Enum.filter(tanks, fn
-          %{capacity_type: :capped} -> true
-          _ -> false
-        end)
-      end
+    all_cts = Enum.map(list_of_wh, & &1.capped_tanks)
 
-    # (a) CT Tags more than one pool 
+    # determining PPS is a two step process
+    # (a) CT tags more than one pool
 
     for ct <- all_cts do
       calculate_inbound_connections(ct)
     end
 
-    # (b)
+    # (b) >= 1  of those tagged pools is tagged by at least one more CT
   end
 
   def calculate_inbound_connections(%Model.Tank{} = ct) do
