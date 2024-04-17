@@ -177,7 +177,7 @@ defmodule Fluid.Model do
 
           if result do
             # pools form pps
-            pps = %Model.PPS{pools: pools}
+            pps = Model.PPS.create!(%{pools: pools})
             Map.put(step_two, ct_id, pps)
           else
             step_two
@@ -213,6 +213,7 @@ defmodule Fluid.Model do
         end
 
       # add `:type` to original pps
+      # todo [refactor] : should this be `Model.PPS.update!` ?
       {ct_id, %{pps | type: pps_type}}
     end
   end

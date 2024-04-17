@@ -51,12 +51,24 @@ defmodule Fluid.Model.PPS do
 
   calculations do
     calculate(:related_wh, {:array, :struct}, {WhCalculations, field: :pools},
-      constraints: [items: [instance_of: Model.Warehouse]]
+      constraints: [items: [instance_of: Model.Warehouse]],
+      description: """
+      depending on #{@pps_types} - list of warehouses
+
+      :excess_circularity - warehouses which must be a mix of determinate and indeterminate warehouses
+      :det_pps_only - warehouses which must be  determinate warehouses
+      :indet_pps_only - warehouses which must be  indeterminate warehouses
+
+      """
     )
   end
 
   actions do
-    defaults([:create, :read])
+    defaults([:read, :update])
+
+    create :create do
+      change(load([:related_wh]))
+    end
   end
 
   code_interface do
@@ -77,7 +89,7 @@ defmodule WhCalculations do
   def calculate(pps_list, opts, _resolution) do
     fields = List.wrap(opts[:field])
     # This way only one db query is made to get all warehouses without preloading tanks / pools etc
-    all_wh = Model.Warehouse.read_all_bare()
+    all_wh = Model.Warehouse.read_all_bare!()
 
     {:ok,
      Enum.map(pps_list, fn pps ->

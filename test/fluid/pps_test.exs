@@ -100,8 +100,13 @@ defmodule Fluid.PPSTest do
       circularity_analysis: %{indeterminate: indeterminate, determinate: determinate}
     } do
       # %{"pps_uuid" => %Model.PPS{}}
-      pps_map = Model.pps_analysis(warehouses)
-      # in this case, warehouse - 01 is determinate. so, all PPS are part of determinate WH
+      pps_map =
+        Model.pps_analysis(warehouses)
+        # in this case, warehouse - 01 is determinate. so, all PPS are part of determinate WH
+        |> IO.inspect(
+          label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}",
+          syntax_colors: [number: :magenta, atom: :cyan, string: :green, boolean: :magenta, nil: :red]
+        )
 
       assert [%Model.PPS{type: :det_only}] = Map.values(pps_map)
       assert false
