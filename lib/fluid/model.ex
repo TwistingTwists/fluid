@@ -11,6 +11,7 @@ defmodule Fluid.Model do
   alias Fluid.Model.Tank
   alias Fluid.Model.Tag
   # import Helpers.ColorIO
+  require Logger
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
@@ -123,34 +124,142 @@ defmodule Fluid.Model do
     |> Model.Circularity.IndeterminateClassification.classify_indeterminate()
   end
 
-  ######## PPS analysis ########
+  ###################### PPS analysis ######################
   # def pps_analysis(%{determinate: det, indeterminate: indet, all: _all} = classified_warehouses) do
   #   Enum.reduce(det, [], fn wh_det, acc  ->
 
   #    end)
   # end
 
-  def pps_analysis(list_of_wh) when list_of_wh != [] do
-    all_cts = Enum.map(list_of_wh, & &1.capped_tanks)
+  # defmodule ABC do
+  #   use Ash.Resource
 
-    # determining PPS is a two step process
+  #   attributes do
+  #     attribute(:pools, {:array, :struct}, constraints: [items: [instance_of: Fluid.Model.Pool]])
+  #     attribute(:two_or_more_tagged_pools?, :boolean)
+  #   end
+  # end
+
+  def pps_analysis(list_of_wh) when list_of_wh != [] do
+    all_cts = Enum.flat_map(list_of_wh, & &1.capped_tanks)
+
+    ############### determining PPS is a two step process #####################
+
     # (a) CT tags more than one pool
 
-    for ct <- all_cts do
-      calculate_inbound_connections(ct)
-    end
+    ct_acc =
+      for ct <- all_cts, reduce: %{} do
+        ct_acc ->
+          ct
+          |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
+
+          {pools, tags} = calculate_inbound_connections_and_pools(ct)
+          Map.put(ct_acc, ct.id, %{pools: pools, two_or_more_tagged_pools?: length(tags) >= 2})
+      end
 
     # (b) >= 1  of those tagged pools is tagged by at least one more CT
+
+    ct_id_pps_map =
+      for {ct_id, %{pools: pools} = _ct_acc_map} <- ct_acc, reduce: %{} do
+        step_two ->
+          # assume: pools don't form pps, hence accumulator is false.
+          result =
+            Enum.reduce_while(pools, false, fn pool, local_acc ->
+              # 1. find all tagged ct
+              {cts, _tags} = calculate_outbound_connections_and_cts(pool)
+              # 2. check if at least one of cts != ct.id
+              if Enum.count(cts, &(&1.id != ct_id)) >= 1 do
+                {:halt, true}
+              else
+                {:cont, local_acc}
+              end
+            end)
+
+          if result do
+            # pools form pps
+            pps = %Model.PPS{pools: pools}
+            Map.put(step_two, ct_id, pps)
+          else
+            step_two
+          end
+      end
+
+    ##########################################
+    classify_pps(ct_id_pps_map, list_of_wh)
   end
 
-  def calculate_inbound_connections(%Model.Tank{} = ct) do
-    all_tags = Model.Tag.read_all!()
+  def classify_pps(ct_id_pps_map, list_of_wh) do
+    for {ct_id, pps} <- ct_id_pps_map, into: %{} do
+      # 1. perform circularity_analysis of `list_of_wh`
+      circularity_analysis = Model.circularity_analysis(list_of_wh)
+      # 2. for each pool.warehouse_id in pps.pools, determine the type of circularity for warehouse
 
-    Enum.reduce(all_tags, [], fn tag, acc ->
+      wh_types_for_pools =
+        Enum.map(pps.pools, fn pool ->
+          warehouse = Model.Warehouse.read_by_id!(pool.warehouse_id)
+
+          cond do
+            Map.has_key?(circularity_analysis.indeterminate, warehouse.id) -> :indeterminate
+            Map.has_key?(circularity_analysis.determinate, warehouse.id) -> :determinate
+          end
+        end)
+
+      # 3. on list from  2. -> check if all warehouses are :determinate, :indeterminate or :mixture_of_determinate_indeterminate
+      pps_type =
+        cond do
+          Enum.all?(wh_types_for_pools, &(&1 == :indeterminate)) -> :indet_pps_only
+          Enum.all?(wh_types_for_pools, &(&1 == :determinate)) -> :det_pps_only
+          true -> :excess_circularity
+        end
+
+      # add `:type` to original pps
+      {ct_id, %{pps | type: pps_type}}
+    end
+  end
+
+  # def calculate_inbound_connections(%Model.Tank{} = ct) do
+  #   # todo [enhancement]: read tags for world
+  #   all_tags = Model.Tag.read_all!()
+
+  #   Enum.reduce(all_tags, [], fn tag, acc ->
+  #     if tag.destination["id"] == ct.id do
+  #       [tag | acc]
+  #     else
+  #       acc
+  #     end
+  #   end)
+  # end
+
+  def calculate_inbound_connections_and_pools(%Model.Tank{} = ct) do
+    # todo [enhancement]: read tags for world
+    all_tags = Model.Tag.read_all!()
+    pools_acc = []
+    tags_acc = []
+
+    Enum.reduce(all_tags, {pools_acc, tags_acc}, fn tag, {pools_acc, tags_acc} ->
       if tag.destination["id"] == ct.id do
-        [tag | acc]
+        # assumption that tag.source is pool
+        pool = Model.Pool.read_by_id!(tag.source["id"])
+        {[pool | pools_acc], [tag | tags_acc]}
       else
-        acc
+        {pools_acc, tags_acc}
+      end
+    end)
+  end
+
+  def calculate_outbound_connections_and_cts(%Model.Pool{} = pool) do
+    # todo [enhancement]: read tags for world
+    all_tags = Model.Tag.read_all!()
+    cts_acc = []
+    tags_acc = []
+
+    Enum.reduce(all_tags, {cts_acc, tags_acc}, fn tag, {cts_acc, tags_acc} ->
+      if tag.source["id"] == pool.id do
+        # assumption that tag.destination is ct
+        ct = Model.Tank.read_by_id!(tag.destination["id"])
+        {[ct | cts_acc], [tag | tags_acc]}
+      else
+        {cts_acc, tags_acc}
       end
     end)
   end

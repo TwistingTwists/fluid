@@ -72,6 +72,8 @@ defmodule Fluid.Model.Warehouse do
       prepare(build(load: @load_fields))
     end
 
+    read(:read_all_bare)
+
     read :read_by_id do
       prepare(build(load: @load_fields))
       get_by([:id])
@@ -153,6 +155,7 @@ defmodule Fluid.Model.Warehouse do
     define(:create)
 
     define(:read_all)
+    define(:read_all_bare)
     define(:read_by_id, args: [:id])
 
     define(:update)
