@@ -349,10 +349,10 @@ defmodule Fluid.CircularityTest do
 
     # {"01 warehouse indeterminate", ~c"A"}
     # {"02 warehouse indeterminate", ~c"B"}
-    # {"03 warehouse indeterminate", ~c"C"} 
-    # {"04 warehouse indeterminate", ~c"D"} 
-    # {"05 warehouse indeterminate", ~c"C"} 
-    # {"06 warehouse indeterminate", ~c"B"} 
+    # {"03 warehouse indeterminate", ~c"C"}
+    # {"04 warehouse indeterminate", ~c"D"}
+    # {"05 warehouse indeterminate", ~c"C"}
+    # {"06 warehouse indeterminate", ~c"B"}
 
     for {n, class} <- %{1 => ?A, 2 => ?B, 3 => ?C, 4 => ?D, 5 => ?C, 6 => ?B} do
       test " wh_0#{n} - class #{<<class::utf8>>} ", %{classification: classification, warehouses: warehouses} do
