@@ -63,6 +63,12 @@ defmodule Fluid.Test.Factory do
     |> Enum.sort_by(& &1.id, :asc)
   end
 
+  @doc """
+  contains a mix of determinate and indeterminate warehouses
+
+  # determinate warehouses - 1, 6
+  # indeterminate warehouses - 2, 3, 4, 5
+  """
   def setup_warehouses_for_circularity do
     # to ensure that warehouse names never conflict.
     random_number = Enum.random(1..100)
