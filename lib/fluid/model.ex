@@ -150,8 +150,8 @@ defmodule Fluid.Model do
     ct_acc =
       for ct <- all_cts, reduce: %{} do
         ct_acc ->
-          ct
-          |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
+          # ct
+          # |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
 
           {pools, tags} = calculate_inbound_connections_and_pools(ct)
           Map.put(ct_acc, ct.id, %{pools: pools, two_or_more_tagged_pools?: length(tags) >= 2})
