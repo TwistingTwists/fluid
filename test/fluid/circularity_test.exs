@@ -23,7 +23,7 @@ defmodule Fluid.CircularityTest do
   describe "circularity - mix determinate and indeterminate - " do
     setup do
       ####### world having circularity #####
-      warehouses = Factory.setup_warehouses_for_circularity()
+      warehouses = Factory.setup_warehouses_for_circularity(:mix_det_indet)
 
       %{circularity_analysis: Model.circularity_analysis(warehouses), warehouses: warehouses}
     end

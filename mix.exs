@@ -65,7 +65,8 @@ defmodule Fluid.MixProject do
       {:ash_jason, "~> 0.3.1"},
 
       # gitops - automatic changelog
-      {:git_ops, "~> 2.6.0", only: [:dev]}
+      {:git_ops, "~> 2.6.0", only: [:dev]},
+      {:truly, "~> 0.2"}
       # {:git_hooks, "~> 0.7.0", only: [:dev], runtime: false}
 
       # {:ash, github: "ash-project/ash", override: true},

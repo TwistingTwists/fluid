@@ -69,7 +69,7 @@ defmodule Fluid.Test.Factory do
   # determinate warehouses - 1, 6
   # indeterminate warehouses - 2, 3, 4, 5
   """
-  def setup_warehouses_for_circularity do
+  def setup_warehouses_for_circularity(:mix_det_indet) do
     # to ensure that warehouse names never conflict.
     random_number = Enum.random(1..100)
 
@@ -130,4 +130,10 @@ defmodule Fluid.Test.Factory do
     # NO outbound connections from 5 and 6
     [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
   end
+
+  # @doc """
+
+  # """
+  # def setup_warehouses_for_circularity(:det_only) do
+  # end
 end
