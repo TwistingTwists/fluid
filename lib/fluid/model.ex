@@ -160,7 +160,7 @@ defmodule Fluid.Model do
     # (b) >= 1  of those tagged pools is tagged by at least one more CT
 
     ct_id_pps_map =
-      for {ct_id, %{pools: pools} = _ct_acc_map} <- ct_acc, reduce: %{} do
+      for {ct_id, %{pools: pools, two_or_more_tagged_pools?: true} = _ct_acc_map} <- ct_acc, reduce: %{} do
         step_two ->
           # assume: pools don't form pps, hence accumulator is false.
           result =

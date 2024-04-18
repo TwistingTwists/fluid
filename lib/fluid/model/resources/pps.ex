@@ -89,15 +89,18 @@ defmodule WhCalculations do
   def calculate(pps_list, opts, _resolution) do
     fields = List.wrap(opts[:field])
     # This way only one db query is made to get all warehouses without preloading tanks / pools etc
-    all_wh = Model.Warehouse.read_all_bare!()
+    all_wh_hashmap =
+      Model.Warehouse.read_all_bare!()
+      |> Map.new(fn %{id: wh_id} = wh -> {wh_id, wh} end)
 
     {:ok,
      Enum.map(pps_list, fn pps ->
        pools = Kernel.get_in(pps, Enum.map(fields, &Access.key/1))
 
        Enum.map(pools, fn %{warehouse_id: wh_id} ->
-         Enum.find(all_wh, fn wh -> wh.id == wh_id end)
+         Map.get(all_wh_hashmap, wh_id, nil)
        end)
+       |> Enum.uniq()
      end)}
   end
 end
