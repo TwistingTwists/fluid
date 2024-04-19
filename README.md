@@ -1,3 +1,4 @@
+
 ### module 003 - PPS_Order
 
 * (0) More cases where PPS (usually within same wh)
@@ -8,6 +9,85 @@
 * (d) NA : if bag_of(PPS) is all determinate_wh => module c
 * (e) NA : if bag_of(PPS) is all indeterminate_wh => module PPS_Eval
 * (f) NA : if bag_of(PPS) is all indeterminate_wh => module WH_Order_module
+
+Questions
+* Can CT / FP be connected from different WH ?
+- how will Pools in PPS contain one WH det and one WH indet?  
+
+Table denoting all possible test cases for module 003: 
+
+| S.No | pps_num | pools_outside_pps | pps_type           | num_wh_involved | remark                |
+|------|---------|-------------------|--------------------|-----------------|-----------------------|
+| 1    | 0       | 0                 | NA                 |                 |                       |
+| 2    | 1       | some              | det                | 1               |                       |
+| 3    | 1       | some              | det                | 2               |                       |
+| 4    | 1       | some              | indet              | 1               |                       |
+| 5    | 1       | some              | indet              | 2               |                       |
+| 6    | 1       | some              | excess_circularity | 2               | mix of indet + det wh |
+| 7    | 1       | 0                 | det                | 1               |                       |
+| 8    | 1       | 0                 | det                | 2               |                       |
+| 9    | 1       | 0                 | indet              | 1               |                       |
+| 10   | 1       | 0                 | indet              | 2               |                       |
+| 11   | 1       | 0                 | excess_circularity | 2               | [ ]                   |
+| 12   | 2       | some              | indet              | 1               |                       |
+| 13   | 2       | some              | indet              | 2               |                       |
+| 14   | 2       | some              | det                | 1               |                       |
+| 15   | 2       | some              | det                | 2               |                       |
+| 16   | 2       | some              | excess_circularity | 2               |                       |
+| 17   | 2       | 0                 | det                | 1               |                       |
+| 18   | 2       | 0                 | det                | 2               |                       |
+| 19   | 2       | 0                 | indet              | 1               |                       |
+| 20   | 2       | 0                 | indet              | 2               |                       |
+| 21   | 2       | 0                 | excess_circularity | 2               |                       |
+
+
+### Here is the meaning of all four columns. 
+
+> You can ignore first column that's just a serial number which denotes the number of rows. 
+
+--- 
+
+
+1. The second column which is `pps_num`, it indicates how many PPS do you have in the world. 
+--- 
+
+2. The third column which is `pool_outside_pps` how many pools are left outside the pool priority set.
+
+> Details:  So, you may have one pool priority set (row 2) and that pool priority set has left out a few pools outside of it.
+But if you see row 7, then the pool outside PPS is 0 which means all the pools in the world form a single pool priority set. 
+
+--- 
+
+
+3. The fourth column which is `pps_type`.  
+Now whatever the pool PPS is formed, it may be of three types determinate, indeterminate or excessive circularity. This is based on the type of warehouse involving the PPS. 
+
+> Details: So, PPS may be formed inside a determinate warehouse or among 2-3 warehouses all of them being determinate forming a PPS. 
+--- 
+ 
+
+4.  The last column is `num_wh_involved` (number of warehouse involved) which means that whether you have one warehouse forming the entire PPS or that PPS forms between >1 warehouses. 
+
+> Details: PPS can be formed _entirely_ within one warehouse or it may span more than one warehouses. That is why we have denoted number 2 in `num_wh_involved` (number of warehouse involved) column. 
+
+--- 
+
+#### And with each PPS combination comes 2 other variables which are column 3 (`pools_outside_pps`) and 4 (`pps_type`) . 
+
+Thinking on the combinations provided by column 4 (`pps_type`) -> 
+
+* a. It means that if a PPS is built _entirely_ within one warehouse, then the type of warehouse determines the type of PPS 
+* b. In single warehouse you can never have excessive circularity. Since, for excessive circularity, you need a combination of determinate and indeterminate warehouses.
+ 
+
+Further, column 3 (`pools_outside_pps`) gives us subcases for above `a.` and `b.` -> 
+* Z. if a PPS forms within single warehouse, you may have a few pools which are **outside** of PPS, but **inside** warehouse, so 2 more cases are formed as per `some` or `0` in column 2 (`pools_outside_pps`).
+
+_So, considering all these four variables, I think there are 21 cases we need to have diagrams for testing._
+
+
+--- 
+--- 
 
 
 Warehouse Validation 
@@ -26,7 +106,7 @@ World Validation
 
 ### module 004 - PPS_Eval
 
-(a) each `pool` (within a `PPS`) has a Pool Rank (default: 1) or indicated by user
+(a) each `pool` (within a `PPS`) has a Pool Rank (default: 1) or indicated by user -- expand the pool_create api (Pool.create/1)
 (b) all pools (within a `PPS`) => eval all module Tag_Eval
 
 
