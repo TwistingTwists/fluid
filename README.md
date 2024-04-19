@@ -14,9 +14,9 @@ Questions
 * Can CT / FP be connected from different WH ?
 - how will Pools in PPS contain one WH det and one WH indet?  
 
-Table denoting all possible test cases for module 003: 
+<div style="background-color:#2C2C29; padding-top:50px; padding-left:10px;">
 
-<div style="background-color:#f5f5f5; padding:10px;">
+Table denoting all possible test cases for module 003: 
 
 | S.No | pps_num | pools_outside_pps | pps_type           | num_wh_involved | remark                |
 |------|---------|-------------------|--------------------|-----------------|-----------------------|
@@ -88,6 +88,8 @@ Further, column 3 (`pools_outside_pps`) gives us subcases for above `a.` and `b.
 _So, considering all these four variables, I think there are 21 cases we need to have diagrams for testing._
 
 </div>
+
+
 --- 
 --- 
 
