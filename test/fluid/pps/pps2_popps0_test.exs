@@ -1,4 +1,4 @@
-defmodule Fluid.PPSTest do
+defmodule Fluid.PPS.AllPoolPps do
   @moduledoc """
 
   ###########################################################################
@@ -9,6 +9,18 @@ defmodule Fluid.PPSTest do
   (b) at least one of those tagged pools is tagged by at least one more CT
 
   Test case diagrams: https://drive.google.com/file/d/16XQDNJEl2TNXePj-UuqhJFhlGr9v9T9g/view?usp=sharing
+
+
+  Total number of possible test cases:
+    - number of pps in world = 0 , 1 , > 1
+    - pools form pps = all / some
+    - pps.type = :det_pps_only / :indet_pps_only / :excessive_circularity
+
+
+  # tests variations included in this test module : test_case 17-21 in README.md
+  > warehouses - 1, 2
+  > pps_type - Model.PPS.PPSTypes
+
   """
 
   use Fluid.DataCase, async: true
@@ -16,7 +28,7 @@ defmodule Fluid.PPSTest do
   alias Fluid.Model
   alias Fluid.Test.Factory
 
-  describe "PPS - all pools form PPS - " do
+  describe "pps = 2, popps = 0, wh = 1 " do
     # Here are the outcomes expected form the tests for PPS module
     # %Model.PPS{type: :det_indet_both} => invalid! => list_WH
     # %Model.PPS{type: :det_only}] = Map.values(pps_map) => [input: list_pps] PPS_Eval_Module =>  [input: list_wh_det] WH_Order_Module (A)
@@ -97,7 +109,7 @@ defmodule Fluid.PPSTest do
       # 3. assert that all pools in warehouse_1 form a part of pps
     end
 
-    test "WH = Determinate + pps.type = :det_pps_only - ", %{
+    test "wh = determinate + pps.type = :det_pps_only - ", %{
       # warehouses: warehouses,
       circularity_analysis: %{determinate: determinate},
       pps_calculated: _,
@@ -122,19 +134,24 @@ defmodule Fluid.PPSTest do
       end)
     end
 
-    test "pool_count + pools forming pps - ", %{
+    test "pool_count - ", %{
       # circularity_analysis: %{determinate: determinate},
-      pps_calculated: [[cp_1, fp_1], [cp_2, fp_2]],
+      # pps_calculated: [[cp_1, fp_1], [cp_2, fp_2]],
       pps_analysis_map: pps_analysis_map
     } do
       # there must be two pps from above setup => 2 pools in each pps
       pps_analysis_map
-      # |> dbg()
       |> Enum.map(fn
         {_ct_id, %{type: :det_pps_only, pools: pools}} ->
           assert Enum.count(pools) == 2
       end)
+    end
 
+    test "pools forming pps - ", %{
+      # circularity_analysis: %{determinate: determinate},
+      pps_calculated: [[cp_1, fp_1], [cp_2, fp_2]],
+      pps_analysis_map: pps_analysis_map
+    } do
       [pps_1, pps_2] = pps_analysis_map |> Map.values()
 
       # cp_1, fp_1 form a pps (either pps_1 or pps_2)
@@ -199,94 +216,7 @@ defmodule Fluid.PPSTest do
     # 0 - No pools for PPS - WH Mix of Det Indet
   end
 
-  # describe "PPS - all pools form PPS " do
-  #   # Here are the outcomes expected form the tests for PPS module
-  #   # %Model.PPS{type: :det_indet_both} => invalid! => list_WH
-  #   # %Model.PPS{type: :det_only}] = Map.values(pps_map) => [input: list_pps] PPS_Eval_Module =>  [input: list_wh_det] WH_Order_Module (A)
-  #   # %Model.PPS{type: :indet_only} => [input: list_pps] PPS_Eval_Module =>  [input: list_wh_indet] WH_Order_Module (B, C)
-
-  #   setup do
-  #     ###### setup warehouses for circularity  ######
-  #     warehouses = Factory.setup_warehouses_for_circularity(:mix_det_indet)
-
-  #     {[warehouse_1, warehouse_2], rest_wh} = Enum.split(warehouses, 2)
-
-  #     {:ok, warehouse_2} =
-  #       Model.add_pools_to_warehouse(
-  #         warehouse_2,
-  #         {:params,
-  #          [
-  #            %{capacity_type: :capped, location_type: :in_wh},
-  #            %{capacity_type: :capped, location_type: :in_wh},
-  #            %{capacity_type: :fixed, location_type: :in_wh},
-  #            %{capacity_type: :fixed, location_type: :in_wh}
-  #          ]}
-  #       )
-
-  #     {:ok, warehouse_2} =
-  #       Model.add_tanks_to_warehouse(
-  #         warehouse_2,
-  #         {:params,
-  #          [
-  #            %{capacity_type: :capped, location_type: :in_wh},
-  #            %{capacity_type: :capped, location_type: :in_wh},
-  #            %{capacity_type: :capped, location_type: :in_wh},
-  #            %{capacity_type: :capped, location_type: :in_wh}
-  #          ]}
-  #       )
-
-  #     [cp_1, cp_2] = warehouse_2.capped_pools
-  #     [fp_1, fp_2] = warehouse_2.fixed_pools
-
-  #     [ct_1, ct_2, ct_3, ct_4] = warehouse_2.capped_tanks
-
-  #     # warehouse_1 |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
-  #     # connections inside WH
-  #     {:ok, _} = Fluid.Model.connect(cp_1, ct_1)
-  #     {:ok, _} = Fluid.Model.connect(cp_1, ct_2)
-  #     {:ok, _} = Fluid.Model.connect(fp_1, ct_2)
-  #     {:ok, _} = Fluid.Model.connect(fp_2, ct_3)
-
-  #     {:ok, _} = Fluid.Model.connect(cp_2, ct_3)
-  #     {:ok, _} = Fluid.Model.connect(cp_2, ct_4)
-
-  #     Model.Tag.read_all!()
-  #     # |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
-
-  #     ###### update warehouses list!  ######
-  #     updated_warehouses = [warehouse_1, warehouse_2] ++ rest_wh
-
-  #     %{circularity_analysis: Model.circularity_analysis(updated_warehouses), warehouses: updated_warehouses}
-  #   end
-
-  #   test "I -  all pools form PPS - WH Indeterminate ", %{
-  #     warehouses: warehouses,
-  #     circularity_analysis: %{determinate: determinate}
-  #   } do
-  #     # there are two main assertions ongoing
-  #     # 1. assert that type of pps :indet_pps_only
-  #     # 2. assert that all related_wh are only determinate
-
-  #     pps_analysis_map = Model.pps_analysis(warehouses)
-
-  #     pps_analysis_map
-  #     |> Enum.map(fn
-  #       {_id, %{type: :det_pps_only, related_wh: wh_list}} ->
-  #         Enum.map(wh_list, fn wh ->
-  #           # 2. assert that all related_wh are only determinate
-  #           assert Map.has_key?(determinate, wh.id)
-  #         end)
-
-  #         # 1. assert that type of pps :det_pps_only
-  #         assert true
-
-  #       val ->
-  #         IO.inspect(val)
-
-  #         # if type of pps is anything else, assert false
-  #         assert false
-  #     end)
-  #   end
+  # describe "pps = 2, popps = 0, wh > 1 " do
   # end
 
   # answers the question: `does the given list of pools form a pps?`
