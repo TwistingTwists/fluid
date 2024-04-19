@@ -16,6 +16,8 @@ Questions
 
 Table denoting all possible test cases for module 003: 
 
+<div style="background-color:#f5f5f5; padding:10px;">
+
 | S.No | pps_num | pools_outside_pps | pps_type           | num_wh_involved | remark                |
 |------|---------|-------------------|--------------------|-----------------|-----------------------|
 | 1    | 0       | 0                 | NA                 |                 |                       |
@@ -85,7 +87,7 @@ Further, column 3 (`pools_outside_pps`) gives us subcases for above `a.` and `b.
 
 _So, considering all these four variables, I think there are 21 cases we need to have diagrams for testing._
 
-
+</div>
 --- 
 --- 
 
