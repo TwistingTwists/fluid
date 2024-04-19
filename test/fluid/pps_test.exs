@@ -70,7 +70,6 @@ defmodule Fluid.PPSTest do
 
       [ct_1, ct_2, ct_3, ct_4] = warehouse_1.capped_tanks
 
-      # warehouse_1 |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
       # connections inside WH
       {:ok, _} = Fluid.Model.connect(cp_1, ct_1)
       {:ok, _} = Fluid.Model.connect(cp_1, ct_2)
@@ -81,7 +80,6 @@ defmodule Fluid.PPSTest do
       {:ok, _} = Fluid.Model.connect(cp_2, ct_4)
 
       Model.Tag.read_all!()
-      # |> IO.inspect(label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}")
 
       ###### update warehouses list!  ######
       updated_warehouses = [warehouse_1 | rest_wh]
@@ -92,6 +90,11 @@ defmodule Fluid.PPSTest do
         pps_calculated: [[cp_1, fp_1], [cp_2, fp_2]],
         pps_analysis_map: Model.pps_analysis(updated_warehouses)
       }
+
+      # main assertions are:
+      # 1. assert that type of pps :det_pps_only
+      # 2. assert that all related_wh are only determinate
+      # 3. assert that all pools in warehouse_1 form a part of pps
     end
 
     test "WH = Determinate + pps.type = :det_pps_only - ", %{
@@ -100,11 +103,6 @@ defmodule Fluid.PPSTest do
       pps_calculated: _,
       pps_analysis_map: pps_analysis_map
     } do
-      # main assertions are:
-      # 1. assert that type of pps :det_pps_only
-      # 2. assert that all related_wh are only determinate
-      # 3. assert that all pools in warehouse_1 form a part of pps
-
       pps_analysis_map
       |> Enum.map(fn
         {_ct_id, %{type: :det_pps_only, related_wh: wh_list}} ->
@@ -140,21 +138,29 @@ defmodule Fluid.PPSTest do
       [pps_1, pps_2] = pps_analysis_map |> Map.values()
 
       # cp_1, fp_1 form a pps (either pps_1 or pps_2)
-      if forms_pps?([cp_1, fp_1], pps_1) do
-        refute forms_pps?([cp_1, fp_1], pps_2)
-      end
+      case {forms_pps?([cp_1, fp_1], pps_1), forms_pps?([cp_1, fp_1], pps_2)} do
+        {true, false} ->
+          assert true
 
-      if forms_pps?([cp_1, fp_1], pps_2) do
-        refute forms_pps?([cp_1, fp_1], pps_1)
+        {false, true} ->
+          assert true
+
+        incorrect ->
+          IO.inspect(incorrect)
+          assert false
       end
 
       # cp_2, fp_2 form a pps (either pps_1 or pps_2)
-      if forms_pps?([cp_2, fp_2], pps_1) do
-        refute forms_pps?([cp_2, fp_2], pps_2)
-      end
+      case({forms_pps?([cp_2, fp_2], pps_1), forms_pps?([cp_2, fp_2], pps_2)}) do
+        {true, false} ->
+          assert true
 
-      if forms_pps?([cp_2, fp_2], pps_2) do
-        refute forms_pps?([cp_2, fp_2], pps_1)
+        {false, true} ->
+          assert true
+
+        incorrect ->
+          IO.inspect(incorrect)
+          assert false
       end
     end
 
