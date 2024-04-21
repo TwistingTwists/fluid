@@ -109,15 +109,29 @@ defmodule Fluid.PPS.AllPoolPps do
       # 3. assert that all pools in warehouse_1 form a part of pps
     end
 
+    test "pps_map - indterminate, excessive_circularity ", %{pps_analysis_map: pps_analysis_map} do
+      %{determinate: _det_pps_list, indeterminate: indet_pps_list, excess_circularity: excess_circularity_pps_list} =
+        pps_analysis_map
+
+      # assertions on indet_pps_list , excess_circularity_pps_list
+
+      assert indet_pps_list == []
+      assert excess_circularity_pps_list == []
+    end
+
     test "wh = determinate + pps.type = :det_pps_only - ", %{
       # warehouses: warehouses,
       circularity_analysis: %{determinate: determinate},
       pps_calculated: _,
       pps_analysis_map: pps_analysis_map
     } do
-      pps_analysis_map
+      %{determinate: det_pps_list, indeterminate: indet_pps_list, excess_circularity: excess_circularity_pps_list} =
+        pps_analysis_map
+
+      # assertions on det_pps_list
+      det_pps_list
       |> Enum.map(fn
-        {_ct_id, %{type: :det_pps_only, related_wh: wh_list}} ->
+        %{type: :det_pps_only, related_wh: wh_list} ->
           Enum.map(wh_list, fn wh ->
             # 2. assert that all related_wh are only determinate
             assert Map.has_key?(determinate, wh.id)
@@ -140,9 +154,12 @@ defmodule Fluid.PPS.AllPoolPps do
       pps_analysis_map: pps_analysis_map
     } do
       # there must be two pps from above setup => 2 pools in each pps
-      pps_analysis_map
+      %{determinate: det_pps_list, indeterminate: indet_pps_list, excess_circularity: excess_circularity_pps_list} =
+        pps_analysis_map
+
+      det_pps_list
       |> Enum.map(fn
-        {_ct_id, %{type: :det_pps_only, pools: pools}} ->
+        %{type: :det_pps_only, pools: pools} ->
           assert Enum.count(pools) == 2
       end)
     end
@@ -152,7 +169,10 @@ defmodule Fluid.PPS.AllPoolPps do
       pps_calculated: [[cp_1, fp_1], [cp_2, fp_2]],
       pps_analysis_map: pps_analysis_map
     } do
-      [pps_1, pps_2] = pps_analysis_map |> Map.values()
+      %{determinate: det_pps_list, indeterminate: indet_pps_list, excess_circularity: excess_circularity_pps_list} =
+        pps_analysis_map
+
+      [pps_1, pps_2] = det_pps_list
 
       # cp_1, fp_1 form a pps (either pps_1 or pps_2)
       case {forms_pps?([cp_1, fp_1], pps_1), forms_pps?([cp_1, fp_1], pps_2)} do

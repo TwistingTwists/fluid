@@ -189,32 +189,48 @@ defmodule Fluid.Model do
   end
 
   def classify_pps(ct_id_pps_map, list_of_wh) do
-    for {ct_id, pps} <- ct_id_pps_map, into: %{} do
-      # 1. perform circularity_analysis of `list_of_wh`
-      circularity_analysis = Model.circularity_analysis(list_of_wh)
-      # 2. for each pool.warehouse_id in pps.pools, determine the type of circularity for warehouse
+    for {_ct_id, pps} <- ct_id_pps_map, reduce: %{determinate: [], indeterminate: [], excess_circularity: []} do
+      pps_analysis_map ->
+        # 1. perform circularity_analysis of `list_of_wh`
+        circularity_analysis = Model.circularity_analysis(list_of_wh)
+        # 2. for each pool.warehouse_id in pps.pools, determine the type of circularity for warehouse
 
-      wh_types_for_pools =
-        Enum.map(pps.pools, fn pool ->
-          warehouse = Model.Warehouse.read_by_id!(pool.warehouse_id)
+        wh_types_for_pools =
+          Enum.map(pps.pools, fn pool ->
+            warehouse = Model.Warehouse.read_by_id!(pool.warehouse_id)
 
+            # circularity_analysis.indeterminate
+            # |> Enum.map(fn {_k, v} -> v.wh.name end)
+            # |> IO.inspect(
+            #   label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}",
+            #   syntax_colors: [number: :magenta, atom: :cyan, string: :green, boolean: :magenta, nil: :red]
+            # )
+
+            # warehouse.name
+            # |> IO.inspect(
+            #   label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}",
+            #   syntax_colors: [number: :magenta, atom: :cyan, string: :green, boolean: :magenta, nil: :red]
+            # )
+
+            cond do
+              Map.has_key?(circularity_analysis.indeterminate, warehouse.id) -> :indeterminate
+              Map.has_key?(circularity_analysis.determinate, warehouse.id) -> :determinate
+            end
+          end)
+
+        # 3. on list from  2. -> check if all warehouses are :determinate, :indeterminate or :mixture_of_determinate_indeterminate
+        {pps_analysis_category, pps_type} =
           cond do
-            Map.has_key?(circularity_analysis.indeterminate, warehouse.id) -> :indeterminate
-            Map.has_key?(circularity_analysis.determinate, warehouse.id) -> :determinate
+            Enum.all?(wh_types_for_pools, &(&1 == :indeterminate)) -> {:indeterminate, :indet_pps_only}
+            Enum.all?(wh_types_for_pools, &(&1 == :determinate)) -> {:determinate, :det_pps_only}
+            true -> {:excess_circularity, :excess_circularity}
           end
-        end)
 
-      # 3. on list from  2. -> check if all warehouses are :determinate, :indeterminate or :mixture_of_determinate_indeterminate
-      pps_type =
-        cond do
-          Enum.all?(wh_types_for_pools, &(&1 == :indeterminate)) -> :indet_pps_only
-          Enum.all?(wh_types_for_pools, &(&1 == :determinate)) -> :det_pps_only
-          true -> :excess_circularity
-        end
-
-      # add `:type` to original pps
-      # todo [refactor] : should this be `Model.PPS.update!` ?
-      {ct_id, %{pps | type: pps_type}}
+        # add `:type` to original pps
+        # todo [refactor] : should this be `Model.PPS.update!` ?
+        Map.put(pps_analysis_map, pps_analysis_category, [
+          %{pps | type: pps_type} | Map.get(pps_analysis_map, pps_analysis_category)
+        ])
     end
   end
 
