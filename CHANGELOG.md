@@ -5,6 +5,41 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.4.0](https://github.com/TwistingTwists/fluid/compare/v0.3.0...v0.4.0) (2024-04-24)
+
+
+
+
+### Features:
+
+* detailed table for all cases for module 003
+
+* more tests for pps
+
+* first test for pps passes
+
+* working pps analysis
+
+* setup for PPS
+
+* tag
+
+* outline module definitions
+
+* async tests in circularity
+
+### Bug Fixes:
+
+* more tests passing
+
+* test naming in sync with Table in readme.md
+
+* warehouse circularity
+
+* mix of circularity - det and indet extracted out to Factory module
+
+* filter only those WH where CT tags >= pool
+
 ## [v0.3.0](https://github.com/TwistingTwists/fluid/compare/v0.2.0...v0.3.0) (2024-03-21)
 
 
