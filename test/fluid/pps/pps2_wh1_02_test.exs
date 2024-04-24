@@ -1,4 +1,4 @@
-defmodule Fluid.PPS.AllPoolPps do
+defmodule Fluid.PPS.PPS2WH102 do
   @moduledoc """
 
   ###########################################################################
@@ -238,7 +238,7 @@ defmodule Fluid.PPS.AllPoolPps do
     # 0 - No pools for PPS - WH Mix of Det Indet
   end
 
-  describe "pps = 2, wh = 1,pps_type = indet " do
+  describe "pps = 2, wh = 1, pps_type = indet " do
     setup do
       ###### setup warehouses for circularity  ######
       warehouses = Factory.setup_warehouses_for_circularity(:mix_det_indet)
