@@ -28,7 +28,7 @@ defmodule Fluid.PPS.AllPoolPps do
   alias Fluid.Model
   alias Fluid.Test.Factory
 
-  describe "pps = 2, popps = 0, wh = 1 " do
+  describe "pps = 2, wh = 1 " do
     # Here are the outcomes expected form the tests for PPS module
     # %Model.PPS{type: :det_indet_both} => invalid! => list_WH
     # %Model.PPS{type: :det_only}] = Map.values(pps_map) => [input: list_pps] PPS_Eval_Module =>  [input: list_wh_det] WH_Order_Module (A)
@@ -109,7 +109,9 @@ defmodule Fluid.PPS.AllPoolPps do
       # 3. assert that all pools in warehouse_1 form a part of pps
     end
 
-    test "pps_map - indterminate, excessive_circularity ", %{pps_analysis_map: pps_analysis_map} do
+    test "pps.type = :det_pps_only - NEGATIVE = (pps_map - indeterminate, excessive_circularity)", %{
+      pps_analysis_map: pps_analysis_map
+    } do
       %{determinate: _det_pps_list, indeterminate: indet_pps_list, excess_circularity: excess_circularity_pps_list} =
         pps_analysis_map
 
@@ -119,7 +121,7 @@ defmodule Fluid.PPS.AllPoolPps do
       assert excess_circularity_pps_list == []
     end
 
-    test "wh = determinate + pps.type = :det_pps_only - ", %{
+    test "pps.type = :det_pps_only - POSITIVE = ", %{
       # warehouses: warehouses,
       circularity_analysis: %{determinate: determinate},
       pps_calculated: _,
