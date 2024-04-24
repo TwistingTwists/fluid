@@ -5,6 +5,15 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.5.0](https://github.com/TwistingTwists/fluid/compare/v0.4.0...v0.5.0) (2024-04-24)
+
+
+
+
+### Features:
+
+* pps = 2 , wh = 1
+
 ## [v0.4.0](https://github.com/TwistingTwists/fluid/compare/v0.3.0...v0.4.0) (2024-04-24)
 
 
