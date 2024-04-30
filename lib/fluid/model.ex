@@ -184,8 +184,60 @@ defmodule Fluid.Model do
           end
       end
 
+    # Step 1: Collect all pools as a list of lists
+    all_pools_list = Enum.map(ct_id_pps_map, fn {_ct_id, pps} -> pps.pools end)
+
+    # Step 2: Create a hashmap to indicate which pools are part of which pool lists
+    pool_overlap_map = create_pool_overlap_map(all_pools_list)
+
     ##########################################
     classify_pps(ct_id_pps_map, list_of_wh)
+  end
+
+  def create_pool_overlap_map(all_pools_list) do
+    Enum.reduce(Enum.with_index(all_pools_list), %{}, fn {pool_list, index}, acc ->
+      Enum.reduce(pool_list, acc, fn pool, acc ->
+        Map.update(acc, pool.id, [index], &[index | &1])
+      end)
+    end)
+    # Sort the indices for each pool so that it is easier to test
+    |> Map.new(fn {pool_id, indices} -> {pool_id, Enum.sort(Enum.uniq(indices))} end)
+    |> merge_pool_overlap()
+  end
+
+  def merge_pool_overlap(input) do
+    input
+    |> Enum.reduce(%{}, fn {key, values}, acc ->
+      overlapping_keys =
+        Enum.filter(acc, fn {_k, v} -> Enum.any?(values, &Enum.member?(v, &1)) end)
+        |> Enum.map(fn {k, _v} -> k end)
+
+      merged_values =
+        [values | Enum.map(overlapping_keys, fn k -> Map.get(acc, k, []) end)]
+        |> List.flatten()
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      merged_keys = [key | overlapping_keys] |> Enum.sort()
+
+      Enum.reduce(merged_keys, acc, fn k, acc ->
+        Map.put(acc, k, merged_values)
+      end)
+    end)
+  end
+
+  def merge_pool_lists(pool_overlap_map, all_pools_list) do
+    Enum.reduce(pool_overlap_map, [], fn {_pool_id, indices}, acc ->
+      merged_list =
+        Enum.reduce(indices, [], fn index, list_acc ->
+          list_acc ++ Enum.at(all_pools_list, index)
+        end)
+        |> List.flatten()
+        |> Enum.uniq()
+
+      acc ++ [merged_list]
+    end)
+    |> Enum.uniq()
   end
 
   def classify_pps(ct_id_pps_map, list_of_wh) do
@@ -198,19 +250,6 @@ defmodule Fluid.Model do
         wh_types_for_pools =
           Enum.map(pps.pools, fn pool ->
             warehouse = Model.Warehouse.read_by_id!(pool.warehouse_id)
-
-            # circularity_analysis.indeterminate
-            # |> Enum.map(fn {_k, v} -> v.wh.name end)
-            # |> IO.inspect(
-            #   label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}",
-            #   syntax_colors: [number: :magenta, atom: :cyan, string: :green, boolean: :magenta, nil: :red]
-            # )
-
-            # warehouse.name
-            # |> IO.inspect(
-            #   label: "#{Path.relative_to_cwd(__ENV__.file)}:#{__ENV__.line}",
-            #   syntax_colors: [number: :magenta, atom: :cyan, string: :green, boolean: :magenta, nil: :red]
-            # )
 
             cond do
               Map.has_key?(circularity_analysis.indeterminate, warehouse.id) -> :indeterminate
