@@ -191,7 +191,7 @@ defmodule Fluid.Model do
     pool_overlap_map = create_pool_overlap_map(all_pools_list)
 
     ##########################################
-    classify_pps(ct_id_pps_map, list_of_wh)
+    classify_pps(pool_overlap_map, list_of_wh)
   end
 
   def create_pool_overlap_map(all_pools_list) do
