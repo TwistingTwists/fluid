@@ -188,10 +188,20 @@ defmodule Fluid.Model do
     all_pools_list = Enum.map(ct_id_pps_map, fn {_ct_id, pps} -> pps.pools end)
 
     # Step 2: Create a hashmap to indicate which pools are part of which pool lists
-    pool_overlap_map = create_pool_overlap_map(all_pools_list)
+    pool_overlap_map =
+      all_pools_list
+      |> create_pool_overlap_map()
+      |> merge_pool_lists(all_pools_list)
+
+    consolidated_pool =
+      pool_overlap_map
+      |> Enum.with_index()
+      |> Enum.reduce(%{}, fn {pools, index}, acc ->
+        Map.put(acc, index, Model.PPS.create!(%{pools: pools}))
+      end)
 
     ##########################################
-    classify_pps(pool_overlap_map, list_of_wh)
+    classify_pps(consolidated_pool, list_of_wh)
   end
 
   def create_pool_overlap_map(all_pools_list) do

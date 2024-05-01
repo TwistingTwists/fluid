@@ -72,7 +72,7 @@ defmodule Fluid.PPS.PPS2WH101 do
       %{
         circularity_analysis: Model.circularity_analysis(updated_warehouses),
         warehouses: updated_warehouses,
-        pps_calculated: [[cp_1, fp_1, fp_2], [cp_2, fp_2]],
+        pps_calculated: [[cp_1, fp_1, fp_2, cp_2]],
         pps_analysis_map: Model.pps_analysis(updated_warehouses)
       }
 
@@ -98,7 +98,7 @@ defmodule Fluid.PPS.PPS2WH101 do
       pps_calculated: _,
       pps_analysis_map: pps_analysis_map
     } do
-      %{determinate: det_pps_list, indeterminate: indet_pps_list, excess_circularity: excess_circularity_pps_list} =
+      %{determinate: det_pps_list, indeterminate: _indet_pps_list, excess_circularity: _} =
         pps_analysis_map
 
       # assertions on det_pps_list
@@ -130,7 +130,7 @@ defmodule Fluid.PPS.PPS2WH101 do
       %{determinate: det_pps_list, indeterminate: _indet_pps_list, excess_circularity: _excess_circularity_pps_list} =
         pps_analysis_map
 
-      assert [2, 3] ==
+      assert [4] ==
                det_pps_list
                |> Enum.map(fn %{type: :det_pps_only, pools: pools} -> Enum.count(pools) end)
                |> Enum.sort()
@@ -138,39 +138,16 @@ defmodule Fluid.PPS.PPS2WH101 do
 
     test "pools forming pps - ", %{
       # circularity_analysis: %{determinate: determinate},
-      pps_calculated: [[cp_1, fp_1, fp_2], [cp_2, fp_2]],
+      pps_calculated: [[cp_1, fp_1, fp_2, cp_2]],
       pps_analysis_map: pps_analysis_map
     } do
       %{determinate: det_pps_list, indeterminate: _, excess_circularity: _} =
         pps_analysis_map
 
-      [pps_1, pps_2] = det_pps_list
+      [pps_1] = det_pps_list
 
       # cp_1, fp_1 form a pps (either pps_1 or pps_2)
-      case {forms_pps?([cp_1, fp_1, fp_2], pps_1), forms_pps?([cp_1, fp_1, fp_2], pps_2)} do
-        {true, false} ->
-          assert true
-
-        {false, true} ->
-          assert true
-
-        incorrect ->
-          IO.inspect(incorrect)
-          assert false
-      end
-
-      # cp_2, fp_2 form a pps (either pps_1 or pps_2)
-      case({forms_pps?([cp_2, fp_2], pps_1), forms_pps?([cp_2, fp_2], pps_2)}) do
-        {true, false} ->
-          assert true
-
-        {false, true} ->
-          assert true
-
-        incorrect ->
-          IO.inspect(incorrect)
-          assert false
-      end
+      assert forms_pps?([cp_1, fp_1, fp_2, cp_2], pps_1)
     end
   end
 
@@ -228,7 +205,7 @@ defmodule Fluid.PPS.PPS2WH101 do
       %{
         circularity_analysis: Model.circularity_analysis(updated_warehouses),
         warehouses: updated_warehouses,
-        pps_calculated: [[cp_1, fp_1, fp_2], [cp_2, fp_2]],
+        pps_calculated: [[cp_1, fp_1, fp_2, cp_2]],
         pps_analysis_map: Model.pps_analysis(updated_warehouses)
       }
 
@@ -266,7 +243,7 @@ defmodule Fluid.PPS.PPS2WH101 do
             assert Map.has_key?(indeterminate, wh.id)
           end)
 
-          # 1. assert that type of pps :det_pps_only
+          # 1. assert that type of pps :indet_pps_only
           assert true
 
         val ->
@@ -286,7 +263,7 @@ defmodule Fluid.PPS.PPS2WH101 do
       %{determinate: _, indeterminate: indet_pps_list, excess_circularity: _excess_circularity_pps_list} =
         pps_analysis_map
 
-      assert [2, 3] ==
+      assert [4] ==
                indet_pps_list
                |> Enum.map(fn %{type: :indet_pps_only, pools: pools} -> Enum.count(pools) end)
                |> Enum.sort()
@@ -294,46 +271,22 @@ defmodule Fluid.PPS.PPS2WH101 do
 
     test "pools forming pps - ", %{
       # circularity_analysis: %{determinate: determinate},
-      pps_calculated: [[cp_1, fp_1, fp_2], [cp_2, fp_2]],
+      pps_calculated: [[cp_1, fp_1, fp_2, cp_2]],
       pps_analysis_map: pps_analysis_map
     } do
       %{determinate: _, indeterminate: indet_pps_list, excess_circularity: _} =
         pps_analysis_map
 
-      [pps_1, pps_2] = indet_pps_list
+      [pps_1] = indet_pps_list
 
-      # cp_1, fp_1 form a pps (either pps_1 or pps_2)
-      case {forms_pps?([cp_1, fp_1, fp_2], pps_1), forms_pps?([cp_1, fp_1, fp_2], pps_2)} do
-        {true, false} ->
-          assert true
-
-        {false, true} ->
-          assert true
-
-        incorrect ->
-          IO.inspect(incorrect)
-          assert false
-      end
-
-      # cp_2, fp_2 form a pps (either pps_1 or pps_2)
-      case({forms_pps?([cp_2, fp_2], pps_1), forms_pps?([cp_2, fp_2], pps_2)}) do
-        {true, false} ->
-          assert true
-
-        {false, true} ->
-          assert true
-
-        incorrect ->
-          IO.inspect(incorrect)
-          assert false
-      end
+      assert forms_pps?([cp_1, fp_1, fp_2, cp_2], pps_1)
     end
   end
 
   # answers the question: `does the given list of pools form a pps?`
   defp forms_pps?(list_of_pools, pps) do
-    list_of_pools_id = list_of_pools |> Enum.map(& &1.id) |> Enum.sort()
-    pps_pool_id = pps.pools |> Enum.map(& &1.id) |> Enum.sort()
+    list_of_pools_id = list_of_pools |> Enum.map(& &1.id) |> Enum.sort() |> Enum.uniq()
+    pps_pool_id = pps.pools |> Enum.map(& &1.id) |> Enum.sort() |> Enum.uniq()
 
     list_of_pools_id == pps_pool_id
   end
