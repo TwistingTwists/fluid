@@ -91,7 +91,7 @@ defmodule Fluid.PPS.PPS2WH102 do
       {:ok, _} = Fluid.Model.connect(cp_2, ct_3)
       {:ok, _} = Fluid.Model.connect(cp_2, ct_4)
 
-      Model.Tag.read_all!()
+      # Model.Tag.read_all!()
 
       ###### update warehouses list!  ######
       updated_warehouses = [warehouse_1 | rest_wh]
