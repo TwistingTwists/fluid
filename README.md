@@ -1,5 +1,49 @@
+for each pool that is tagged by more than one ct
+    for each ct -> find potential_pps
+
+
+ %{1 => [0, 2], 2 => [0, 1], 4 => [1], 6 => [2]}
+
+For above input, write a function to  Produce the  following output 
+
+%{1 => [0, 1, 2], 2 => [0, 1,2], 4 => [0,1,2], 6 => [0,1,2]}
+
+Here is the step by step breakdown.
+
+Step 1: 
+for key 1, the value is [0,2] => put it in `output`
+so, output: %{1 => [0,2] }
+
+Step 2: 
+for key 2, the value is [0,1] => search which key in `output` has overlap with any of the values [0,1]. merge all the values for keys where the overlap is present
+
+so, output: %{1 => [0,1,2], => [0, 1,2] }
+
+
+Step 3: 
+for key 4, the value is [1] => search which key in `output` has overlap with any of the values [1]. merge all the values for keys where the overlap is present
+
+so, output: %{1 => [0,1,2], => [0, 1,2], 4 => [0,1,2]  }
+
+
+Step 4: 
+for key 6, the value is [2] => search which key in `output` has overlap with any of the values [2]. merge all the values for keys where the overlap is present
+
+so, output: %{1 => [0, 1, 2], 2 => [0, 1,2], 4 => [0,1,2], 6 => [0,1,2]}
+
+
+Write an elixir function for given input output pair. 
+
+also genertae 6 tests cases for above
+
 
 ### module 003 - PPS_Order
+
+Yes it is all one PPS. CT2/CP1/FP1/FP2 satisfies (a), and CT3/FP2 satisfies (b). That alone is sufficient to make CP1/FP1/FP2 a single PPS. That PPS is connected to CT3, and since CP2 is also connected to CT3, that makes CP2 part of the same PPS as CP1/FP1/FP2 as well.  So, CP1/FP1/FP2/CP2 is all one PPS.
+
+Tags can most definitely go inter-WH (and therefore pools in different WHs can all be part of the same PPS). At some point I introduced the concept of Virtual Capped Tanks/Pools to handle tags that are inter-WH, but when I drafted the master algorithm I might have abandoned it as unnecessary. Can’t remember; if there’s no reference to Virtual Capped Tanks/Pools in the MA then they’re not needed to deal with inter-WH tags.
+
+Yep all of the pools in WH1 and WH2 form one PPS. The pools in WH1 are one PPS as described above; CP10 and FP11 are incorporated into it via CT14, and FP12 and CT13 are incorporated into it via CT17
 
 * (0) More cases where PPS (usually within same wh)
 * (a) Identify PPS : Tag : "Can create a bag_of(PPS) from a world"
