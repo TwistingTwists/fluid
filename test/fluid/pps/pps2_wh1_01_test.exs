@@ -14,6 +14,7 @@ defmodule Fluid.PPS.PPS2WH101 do
   """
 
   use Fluid.DataCase, async: true
+  import Fluid.Test.PpsUtils
 
   alias Fluid.Model
   alias Fluid.Test.Factory
@@ -277,17 +278,9 @@ defmodule Fluid.PPS.PPS2WH101 do
       %{determinate: _, indeterminate: indet_pps_list, excess_circularity: _} =
         pps_analysis_map
 
-      [pps_1] = indet_pps_list
+      assert [pps_1] = indet_pps_list
 
       assert forms_pps?([cp_1, fp_1, fp_2, cp_2], pps_1)
     end
-  end
-
-  # answers the question: `does the given list of pools form a pps?`
-  defp forms_pps?(list_of_pools, pps) do
-    list_of_pools_id = list_of_pools |> Enum.map(& &1.id) |> Enum.sort() |> Enum.uniq()
-    pps_pool_id = pps.pools |> Enum.map(& &1.id) |> Enum.sort() |> Enum.uniq()
-
-    list_of_pools_id == pps_pool_id
   end
 end
