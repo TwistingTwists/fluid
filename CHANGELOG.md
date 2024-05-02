@@ -5,6 +5,25 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.6.0](https://github.com/TwistingTwists/fluid/compare/v0.5.0...v0.6.0) (2024-05-02)
+
+
+
+
+### Features:
+
+* two pps from two different warehouses
+
+* excessive circularity between two warehouses
+
+* tests pass with new pps definition
+
+* overlap algorithm in PPS
+
+### Bug Fixes:
+
+* upgrade elixir and erlang
+
 ## [v0.5.0](https://github.com/TwistingTwists/fluid/compare/v0.4.0...v0.5.0) (2024-04-24)
 
 
