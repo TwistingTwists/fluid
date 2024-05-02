@@ -16,13 +16,13 @@ defmodule Fluid.Model.OverlapAlgoTest do
   """
   use ExUnit.Case
 
-  alias Fluid.Model
+  alias Fluid.Model.Pps.Algorithm
 
   test "pool_overlap_map with single pool list" do
     all_pools_list = [[%{name: "pool1", id: 1}, %{name: "pool2", id: 2}, %{name: "pool3", id: 3}]]
 
-    pool_overlap_map = Model.create_pool_overlap_map(all_pools_list)
-    merged_lists = Model.merge_pool_lists(pool_overlap_map, all_pools_list)
+    pool_overlap_map = Algorithm.create_pool_overlap_map(all_pools_list)
+    merged_lists = Algorithm.merge_pool_lists(pool_overlap_map, all_pools_list)
 
     assert pool_overlap_map == %{1 => [0], 2 => [0], 3 => [0]}
     assert merged_lists == [[%{name: "pool1", id: 1}, %{name: "pool2", id: 2}, %{name: "pool3", id: 3}]]
@@ -37,8 +37,8 @@ defmodule Fluid.Model.OverlapAlgoTest do
       [%{name: "pool5", id: 5}, %{name: "pool6", id: 6}]
     ]
 
-    pool_overlap_map = Model.create_pool_overlap_map(all_pools_list)
-    merged_lists = Model.merge_pool_lists(pool_overlap_map, all_pools_list)
+    pool_overlap_map = Algorithm.create_pool_overlap_map(all_pools_list)
+    merged_lists = Algorithm.merge_pool_lists(pool_overlap_map, all_pools_list)
 
     assert pool_overlap_map == %{1 => [0], 2 => [0], 3 => [1], 4 => [1], 5 => [2], 6 => [2]}
 
@@ -56,8 +56,8 @@ defmodule Fluid.Model.OverlapAlgoTest do
       [%{name: "pool1", id: 1}, %{name: "pool6", id: 6}]
     ]
 
-    pool_overlap_map = Model.create_pool_overlap_map(all_pools_list)
-    merged_lists = Model.merge_pool_lists(pool_overlap_map, all_pools_list)
+    pool_overlap_map = Algorithm.create_pool_overlap_map(all_pools_list)
+    merged_lists = Algorithm.merge_pool_lists(pool_overlap_map, all_pools_list)
 
     assert pool_overlap_map == %{1 => [0, 1, 2], 2 => [0, 1, 2], 4 => [0, 1, 2], 6 => [0, 1, 2]}
 
@@ -80,8 +80,8 @@ defmodule Fluid.Model.OverlapAlgoTest do
       [%{name: "pool5", id: 5}, %{name: "pool6", id: 6}]
     ]
 
-    pool_overlap_map = Model.create_pool_overlap_map(all_pools_list)
-    merged_lists = Model.merge_pool_lists(pool_overlap_map, all_pools_list)
+    pool_overlap_map = Algorithm.create_pool_overlap_map(all_pools_list)
+    merged_lists = Algorithm.merge_pool_lists(pool_overlap_map, all_pools_list)
 
     assert pool_overlap_map == %{1 => [0, 1], 2 => [0, 1], 4 => [0, 1], 5 => [2], 6 => [2]}
 
@@ -93,8 +93,8 @@ defmodule Fluid.Model.OverlapAlgoTest do
 
   test "pool_overlap_map with empty pool list" do
     all_pools_list = []
-    pool_overlap_map = Model.create_pool_overlap_map(all_pools_list)
-    merged_lists = Model.merge_pool_lists(pool_overlap_map, all_pools_list)
+    pool_overlap_map = Algorithm.create_pool_overlap_map(all_pools_list)
+    merged_lists = Algorithm.merge_pool_lists(pool_overlap_map, all_pools_list)
     assert merged_lists == []
     assert pool_overlap_map == %{}
   end
