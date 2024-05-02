@@ -3,7 +3,7 @@
     :ash_admin,
     :ash_oban,
     :ash_postgres,
-    :ash_state_machine,
+    # :ash_state_machine,
     :ash,
     :ecto_sql,
     :ecto,
