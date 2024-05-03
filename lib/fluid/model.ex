@@ -207,12 +207,19 @@ defmodule Fluid.Model do
     end)
   end
 
+  @doc """
+  from a given pool, calculate the {`the capped tanks` , ` outbound connections to capped tanks` }
+  """
   def calculate_outbound_connections_and_cts(%Model.Pool{} = pool) do
     # todo [enhancement]: read tags for world
     all_tags = Model.Tag.read_all!()
     cts_acc = []
     tags_acc = []
 
+    # Accumulator is a tuple of capped tanks and tags represented as {cts_acc, tag_acc}. Here is the algorithm.
+    # 1. start with all_tags in the world
+    # 2. if tag's origin is given pool => read tank at the destination of tag
+    # 3. accumulate both - the tank and the tag
     Enum.reduce(all_tags, {cts_acc, tags_acc}, fn tag, {cts_acc, tags_acc} ->
       if tag.source["id"] == pool.id do
         # assumption that tag.destination is ct
