@@ -10,9 +10,15 @@ defmodule Fluid.Model.OverlapAlgoTest do
 
   Algorithm:
   1. Find the CT which tags more than one pool
-  2. Find the pool list such that it tags at least one more CT
+  2. Find the pool list such that it tags at least one more CT. This is the potential_pps list.
+  Upto step 2. , we have ensured that both conditions (a) and (b) are satisified for all the potential_pps_list. Now, to calculate the actual pps, there is one more step involved. The potential pps may share some capped tanks. And thus some of potential_pps may merge to become one bigger pps. This is the role of overlap algo.
   3. Apply Overlap Algo to find the overlapping pool sets
 
+
+  For example:
+
+  potential_pps_list : [[1,2], [2,3]]
+  This means that [1,2] for a pps and [2,3] form a pps. Thus, [1,2,3] form a pps.
   """
   use ExUnit.Case
 

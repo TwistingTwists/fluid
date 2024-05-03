@@ -223,6 +223,7 @@ defmodule Fluid.Model do
     Enum.reduce(all_tags, {cts_acc, tags_acc}, fn tag, {cts_acc, tags_acc} ->
       if tag.source["id"] == pool.id do
         # assumption that tag.destination is ct
+        # maybe check that as well since a pool could be connected to SUCT
         ct = Model.Tank.read_by_id!(tag.destination["id"])
         {[ct | cts_acc], [tag | tags_acc]}
       else
