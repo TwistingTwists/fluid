@@ -39,7 +39,7 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
     end
   end
 
-  def src_dest_from_different_wh({:cont, changeset}, source, dest) do
+  defp src_dest_from_different_wh({:cont, changeset}, source, dest) do
     if source.warehouse_id == dest.warehouse_id do
       changeset
       |> Ash.Changeset.add_error(
@@ -58,9 +58,9 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
     end
   end
 
-  def src_dest_from_different_wh({:halt, changeset}, _source, _dest), do: {:halt, changeset}
+  defp src_dest_from_different_wh({:halt, changeset}, _source, _dest), do: {:halt, changeset}
 
-  def src_dest_type_validations({:cont, changeset}, source, dest) do
+  defp src_dest_type_validations({:cont, changeset}, source, dest) do
     case {source, dest} do
       # Every UCT is linked either to one or more SUCTs and/or to one or more UCPs
       # todo : ensure that both tank and pool are from different warehouses
@@ -100,7 +100,7 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
     end
   end
 
-  def src_dest_type_validations({:halt, changeset}, _source, _dest) do
+  defp src_dest_type_validations({:halt, changeset}, _source, _dest) do
     {:halt, changeset}
   end
 
