@@ -85,6 +85,11 @@ defmodule WhCalculations do
   use Ash.Calculation
   alias Fluid.Model
 
+  @doc """
+  Given a list of pps, return a list of the associated warehouses for each pps.
+
+  The associated warehouses are stored as a value under key `opts[:field]` in PPS struct.
+  """
   @impl Ash.Calculation
   def calculate(pps_list, opts, _resolution) do
     fields = List.wrap(opts[:field])
@@ -95,12 +100,21 @@ defmodule WhCalculations do
 
     {:ok,
      Enum.map(pps_list, fn pps ->
-       pools = Kernel.get_in(pps, Enum.map(fields, &Access.key/1))
-
-       Enum.map(pools, fn %{warehouse_id: wh_id} ->
-         Map.get(all_wh_hashmap, wh_id, nil)
-       end)
-       |> Enum.uniq()
+       pps
+       |> Kernel.get_in(Enum.map(fields, &Access.key/1))
+       |> get_related_warehouses(all_wh_hashmap)
      end)}
+  end
+
+  @doc """
+  all_wh_hashmap : in this hashmap, key is warehouse_id and value is %Warehouse{}
+
+  Given a list of pools, and the all_wh_hashmap, associate the pool with warehouse.
+  """
+  def get_related_warehouses(pools, all_wh_hashmap) do
+    Enum.map(pools, fn %{warehouse_id: wh_id} ->
+      Map.get(all_wh_hashmap, wh_id, nil)
+    end)
+    |> Enum.uniq()
   end
 end
