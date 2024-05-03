@@ -125,20 +125,6 @@ defmodule Fluid.Model do
   end
 
   ###################### PPS analysis ######################
-  # def pps_analysis(%{determinate: det, indeterminate: indet, all: _all} = classified_warehouses) do
-  #   Enum.reduce(det, [], fn wh_det, acc  ->
-
-  #    end)
-  # end
-
-  # defmodule ABC do
-  #   use Ash.Resource
-
-  #   attributes do
-  #     attribute(:pools, {:array, :struct}, constraints: [items: [instance_of: Fluid.Model.Pool]])
-  #     attribute(:two_or_more_tagged_pools?, :boolean)
-  #   end
-  # end
 
   def pps_analysis(list_of_wh) when list_of_wh != [] do
     all_cts = Enum.flat_map(list_of_wh, & &1.capped_tanks)
