@@ -1,4 +1,18 @@
 defmodule Fluid.Model.Warehouse.Calculations.PoolorTankType do
+  @moduledoc """
+
+  This module is a generic implementation of calculation of pools / tanks of a specific type.
+
+  Typical usage in any Ash Resource would be: (in attributes section)
+
+  ```
+  calculate(:capped_pools, {:array, :struct}, {Warehouse.Calculations.PoolorTankType, field: :pools, type: :capped},
+      constraints: [items: [instance_of: Fluid.Model.Pool]]
+    )
+  ```
+
+  This way parametrising the calculation on warehouse by `pool` or `tank` and then parametrising on `type` to calculate correct values.
+  """
   use Ash.Calculation
 
   require Logger
