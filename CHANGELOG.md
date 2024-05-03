@@ -5,6 +5,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.6.3](https://github.com/TwistingTwists/fluid/compare/v0.6.2...v0.6.3) (2024-05-03)
+
+
+
+
 ## [v0.6.2](https://github.com/TwistingTwists/fluid/compare/v0.6.1...v0.6.2) (2024-05-03)
 
 
