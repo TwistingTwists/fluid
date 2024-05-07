@@ -115,10 +115,10 @@ defmodule Fluid.Model.Circularity do
   end
 
   @doc """
-  There are 3 cases to update the circularity. 
+  There are 3 cases to update the circularity.
 
-  1. for a feeder node => delete the outbound connections + delete the feeder node 
-  2. for an unconnected node => delete the unconnected node 
+  1. for a feeder node => delete the outbound connections + delete the feeder node
+  2. for an unconnected node => delete the unconnected node
   3. for any other node => don't change anything
   """
   def update_wh_map(

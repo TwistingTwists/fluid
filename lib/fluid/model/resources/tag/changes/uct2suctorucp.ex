@@ -12,13 +12,34 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
     dest = Ash.Changeset.get_argument(changeset, :destination)
 
     # if this pipeline fails =>  add relevant error to changeset at failure step and doesn't operate further on changeset
-    {:ok, changeset}
+    {:cont, changeset}
+    |> ensure_source_dest_types(source, dest)
     |> src_dest_from_different_wh(source, dest)
     |> src_dest_type_validations(source, dest)
     |> unwrap()
   end
 
-  def src_dest_from_different_wh({:ok, changeset}, source, dest) do
+  def ensure_source_dest_types({:cont, cs}, source, dest) do
+    case {source, dest} do
+      {%Tank{capacity_type: :capped}, %Pool{capacity_type: pool_capacity}}
+      when pool_capacity in [:fixed, :capped] ->
+        # if tank or pool are not uncapped, halt the pipeline and let it pass.
+        # todo find out why?
+        {:cont, cs}
+
+      # {:halt, cs}
+
+      {%Pool{capacity_type: pool_capacity}, %Tank{capacity_type: :capped}}
+      when pool_capacity in [:fixed, :capped] ->
+        # if tank or pool are not uncapped, halt the pipeline and let it pass.
+        {:halt, cs}
+
+      _ ->
+        {:cont, cs}
+    end
+  end
+
+  defp src_dest_from_different_wh({:cont, changeset}, source, dest) do
     if source.warehouse_id == dest.warehouse_id do
       changeset
       |> Ash.Changeset.add_error(
@@ -31,15 +52,15 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
         """
       )
 
-      {:error, changeset}
+      {:halt, changeset}
     else
-      {:ok, changeset}
+      {:cont, changeset}
     end
   end
 
-  # def src_dest_from_different_wh({:error, changeset}, _source, _dest), do: {:error, changeset}
+  defp src_dest_from_different_wh({:halt, changeset}, _source, _dest), do: {:halt, changeset}
 
-  def src_dest_type_validations({:ok, changeset}, source, dest) do
+  defp src_dest_type_validations({:cont, changeset}, source, dest) do
     case {source, dest} do
       # Every UCT is linked either to one or more SUCTs and/or to one or more UCPs
       # todo : ensure that both tank and pool are from different warehouses
@@ -50,16 +71,15 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
           |> Ash.Changeset.change_attribute(:source, to_map(source))
           |> Ash.Changeset.change_attribute(:destination, to_map(dest))
 
-        {:ok, cs}
+        {:cont, cs}
 
-      {%Tank{capacity_type: :uncapped, location_type: :in_wh},
-       %Tank{capacity_type: :uncapped, location_type: :standalone}} ->
+      {%Tank{capacity_type: :uncapped, location_type: :in_wh}, %Tank{capacity_type: :uncapped, location_type: :standalone}} ->
         cs =
           changeset
           |> Ash.Changeset.change_attribute(:source, source)
           |> Ash.Changeset.change_attribute(:destination, dest)
 
-        {:ok, cs}
+        {:cont, cs}
 
       {source, dest} ->
         Logger.error("source: #{source.capacity_type} / #{source.location_type}")
@@ -76,12 +96,12 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
             """
           )
 
-        {:error, cs}
+        {:halt, cs}
     end
   end
 
-  def src_dest_type_validations({:error, changeset}, _source, _dest) do
-    {:error, changeset}
+  defp src_dest_type_validations({:halt, changeset}, _source, _dest) do
+    {:halt, changeset}
   end
 
   def unwrap({_, changeset}), do: changeset

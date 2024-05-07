@@ -2,7 +2,8 @@ defmodule Fluid.Model.Pool do
   require Logger
 
   use Ash.Resource,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshJason.Extension]
 
   attributes do
     uuid_primary_key(:id)
@@ -75,5 +76,9 @@ defmodule Fluid.Model.Pool do
   postgres do
     table("pools")
     repo(Fluid.Repo)
+  end
+
+  jason do
+    merge(%{module: "#{__MODULE__}"})
   end
 end

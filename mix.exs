@@ -1,7 +1,7 @@
 defmodule Fluid.MixProject do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.6.3"
 
   def project do
     [
@@ -62,9 +62,11 @@ defmodule Fluid.MixProject do
       {:spark, "~>  1.1.54"},
       {:ash_oban, "~> 0.1.13"},
       {:oban, "~> 2.17"},
+      {:ash_jason, "~> 0.3.1"},
 
       # gitops - automatic changelog
-      {:git_ops, "~> 2.6.0", only: [:dev]}
+      {:git_ops, "~> 2.6.0", only: [:dev]},
+      {:truly, "~> 0.2"}
       # {:git_hooks, "~> 0.7.0", only: [:dev], runtime: false}
 
       # {:ash, github: "ash-project/ash", override: true},

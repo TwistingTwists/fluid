@@ -2,7 +2,7 @@ defmodule Fluid.Model.Circularity.Utils do
   alias Fluid.Model
 
   @doc """
-  Given a warehouse, in a world, calculate all the connections 
+  Given a warehouse, in a world, calculate all the connections
   todo ensure the world id matches when you read all tags.
 
   all_tags: represents all the tags in the world (where warehouse exists)
@@ -27,7 +27,9 @@ defmodule Fluid.Model.Circularity.Utils do
     tank_or_pool_ids = tank_ids ++ pool_ids
 
     Enum.reduce(all_tags, [], fn tag, acc ->
-      if tag.source["id"] in tank_or_pool_ids do
+      # and tag.destination["id"] not in tank_or_pool_ids
+      # 👆 when connections are arising from within the warehouse => don't count them for circularity
+      if tag.source["id"] in tank_or_pool_ids and tag.destination["id"] not in tank_or_pool_ids do
         [tag | acc]
       else
         acc
@@ -56,7 +58,9 @@ defmodule Fluid.Model.Circularity.Utils do
     tank_or_pool_ids = tank_ids ++ pool_ids
 
     Enum.reduce(all_tags, [], fn tag, acc ->
-      if tag.destination["id"] in tank_or_pool_ids do
+      # `and tag.source["id"] not in tank_or_pool_ids`
+      # 👆 when connections are arising from within the warehouse => don't count them for circularity
+      if tag.destination["id"] in tank_or_pool_ids and tag.source["id"] not in tank_or_pool_ids do
         [tag | acc]
       else
         acc
@@ -120,7 +124,7 @@ defmodule Fluid.Model.Circularity.Utils do
   end
 
   @doc """
-   
+
   if is_class_0? do
     Map.put(wh_circularity, :determinate_classes, [?0] ++ wh_circularity.determinate_classes)
   else

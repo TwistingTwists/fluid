@@ -2,7 +2,8 @@ defmodule Fluid.Model.Tank do
   require Logger
 
   use Ash.Resource,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshJason.Extension]
 
   # alias Fluid.Model.World
   # alias Fluid.Model.Warehouse
@@ -85,5 +86,9 @@ defmodule Fluid.Model.Tank do
   postgres do
     table "tanks"
     repo Fluid.Repo
+  end
+
+  jason do
+    merge(%{module: "#{__MODULE__}"})
   end
 end
