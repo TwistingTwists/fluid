@@ -1,4 +1,8 @@
 defmodule Fluid.Model.Tank do
+  @moduledoc """
+  Some attributes like :applicable_capacity, :residual_capacity only make sense for capped tank.
+  Maybe write a validation around it.
+  """
   require Logger
 
   use Ash.Resource,
@@ -18,6 +22,26 @@ defmodule Fluid.Model.Tank do
       description "uncapped, capped"
     end
 
+    attribute :total_capacity, :integer do
+      description "The capacity of a CT when it is empty."
+    end
+
+    attribute :volume, :integer do
+      default 0
+      description "the volume of water `currently` in that CT."
+    end
+
+    # attribute :residual_capacity, :integer do
+    #   description "total_capacity - volume"
+    # end
+
+    attribute :applicable_capacity, :integer do
+      description "The capacity of a CT that is used for allocation calculations. It can equal either the
+      Residual Capacity of the CT or the Total Capacity of the CT. The default setting is for
+      it to equal the Residual Capacity of the CT, but the user can change this setting for
+      each CT as they wish."
+    end
+
     attribute :regularity_type, Fluid.TankRegularityTypes do
       description "regular tanks are default"
       default :regular
@@ -29,6 +53,12 @@ defmodule Fluid.Model.Tank do
 
     create_timestamp :created_at
     update_timestamp :updated_at
+  end
+
+  calculations do
+    calculate :residual_capacity, :integer, expr(total_capacity - volume) do
+      description "total_capacity - volume"
+    end
   end
 
   relationships do

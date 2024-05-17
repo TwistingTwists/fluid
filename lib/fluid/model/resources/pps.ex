@@ -50,7 +50,7 @@ defmodule Fluid.Model.PPS do
   end
 
   calculations do
-    calculate(:related_wh, {:array, :struct}, {WhCalculations, field: :pools},
+    calculate :related_wh, {:array, :struct}, {WhCalculations.Warehouse, field: :pools},
       constraints: [items: [instance_of: Model.Warehouse]],
       description: """
       depending on #{@pps_types} - list of warehouses
@@ -60,7 +60,12 @@ defmodule Fluid.Model.PPS do
       :indet_pps_only - warehouses which must be  indeterminate warehouses
 
       """
-    )
+
+    calculate :related_ct, {:array, :struct}, {WhCalculations.Tank, field: :pools},
+      constraints: [items: [instance_of: Model.Tank]],
+      description: """
+      list of capped tanks associated with pps
+      """
   end
 
   actions do
@@ -78,7 +83,44 @@ defmodule Fluid.Model.PPS do
   end
 end
 
-defmodule WhCalculations do
+defmodule WhCalculations.Tank do
+  @moduledoc """
+  Calculates capped tanks for given list of pools
+  """
+  use Ash.Calculation
+  alias Fluid.Model
+
+  @doc """
+  Given a list of pps, return a list of the associated capped tanks for each pps.
+
+  The associated capped tanks are stored as a value under key `opts[:field]` in PPS struct.
+  """
+  @impl Ash.Calculation
+  def calculate(pps_list, opts, _resolution) do
+    fields = List.wrap(opts[:field])
+
+    {:ok,
+     Enum.map(pps_list, fn pps ->
+       pps
+       |> Kernel.get_in(Enum.map(fields, &Access.key/1))
+       # each pps has many pools
+       |> get_related_cts()
+     end)}
+  end
+
+  @doc """
+  Return a unique list of related tanks for a given set of pools
+  """
+  def get_related_cts(pools) do
+    Enum.map(pools, fn pool ->
+      {cts, _outbound_connections} = Model.calculate_outbound_connections_and_cts(pool)
+      cts
+    end)
+    |> Enum.uniq()
+  end
+end
+
+defmodule WhCalculations.Warehouse do
   @moduledoc """
   Calculates warehouse for given list of pools
   """
