@@ -72,7 +72,7 @@ defmodule Fluid.Model.PPS do
     defaults([:read, :update])
 
     create :create do
-      change load([:related_wh])
+      change load([:related_wh, :related_ct])
     end
   end
 
@@ -112,7 +112,7 @@ defmodule WhCalculations.Tank do
   Return a unique list of related tanks for a given set of pools
   """
   def get_related_cts(pools) do
-    Enum.map(pools, fn pool ->
+    Enum.flat_map(pools, fn pool ->
       {cts, _outbound_connections} = Model.calculate_outbound_connections_and_cts(pool)
       cts
     end)
