@@ -10,11 +10,11 @@ defmodule Fluid.Model.Warehouse do
   attributes do
     uuid_primary_key(:id)
 
-    attribute(:name, :string, allow_nil?: false)
+    attribute :name, :string, allow_nil?: false
 
     # attribute :name, :string, allow_nil?: false
-    create_timestamp(:created_at)
-    update_timestamp(:updated_at)
+    create_timestamp :created_at
+    update_timestamp :updated_at
   end
 
   relationships do
@@ -68,7 +68,7 @@ defmodule Fluid.Model.Warehouse do
     defaults([:update])
 
     read :read_all do
-      primary?(true)
+      primary? true
       prepare(build(load: @load_fields))
     end
 
@@ -76,16 +76,16 @@ defmodule Fluid.Model.Warehouse do
 
     read :read_by_id do
       prepare(build(load: @load_fields))
-      get_by([:id])
+      get_by [:id]
     end
 
     create :create do
-      primary?(true)
+      primary? true
 
       argument(:tanks, {:array, Fluid.Model.Tank}, allow_nil?: true)
       argument(:pools, {:array, Fluid.Model.Pool}, allow_nil?: true)
 
-      change(load(@load_fields))
+      change load(@load_fields)
 
       change({Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tanks, rel: :tanks})
       # change Fluid.Model.Warehouse.Changes.AddDefaultPool
@@ -97,7 +97,7 @@ defmodule Fluid.Model.Warehouse do
     update :add_tank do
       argument(:tank, Fluid.Model.Tank, allow_nil?: false)
 
-      change(load(@load_fields))
+      change load(@load_fields)
 
       # change {Fluid.Model.Changes.AddArgToRelationship, arg: :tank, rel: :tanks}
       change({Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks})
@@ -107,7 +107,7 @@ defmodule Fluid.Model.Warehouse do
     update :add_pool do
       argument(:pool, Fluid.Model.Pool, allow_nil?: false)
 
-      change(load(@load_fields))
+      change load(@load_fields)
 
       change({Fluid.Model.Changes.AddArgToRelationship, arg: :pool, rel: :pools})
       # change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks}

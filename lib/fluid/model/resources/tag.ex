@@ -21,38 +21,36 @@ defmodule Fluid.Model.Tag do
     uuid_primary_key(:id)
 
     # https://github.com/rellen/ash/blob/37b0c4d9d0b3ee144c13293c73636c25cbf9be86/test/type/union_test.exs#L5
-    attribute(:source, :map, allow_nil?: false)
-    attribute(:destination, :map, allow_nil?: false)
+    attribute :source, :map, allow_nil?: false
+    attribute :destination, :map, allow_nil?: false
 
-    attribute(:user_defined_tag, :string,
+    attribute :user_defined_tag, :string,
       description:
         "Tag which contains Primary Tag Rank and Secondary Tag Rank in a tuple format. {:primary_tag_tank, :secondar_tag_rank}. User Input is taken and stored in database."
-    )
 
-    create_timestamp(:created_at)
-    update_timestamp(:updated_at)
+    create_timestamp :created_at
+    update_timestamp :updated_at
   end
 
   calculations do
-    calculate(:tag, :string, {Tag.TagCalculation},
+    calculate :tag, :string, {Tag.TagCalculation},
       description:
         "Tag which contains Primary Tag Rank and Secondary Tag Rank in a tuple format. {:primary_tag_tank, :secondar_tag_rank}. For all practical use cases, this calculation is used. "
-    )
   end
 
   actions do
     defaults([:update])
 
     read :read_all do
-      primary?(true)
+      primary? true
     end
 
     read :read_by_id do
-      get_by([:id])
+      get_by [:id]
     end
 
     create :create do
-      primary?(true)
+      primary? true
       # argument :source, Tank | Pool, allow_nil?: false
       argument(:source, :map, allow_nil?: false)
       argument(:destination, :map, allow_nil?: false)

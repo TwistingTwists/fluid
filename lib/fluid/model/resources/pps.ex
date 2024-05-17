@@ -67,7 +67,7 @@ defmodule Fluid.Model.PPS do
     defaults([:read, :update])
 
     create :create do
-      change(load([:related_wh]))
+      change load([:related_wh])
     end
   end
 

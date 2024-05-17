@@ -8,8 +8,8 @@ defmodule Fluid.Model.Pool do
   attributes do
     uuid_primary_key(:id)
 
-    attribute(:name, :string, allow_nil?: true)
-    attribute(:tag_id, :uuid, allow_nil?: true)
+    attribute :name, :string, allow_nil?: true
+    attribute :tag_id, :uuid, allow_nil?: true
 
     attribute :capacity_type, Fluid.PoolTypes do
       description("fixed, uncapped, or capped pools can exist")
@@ -19,8 +19,8 @@ defmodule Fluid.Model.Pool do
       description("Whether it is standalone or in warehouse")
     end
 
-    create_timestamp(:created_at)
-    update_timestamp(:updated_at)
+    create_timestamp :created_at
+    update_timestamp :updated_at
   end
 
   relationships do
@@ -34,15 +34,15 @@ defmodule Fluid.Model.Pool do
     defaults([:update])
 
     read :read_all do
-      primary?(true)
+      primary? true
     end
 
     read :read_by_id do
-      get_by([:id])
+      get_by [:id]
     end
 
     create :create do
-      change(load([:world, :warehouse]))
+      change load([:world, :warehouse])
     end
 
     # create :create_with_world do
