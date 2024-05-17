@@ -195,6 +195,8 @@ defmodule Fluid.Model do
 
   @doc """
   from a given pool, calculate the {`the capped tanks` , ` outbound connections to capped tanks` }
+
+  This function is used in calculations to yield pps.related_ct
   """
   def calculate_outbound_connections_and_cts(%Model.Pool{} = pool) do
     # todo [enhancement]: read tags for world
