@@ -33,7 +33,7 @@ defmodule Fluid.Model.Tag do
   end
 
   calculations do
-    calculate :tag, :string, {Tag.TagCalculation},
+    calculate :tag, {:integer, :integer}, {Tag.TagCalculation},
       description:
         "Tag which contains Primary Tag Rank and Secondary Tag Rank in a tuple format. {:primary_tag_tank, :secondar_tag_rank}. For all practical use cases, this calculation is used. "
   end

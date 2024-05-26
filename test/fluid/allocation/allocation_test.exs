@@ -9,6 +9,8 @@ defmodule Fluid.AllocationTest do
   Pool Rank - valid only for pools in pps. Refers to the `order` of pools in pps.
   """
   use Fluid.DataCase, async: true
+  doctest Fluid.Model.Tag.TagCalculation.Parser
+
   alias Fluid.Test.Factory
   alias Fluid.Model
 
