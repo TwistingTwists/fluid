@@ -6,13 +6,15 @@ defmodule Fluid.Model.Tag.TagCalculation do
   use Ash.Calculation
 
   require Logger
+  alias Fluid.Model
   alias __MODULE__.Parser
 
   @impl Ash.Calculation
   def calculate(tags, _opts, _resolution) do
     {:ok,
      Enum.map(tags, fn tag ->
-       Parser.parse(tag.user_defined_tag)
+       {primary, secondary} = Parser.parse(tag.user_defined_tag)
+       struct!(Model.Tag.TagRank,%{primary: primary, secondary: secondary})
      end)}
   end
 

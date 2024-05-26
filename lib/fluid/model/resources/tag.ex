@@ -11,6 +11,18 @@ defmodule Fluid.Model.Tag do
   # alias Fluid.Model.Warehouse
   # alias Fluid.Model.World
   alias __MODULE__
+  alias Fluid.Model
+
+  defmodule TagRank do
+    use Ash.Resource
+
+    attributes do
+      uuid_primary_key :id
+
+      attribute :primary, :integer, default: 1
+      attribute :secondary, :integer, default: 1
+    end
+  end
 
   require Logger
 
@@ -18,7 +30,7 @@ defmodule Fluid.Model.Tag do
     data_layer: AshPostgres.DataLayer
 
   attributes do
-    uuid_primary_key(:id)
+    uuid_primary_key :id
 
     # https://github.com/rellen/ash/blob/37b0c4d9d0b3ee144c13293c73636c25cbf9be86/test/type/union_test.exs#L5
     attribute :source, :map, allow_nil?: false
@@ -33,13 +45,19 @@ defmodule Fluid.Model.Tag do
   end
 
   calculations do
-    calculate :tag, {:integer, :integer}, {Tag.TagCalculation},
-      description:
-        "Tag which contains Primary Tag Rank and Secondary Tag Rank in a tuple format. {:primary_tag_tank, :secondar_tag_rank}. For all practical use cases, this calculation is used. "
+    calculate :tag, :struct, {Tag.TagCalculation},
+      constraints: [instance_of: Model.Tag.TagRank],
+      description: """
+      Tag which contains Primary Tag Rank and Secondary Tag Rank in a tuple format. {:primary_tag_tank, :secondar_tag_rank}. For all practical use cases, this calculation is used.
+      """
+  end
+
+  relationships do
+    has_one :allocation, Model.Allocation
   end
 
   actions do
-    defaults([:update])
+    defaults [:update]
 
     read :read_all do
       primary? true
@@ -52,10 +70,10 @@ defmodule Fluid.Model.Tag do
     create :create do
       primary? true
       # argument :source, Tank | Pool, allow_nil?: false
-      argument(:source, :map, allow_nil?: false)
-      argument(:destination, :map, allow_nil?: false)
+      argument :source, :map, allow_nil?: false
+      argument :destination, :map, allow_nil?: false
 
-      change(Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP)
+      change Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP
       # change load([:world, :warehouse])
     end
 
@@ -70,19 +88,19 @@ defmodule Fluid.Model.Tag do
   end
 
   code_interface do
-    define_for(Fluid.Model.Api)
+    define_for Fluid.Model.Api
 
-    define(:create, args: [:source, :destination])
-    define(:create_reverse, args: [:source, :destination])
+    define :create, args: [:source, :destination]
+    define :create_reverse, args: [:source, :destination]
 
-    define(:read_all)
-    define(:read_by_id, args: [:id])
+    define :read_all
+    define :read_by_id, args: [:id]
 
-    define(:update)
+    define :update
   end
 
   postgres do
-    table("tags")
-    repo(Fluid.Repo)
+    table "tags"
+    repo Fluid.Repo
   end
 end
