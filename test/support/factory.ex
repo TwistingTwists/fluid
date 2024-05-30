@@ -256,14 +256,38 @@ defmodule Fluid.Test.Factory do
     [cp_1, cp_2] = warehouse_1.capped_pools
     [fp_1, fp_2] = warehouse_1.fixed_pools
 
+    [cp_1, cp_2 ,fp_1, fp_2]=
+    [{cp_1,2000}, {cp_2,500} ,{fp_1,2500}, {fp_2,1000}]
+    |> Enum.map(fn ct, volume ->
+      Model.Pool.update_volume!(ct, %{volume: volume})
+    end)
+
     [ct_1, ct_2, ct_3, ct_4] = warehouse_1.capped_tanks
+
+    [ct_1, ct_2, ct_3, ct_4] =
+      [{ct_1, 1100}, {ct_2, 3000}, {ct_3, 8000}, {ct_4, 1000}]
+      |> Enum.map(fn ct, volume ->
+        Model.Tank.update_volume!(ct, %{volume: volume})
+      end)
 
     ####################################
 
     [cp_10, cp_13] = warehouse_6.capped_pools
     [fp_11, fp_12] = warehouse_6.fixed_pools
 
+    [cp_10, cp_13, fp_11, fp_12] =
+      [{cp_10, 100}, {cp_13, 2000}, {fp_11, 100}, {fp_12, 2700}]
+      |> Enum.map(fn ct, volume ->
+        Model.Pool.update_volume!(ct, %{volume: volume})
+      end)
+
     [ct_14, ct_15, _ct_16, ct_17] = warehouse_6.capped_tanks
+
+    [ct_14, ct_15, ct_17] =
+      [{ct_14, 600}, {ct_15, 1000}, {ct_17, 1200}]
+      |> Enum.map(fn ct, volume ->
+        Model.Tank.update_volume!(ct, %{volume: volume})
+      end)
 
     ####################################
     # connections inside WH1

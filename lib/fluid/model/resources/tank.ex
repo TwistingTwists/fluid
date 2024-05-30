@@ -85,6 +85,11 @@ defmodule Fluid.Model.Tank do
       change load([:world, :warehouse])
     end
 
+    update :update_volume do
+      accept [:volume]
+      change load([:warehouse])
+    end
+
     # create :create_with_world do
     #   argument :world, World, allow_nil?: true
     #   change load([:world, :warehouse])
@@ -104,6 +109,7 @@ defmodule Fluid.Model.Tank do
     define_for Fluid.Model.Api
 
     define :create
+    define :update_volume
     # define :create_with_world, args: [:world]
     # define :create_with_warehouse, args: [:warehouse]
 
