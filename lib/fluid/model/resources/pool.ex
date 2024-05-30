@@ -19,6 +19,11 @@ defmodule Fluid.Model.Pool do
       description("Whether it is standalone or in warehouse")
     end
 
+    attribute :volume, :integer do
+      default 0
+      description "the volume of water `currently` in that pool."
+    end
+
     create_timestamp :created_at
     update_timestamp :updated_at
   end
@@ -45,6 +50,11 @@ defmodule Fluid.Model.Pool do
       change load([:world, :warehouse])
     end
 
+    update :update_volume do
+      accept [:volume]
+      change load([:warehouse])
+    end
+
     # create :create_with_world do
     #   argument :world, World, allow_nil?: true
     #   change load([:world, :warehouse])
@@ -64,6 +74,7 @@ defmodule Fluid.Model.Pool do
     define_for(Fluid.Model.Api)
 
     define(:create)
+    define :update_volume
     # define :create_with_world, args: [:world]
     # define :create_with_warehouse, args: [:warehouse]
 

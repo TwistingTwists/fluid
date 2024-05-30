@@ -7,22 +7,8 @@ defmodule Fluid.Model.Tag do
   with constraints modelled as changesets
   """
 
-  # alias Fluid.Model.Tank
-  # alias Fluid.Model.Warehouse
-  # alias Fluid.Model.World
   alias __MODULE__
   alias Fluid.Model
-
-  defmodule TagRank do
-    use Ash.Resource
-
-    attributes do
-      uuid_primary_key :id
-
-      attribute :primary, :integer, default: 1
-      attribute :secondary, :integer, default: 1
-    end
-  end
 
   require Logger
 
@@ -45,10 +31,10 @@ defmodule Fluid.Model.Tag do
   end
 
   calculations do
-    calculate :tag, :struct, {Tag.TagCalculation},
+    calculate :tag, :struct, Tag.TagCalculation,
       constraints: [instance_of: Model.Tag.TagRank],
       description: """
-      Tag which contains Primary Tag Rank and Secondary Tag Rank in a tuple format. {:primary_tag_tank, :secondar_tag_rank}. For all practical use cases, this calculation is used.
+      Tag which contains Primary Tag Rank and Secondary Tag Rank. For all practical use cases, this calculation is used.
       """
   end
 

@@ -10,9 +10,33 @@ defmodule Fluid.AllocationTest do
   """
   use Fluid.DataCase, async: true
   doctest Fluid.Model.Tag.TagCalculation.Parser
+  doctest Fluid.Model
 
   alias Fluid.Test.Factory
   alias Fluid.Model
+
+  describe "unit tests" do
+    test "group pool of same rank from list of pps'es" do
+      value =
+        # This is a list of pps. each entry in pss indicates a pool
+        [~w(r o a b m p z y t q )a, ~w(b g v f s )a, ~w(v f a g h a l uo)a]
+        |> Model.group_by_rank()
+
+      assert {10,
+              %{
+                1 => [:v, :b, :r],
+                2 => [:f, :g, :o],
+                3 => [:a, :v, :a],
+                4 => [:g, :f, :b],
+                5 => [:h, :s, :m],
+                6 => [:a, :p],
+                7 => [:l, :z],
+                8 => [:uo, :y],
+                9 => [:t],
+                10 => [:q]
+              }} == value
+    end
+  end
 
   describe "pool and warehouses" do
     setup do
