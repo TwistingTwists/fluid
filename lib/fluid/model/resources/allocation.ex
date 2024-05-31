@@ -16,7 +16,7 @@ defmodule Fluid.Model.Allocation do
 
     # attribute :from, {:array, :struct}, constraints: [items: [instance_of: Fluid.Model.Tag]]
     # attribute :to, :string
-    attribute :volume, :string
+    attribute :volume, :float
 
     attribute :stage, :string,
       default: "",
@@ -44,11 +44,37 @@ defmodule Fluid.Model.Allocation do
   end
 
   relationships do
-    belongs_to :tag, Model.Tag
+    belongs_to :tag, Model.Tag do
+    attribute_writable? true
+    end
   end
 
   postgres do
     table "allocations"
     repo Fluid.Repo
   end
+
+  actions do
+    defaults [:update,:create]
+
+    read :read_all do
+      primary? true
+    end
+
+    read :read_by_id do
+      get_by [:id]
+      # prepare build(load: @load_fields)
+    end
+
+  end
+
+  code_interface do
+    define_for(Fluid.Model.Api)
+
+    define :create
+    define :read_all
+    define :read_by_id, args: [:id]
+    define :update
+  end
+
 end

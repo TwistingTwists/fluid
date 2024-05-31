@@ -5,6 +5,8 @@ defmodule Fluid.Model.Pool do
     data_layer: AshPostgres.DataLayer,
     extensions: [AshJason.Extension]
 
+  @load_fields [ :warehouse]
+
   attributes do
     uuid_primary_key(:id)
 
@@ -22,6 +24,10 @@ defmodule Fluid.Model.Pool do
     attribute :volume, :integer do
       default 0
       description "the volume of water `currently` in that pool."
+    end
+
+    attribute :total_capacity, :integer do
+      description "The TOTAL capacity of a pool when it is empty state."
     end
 
     create_timestamp :created_at
@@ -44,16 +50,17 @@ defmodule Fluid.Model.Pool do
 
     read :read_by_id do
       get_by [:id]
+      prepare build(load: @load_fields)
     end
 
     create :create do
-      change load([:world, :warehouse])
+      change load(@load_fields)
     end
 
-    update :update_volume do
-      accept [:volume]
-      change load([:warehouse])
-    end
+    # update :update_volume do
+    #   accept [:volume]
+    #   change load([:warehouse])
+    # end
 
     # create :create_with_world do
     #   argument :world, World, allow_nil?: true
@@ -74,7 +81,7 @@ defmodule Fluid.Model.Pool do
     define_for(Fluid.Model.Api)
 
     define(:create)
-    define :update_volume
+    # define :update
     # define :create_with_world, args: [:world]
     # define :create_with_warehouse, args: [:warehouse]
 

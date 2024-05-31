@@ -6,9 +6,9 @@
       "type": "uuid",
       "source": "id",
       "references": null,
-      "primary_key?": true,
       "allow_nil?": false,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": true
     },
     {
       "default": "nil",
@@ -16,9 +16,9 @@
       "type": "float",
       "source": "volume",
       "references": null,
-      "primary_key?": false,
       "allow_nil?": true,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     },
     {
       "default": "\"\"",
@@ -26,9 +26,9 @@
       "type": "text",
       "source": "stage",
       "references": null,
-      "primary_key?": false,
       "allow_nil?": true,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     },
     {
       "default": "nil",
@@ -38,40 +38,40 @@
       "references": {
         "name": "allocations_tag_id_fkey",
         "table": "tags",
-        "primary_key?": true,
         "schema": "public",
+        "on_delete": null,
         "multitenancy": {
           "global": null,
-          "strategy": null,
-          "attribute": null
+          "attribute": null,
+          "strategy": null
         },
+        "primary_key?": true,
         "destination_attribute": "id",
-        "on_delete": null,
-        "on_update": null,
         "deferrable": false,
-        "match_with": null,
         "match_type": null,
+        "match_with": null,
+        "on_update": null,
         "destination_attribute_default": null,
         "destination_attribute_generated": null
       },
-      "primary_key?": false,
       "allow_nil?": true,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     }
   ],
   "table": "allocations",
-  "hash": "299472EA84571B732A22301F13AFC5B7787C37F199A29EDB295C25555AFE762D",
+  "hash": "8886C3D86A7B2541A599426F342E949CF52D964BB42829C479EDF582E0C41025",
   "repo": "Elixir.Fluid.Repo",
-  "schema": null,
-  "check_constraints": [],
   "identities": [],
-  "custom_indexes": [],
+  "schema": null,
   "multitenancy": {
     "global": null,
-    "strategy": null,
-    "attribute": null
+    "attribute": null,
+    "strategy": null
   },
   "base_filter": null,
+  "check_constraints": [],
+  "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true
 }

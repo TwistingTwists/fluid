@@ -12,6 +12,9 @@ defmodule Fluid.Model.Tank do
   # alias Fluid.Model.World
   # alias Fluid.Model.Warehouse
 
+  @load_fields [ :residual_capacity, :world,:warehouse]
+
+
   attributes do
     uuid_primary_key :id
 
@@ -78,16 +81,18 @@ defmodule Fluid.Model.Tank do
 
     read :read_by_id do
       get_by [:id]
+      prepare build(load: @load_fields)
+
     end
 
     create :create do
       primary? true
-      change load([:world, :warehouse])
+      change load(@load_fields)
     end
 
     update :update_volume do
       accept [:volume]
-      change load([:warehouse])
+      change load(@load_fields)
     end
 
     # create :create_with_world do
@@ -109,7 +114,7 @@ defmodule Fluid.Model.Tank do
     define_for Fluid.Model.Api
 
     define :create
-    define :update_volume
+    # define :update_volume
     # define :create_with_world, args: [:world]
     # define :create_with_warehouse, args: [:warehouse]
 

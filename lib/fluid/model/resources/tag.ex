@@ -15,6 +15,8 @@ defmodule Fluid.Model.Tag do
   use Ash.Resource,
     data_layer: AshPostgres.DataLayer
 
+  @load_fields [ :allocation]
+
   attributes do
     uuid_primary_key :id
 
@@ -47,10 +49,14 @@ defmodule Fluid.Model.Tag do
 
     read :read_all do
       primary? true
+      prepare build(load: @load_fields)
+
     end
 
     read :read_by_id do
       get_by [:id]
+      prepare build(load: @load_fields)
+
     end
 
     create :create do
@@ -60,7 +66,7 @@ defmodule Fluid.Model.Tag do
       argument :destination, :map, allow_nil?: false
 
       change Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP
-      # change load([:world, :warehouse])
+      change load(@load_fields)
     end
 
     create :create_reverse do

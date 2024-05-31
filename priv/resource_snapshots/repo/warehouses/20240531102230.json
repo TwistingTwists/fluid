@@ -7,8 +7,8 @@
       "source": "id",
       "references": null,
       "allow_nil?": false,
-      "primary_key?": true,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": true
     },
     {
       "default": "nil",
@@ -17,8 +17,8 @@
       "source": "name",
       "references": null,
       "allow_nil?": false,
-      "primary_key?": false,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     },
     {
       "default": "fragment(\"now()\")",
@@ -27,8 +27,8 @@
       "source": "created_at",
       "references": null,
       "allow_nil?": false,
-      "primary_key?": false,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     },
     {
       "default": "fragment(\"now()\")",
@@ -37,8 +37,8 @@
       "source": "updated_at",
       "references": null,
       "allow_nil?": false,
-      "primary_key?": false,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     },
     {
       "default": "nil",
@@ -48,40 +48,40 @@
       "references": {
         "name": "warehouses_world_id_fkey",
         "table": "worlds",
-        "primary_key?": true,
         "schema": "public",
+        "on_delete": null,
         "multitenancy": {
           "global": null,
           "attribute": null,
           "strategy": null
         },
+        "primary_key?": true,
         "destination_attribute": "id",
-        "on_delete": null,
-        "on_update": null,
         "deferrable": false,
-        "match_with": null,
         "match_type": null,
+        "match_with": null,
+        "on_update": null,
         "destination_attribute_default": null,
         "destination_attribute_generated": null
       },
       "allow_nil?": true,
-      "primary_key?": false,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     }
   ],
   "table": "warehouses",
-  "hash": "B3EFA04E34EB80A41F38294CF4B5A0432F3B25EDCB426E9741AE3AD749CE5E16",
+  "hash": "98EF94CA52CCC0CCDCC39BA8ADD278FE0D2FF732DC15BBC082476C8DED24AADB",
   "repo": "Elixir.Fluid.Repo",
-  "schema": null,
-  "check_constraints": [],
   "identities": [],
-  "custom_indexes": [],
+  "schema": null,
   "multitenancy": {
     "global": null,
     "attribute": null,
     "strategy": null
   },
   "base_filter": null,
+  "check_constraints": [],
+  "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true
 }

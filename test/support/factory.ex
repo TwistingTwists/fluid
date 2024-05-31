@@ -2,6 +2,7 @@ defmodule Fluid.Test.Factory do
   alias Fluid.Model
   alias Fluid.Model.Tank
   alias Fluid.Model.Pool
+  import Helpers.ColorIO
 
   def tank_params() do
     [
@@ -256,18 +257,19 @@ defmodule Fluid.Test.Factory do
     [cp_1, cp_2] = warehouse_1.capped_pools
     [fp_1, fp_2] = warehouse_1.fixed_pools
 
-    [cp_1, cp_2 ,fp_1, fp_2]=
-    [{cp_1,2000}, {cp_2,500} ,{fp_1,2500}, {fp_2,1000}]
-    |> Enum.map(fn ct, volume ->
-      Model.Pool.update_volume!(ct, %{volume: volume})
-    end)
+    [cp_1, cp_2, fp_1, fp_2] =
+      [{cp_1, 2000, "cp_1"}, {cp_2, 500, "cp_2"}, {fp_1, 2500, "fp_1"}, {fp_2, 1000, "fp_2"}]
+      |> Enum.map(fn {ct, total_capacity, name} ->
+        Model.Pool.update!(ct, %{total_capacity: total_capacity, volume: total_capacity, name: name})
+        # |> IO.inspect(label: "pool wh1")
+      end)
 
     [ct_1, ct_2, ct_3, ct_4] = warehouse_1.capped_tanks
 
     [ct_1, ct_2, ct_3, ct_4] =
-      [{ct_1, 1100}, {ct_2, 3000}, {ct_3, 8000}, {ct_4, 1000}]
-      |> Enum.map(fn ct, volume ->
-        Model.Tank.update_volume!(ct, %{volume: volume})
+      [{ct_1, 1100, "ct_1"}, {ct_2, 3000, "ct_2"}, {ct_3, 8000, "ct_3"}, {ct_4, 1000, "ct_4"}]
+      |> Enum.map(fn {ct, total_capacity, name} ->
+        Model.Tank.update!(ct, %{total_capacity: total_capacity, name: name})
       end)
 
     ####################################
@@ -276,18 +278,23 @@ defmodule Fluid.Test.Factory do
     [fp_11, fp_12] = warehouse_6.fixed_pools
 
     [cp_10, cp_13, fp_11, fp_12] =
-      [{cp_10, 100}, {cp_13, 2000}, {fp_11, 100}, {fp_12, 2700}]
-      |> Enum.map(fn ct, volume ->
-        Model.Pool.update_volume!(ct, %{volume: volume})
+      [{cp_10, 100, "cp_10"}, {cp_13, 2000, "cp_13"}, {fp_11, 100, "fp_11"}, {fp_12, 2700, "fp_12"}]
+      |> Enum.map(fn {ct, total_capacity, name} ->
+        Model.Pool.update!(ct, %{total_capacity: total_capacity, volume: total_capacity, name: name})
+        # |> IO.inspect(label: "pool wh1")
       end)
 
     [ct_14, ct_15, _ct_16, ct_17] = warehouse_6.capped_tanks
 
     [ct_14, ct_15, ct_17] =
-      [{ct_14, 600}, {ct_15, 1000}, {ct_17, 1200}]
-      |> Enum.map(fn ct, volume ->
-        Model.Tank.update_volume!(ct, %{volume: volume})
+      [{ct_14, 600, "ct_14"}, {ct_15, 1000, "ct_15"}, {ct_17, 1200, "ct_17"}]
+      |> Enum.map(fn {ct, total_capacity, name} ->
+        Model.Tank.update!(ct, %{total_capacity: total_capacity, name: name})
       end)
+
+    # [ct_14, ct_15, ct_17]
+    # [cp_10, cp_13, fp_11, fp_12]
+    #   |> Enum.map(& &1.name) |> orange("ct names ")
 
     ####################################
     # connections inside WH1
@@ -316,6 +323,11 @@ defmodule Fluid.Test.Factory do
     {:ok, _} = Fluid.Model.connect(cp_1, ct_14)
 
     ####################################
+
+    # Model.Warehouse.read_by_id!(warehouse_1.id) |> Enum.map(& &1.name) |> orange("wh.pools names")
+
+    # caution: re read all warehouses from db - just to make sure all the latest data is reloaded back in them.
     [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
+    |> Enum.map(fn wh -> Model.Warehouse.read_by_id!(wh.id) end)
   end
 end
