@@ -5,6 +5,27 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.7.0](https://github.com/TwistingTwists/fluid/compare/v0.6.3...v0.7.0) (2024-05-31)
+
+
+
+
+### Features:
+
+* module 009 allocations for pools
+
+* add volume to tank and pools
+
+* allocations module
+
+### Bug Fixes:
+
+* migrations for allocations - string
+
+* factory setup with volumes + tank api updated
+
+* Tag Rank is now represented as Tuple
+
 ## [v0.6.3](https://github.com/TwistingTwists/fluid/compare/v0.6.2...v0.6.3) (2024-05-03)
 
 
