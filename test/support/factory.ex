@@ -141,6 +141,16 @@ defmodule Fluid.Test.Factory do
     # to ensure that warehouse names never conflict.
     random_number = Enum.random(101..400)
 
+    # to_improve: add warehouses to world -> on start and remove random numbers
+
+    # VALID
+    # warehosue_1 -> world_1
+    # warehosue_1 -> world_2
+
+    # INVALID
+    # warehouse_1 -> (world_1)
+    # warehouse_1 -> (world_1)
+
     {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1 #{__MODULE__} #{random_number}")
     {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2 #{__MODULE__} #{random_number}")
     {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3 #{__MODULE__} #{random_number}")
@@ -148,8 +158,36 @@ defmodule Fluid.Test.Factory do
     {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5 #{__MODULE__} #{random_number}")
     {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6 #{__MODULE__} #{random_number}")
 
+    # to_improve: convenience - add_pool_to_warehouse
+    # to_discuss: are there uncapped pools? - capped / fixed
+
+    # all tanks start with 0 volume.
+
+    # Do the pools have a default volume? - NO
+    # FP - Volume at start HAS TO be defined.
+    # Capped - Volume - equal to CT it is connected (tagged) to.
+      # at start, CT, CP both have 0 volume
+      # when we connect CT with CP then, the volume of CT does not change.
+        # capacity of CT and CP MUST be the same. Ensure this when we are connecting the two - CT and CP. (unanswered)
+
+      # at runtime, when volume enters CT -> it flows automatically to CP
+
+      # FP always have a fixed volume. At start.
+
+    # Can we have uncapped pools?  - YES
+      # Uncapped - Volume - 0 at start.
+
+    # Can pools live outside the warehouse? - NO
+    # MUST fixed pool need to have volume attribute set at start? - YES
+
+    # tanks and pools in warehouse need to have a unique name within a warehouse. - YES
+
     {:ok, warehouse_1} =
-      Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_1, {:params, [%{name: "", pool_type: :fixed, volume: 67}]})
+      Model.add_pools_to_warehouse(warehouse_1, {:params, [%{pool_type: :capped / :uncapped }]}) # -- NO :volume ATTRIBUTE
+
+      # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{pool_type: :uncapped, volume: 67}]}) -- INVALID
 
     {:ok, warehouse_2} =
       Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
@@ -166,6 +204,11 @@ defmodule Fluid.Test.Factory do
     {:ok, warehouse_6} =
       Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
+    # wh: query tanks by type (API wh.uncapped_tanks)
+    # wh: at least one UCT + at least (one of FP / CP) - todo: instead of default uncapped, do capped / fp
+
+    # todo: wh: add a `is_valid` key in warehouse, `reason` - the reason to show in UI
+
     [uct_1] = warehouse_1.tanks
     [uct_2] = warehouse_2.tanks
     [uct_3] = warehouse_3.tanks
@@ -180,8 +223,20 @@ defmodule Fluid.Test.Factory do
     [ucp_5] = warehouse_5.pools
     [ucp_6] = warehouse_6.pools
 
+    # Fluid.Model.connect("wh_1" , "ct_1", "wh_2", "cp_1")
+    # Frontend
+    # "wh_1" , "ct_1", "wh_2", "cp_1" = params from frontend
+    # uuids, integer, string, atoms
+
+    # LiveView
+    # - params from frontend
+    # - handle_event -> params => API.changeset() |> Repo.insert()
+
+
     # outbound connections from 1
     {:ok, _} = Fluid.Model.connect(uct_1, ucp_5)
+    {:ok, _} = Fluid.Model.connect(ct_1, cp_2)
+
     {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
     {:ok, _} = Fluid.Model.connect(uct_1, ucp_6)
 
@@ -251,11 +306,16 @@ defmodule Fluid.Test.Factory do
            %{capacity_type: :capped, location_type: :in_wh}
          ]}
       )
+    # to_improve: make it simpler to use in iex
+    # Model.add_tanks_to_warehouse(warehouse)
 
     ####################################
 
     [cp_1, cp_2] = warehouse_1.capped_pools
     [fp_1, fp_2] = warehouse_1.fixed_pools
+
+    # to_improve: try to build wh from iex.
+    #
 
     [cp_1, cp_2, fp_1, fp_2] =
       [{cp_1, 2000, "cp_1"}, {cp_2, 500, "cp_2"}, {fp_1, 2500, "fp_1"}, {fp_2, 1000, "fp_2"}]
