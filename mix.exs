@@ -81,6 +81,8 @@ defmodule Fluid.MixProject do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ash_postgres.setup": ["ash_postgres.create", "ash_postgres.migrate"],
+      "ash_postgres.reset": ["ash_postgres.drop","ash_postgres.create", "ash_postgres.migrate"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],

@@ -13,20 +13,30 @@
     {
       "default": "nil",
       "size": null,
-      "type": "float",
-      "source": "volume",
+      "type": "text",
+      "source": "name",
       "references": null,
-      "allow_nil?": true,
+      "allow_nil?": false,
       "generated?": false,
       "primary_key?": false
     },
     {
-      "default": "\"\"",
+      "default": "fragment(\"now()\")",
       "size": null,
-      "type": "text",
-      "source": "stage",
+      "type": "utc_datetime_usec",
+      "source": "created_at",
       "references": null,
-      "allow_nil?": true,
+      "allow_nil?": false,
+      "generated?": false,
+      "primary_key?": false
+    },
+    {
+      "default": "fragment(\"now()\")",
+      "size": null,
+      "type": "utc_datetime_usec",
+      "source": "updated_at",
+      "references": null,
+      "allow_nil?": false,
       "generated?": false,
       "primary_key?": false
     },
@@ -34,36 +44,46 @@
       "default": "nil",
       "size": null,
       "type": "uuid",
-      "source": "tag_id",
+      "source": "world_id",
       "references": {
-        "name": "allocations_tag_id_fkey",
-        "table": "tags",
+        "name": "warehouses_world_id_fkey",
+        "table": "worlds",
         "schema": "public",
         "on_delete": null,
+        "on_update": null,
+        "destination_attribute": "id",
+        "primary_key?": true,
         "multitenancy": {
           "global": null,
           "attribute": null,
           "strategy": null
         },
-        "primary_key?": true,
-        "destination_attribute": "id",
         "deferrable": false,
-        "match_type": null,
-        "match_with": null,
-        "on_update": null,
         "destination_attribute_default": null,
-        "destination_attribute_generated": null
+        "destination_attribute_generated": null,
+        "match_with": null,
+        "match_type": null
       },
       "allow_nil?": true,
       "generated?": false,
       "primary_key?": false
     }
   ],
-  "table": "allocations",
-  "hash": "8886C3D86A7B2541A599426F342E949CF52D964BB42829C479EDF582E0C41025",
+  "table": "warehouses",
+  "hash": "C78F0E35A1DD11EED14D8F701C18DB3F2453B703D95D4035A50DF24EC9FAA75F",
   "repo": "Elixir.Fluid.Repo",
-  "identities": [],
   "schema": null,
+  "identities": [
+    {
+      "name": "unique_name_in_world",
+      "keys": [
+        "name",
+        "world_id"
+      ],
+      "index_name": "warehouses_unique_name_in_world_index",
+      "base_filter": null
+    }
+  ],
   "multitenancy": {
     "global": null,
     "attribute": null,

@@ -62,10 +62,10 @@
     }
   ],
   "table": "tags",
-  "hash": "25B1C13AFF900E5143BA6CD97C09D0F7F9457668F6B2C17A267F593248E0CDF8",
+  "hash": "8C88E4CEBE1C6D893025D015A7456763A2E60FAF51128D669A072DAC2DE34F12",
   "repo": "Elixir.Fluid.Repo",
-  "identities": [],
   "schema": null,
+  "identities": [],
   "multitenancy": {
     "global": null,
     "attribute": null,

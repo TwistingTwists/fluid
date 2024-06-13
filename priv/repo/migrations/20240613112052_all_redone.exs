@@ -1,4 +1,4 @@
-defmodule Fluid.Repo.Migrations.AllocationsVolumeFloat do
+defmodule Fluid.Repo.Migrations.AllRedone do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 
@@ -29,6 +29,10 @@ defmodule Fluid.Repo.Migrations.AllocationsVolumeFloat do
             prefix: "public"
           )
     end
+
+    create unique_index(:warehouses, [:name, :world_id],
+             name: "warehouses_unique_name_in_world_index"
+           )
 
     create table(:tanks, primary_key: false) do
       add :id, :uuid, null: false, default: fragment("uuid_generate_v4()"), primary_key: true
@@ -130,6 +134,10 @@ defmodule Fluid.Repo.Migrations.AllocationsVolumeFloat do
     drop constraint(:tanks, "tanks_world_id_fkey")
 
     drop table(:tanks)
+
+    drop_if_exists unique_index(:warehouses, [:name, :world_id],
+                     name: "warehouses_unique_name_in_world_index"
+                   )
 
     drop constraint(:warehouses, "warehouses_world_id_fkey")
 
