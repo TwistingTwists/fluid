@@ -17,6 +17,10 @@ defmodule Fluid.Model.Warehouse do
     update_timestamp :updated_at
   end
 
+  identities do
+      identity :unique_name_in_world, [:name, :world_id]
+  end
+
   relationships do
     belongs_to(:world, Fluid.Model.World)
     has_many(:tanks, Fluid.Model.Tank)
