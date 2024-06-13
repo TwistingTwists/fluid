@@ -44,22 +44,14 @@ defmodule Fluid.Test.Factory do
 
   def tanks() do
     tank_params()
-    |> Enum.map(fn tank_params ->
-      {:ok, tank} =
-        Tank.create(tank_params)
-
-      tank
-    end)
+    |> Enum.map(&Tank.create!/1)
     # additionally sort tanks by id to ease out asssertion
     |> Enum.sort_by(& &1.id, :asc)
   end
 
   def pools() do
     pool_params()
-    |> Enum.map(fn pool_params ->
-      {:ok, pool} = Pool.create(pool_params)
-      pool
-    end)
+    |> Enum.map(&Pool.create!/1)
     # additionally sort tanks by id to ease out asssertion
     |> Enum.sort_by(& &1.id, :asc)
   end
@@ -235,7 +227,7 @@ defmodule Fluid.Test.Factory do
 
     # outbound connections from 1
     {:ok, _} = Fluid.Model.connect(uct_1, ucp_5)
-    {:ok, _} = Fluid.Model.connect(ct_1, cp_2)
+    {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
 
     {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
     {:ok, _} = Fluid.Model.connect(uct_1, ucp_6)

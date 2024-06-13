@@ -53,8 +53,8 @@ defmodule Fluid.MixProject do
 
       # ash dependencies
 
-      {:ash, "~> 2.18"},
-      {:ash_postgres, "~> 1.3.6"},
+      {:ash, "~> 2.21"},
+      {:ash_postgres, "~> 1.3"},
 
       # for future UI admin usage
       {:ash_admin, "~> 0.10.2"},

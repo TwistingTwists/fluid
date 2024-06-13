@@ -8,7 +8,7 @@ defmodule Fluid.Model.Warehouse do
     data_layer: AshPostgres.DataLayer
 
   attributes do
-    uuid_primary_key(:id)
+    uuid_primary_key :id
 
     attribute :name, :string, allow_nil?: false
 
@@ -22,7 +22,9 @@ defmodule Fluid.Model.Warehouse do
   end
 
   relationships do
-    belongs_to(:world, Fluid.Model.World)
+    belongs_to :world, Fluid.Model.World do
+      attribute_writable? true
+    end
     has_many(:tanks, Fluid.Model.Tank)
     has_many(:pools, Fluid.Model.Pool)
   end
@@ -51,7 +53,7 @@ defmodule Fluid.Model.Warehouse do
 
   aggregates do
     count :count_ucp_cp, :pools do
-      filter(expr(capacity_type in [:uncapped, :capped]))
+      filter(expr(capacity_type in [:capped, :uncapped]))
     end
   end
 

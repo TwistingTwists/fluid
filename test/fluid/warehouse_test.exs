@@ -8,11 +8,10 @@ defmodule Fluid.WarehouseTest do
 
   describe "Warehouse:Name" do
     setup do
-      default_string = "- #{__MODULE__}"
-      map_or_kv = [name: "Unique world " <> default_string]
+      map_or_kv = [name: "Unique world from warehouse_test"]
 
       {:ok, world} = Fluid.Model.create_world(map_or_kv)
-      {:ok, warehouse} = Fluid.Model.create_warehouse(name: "warehouse1 " <> default_string)
+      {:ok, warehouse} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
 
       # one tank of each type - sorted by id of their creation
       tanks = Factory.tanks()
@@ -21,10 +20,10 @@ defmodule Fluid.WarehouseTest do
       [world: world, warehouse: warehouse, tanks: tanks, pools: pools]
     end
 
-    test "create: warehouse cannot have duplicate name",
-         %{world: _setup_world, warehouse: warehouse} do
+    test "create: warehouse CANNOT have duplicate name in SAME world",
+         %{world: setup_world, warehouse: warehouse} do
       assert {:error, error} =
-               Fluid.Model.create_warehouse(name: warehouse.name)
+               Fluid.Model.create_warehouse(name: warehouse.name, world_id: setup_world.id)
 
       assert %Fluid.Error.ModelError{
                class: :create_error,
@@ -40,18 +39,27 @@ defmodule Fluid.WarehouseTest do
                error
 
       # asserts that uniqueness is obtained by postgres unique_constraint
-      assert String.contains?(error_string, "index_for_name_unique_entries")
-      assert String.contains?(error_string, "(unique_constraint)")
+      assert String.contains?(error_string, "warehouses_unique_name_in_world_index")
+      assert String.contains?(error_string, "constraint_type: :unique")
+    end
+
+    test "create: warehouse CAN have a duplicate name in ANOTHER world",
+         %{world: _setup_world, warehouse: warehouse} do
+      {:ok, new_world} = Model.create_world(name: "new test world in warehouse_test")
+
+      assert {:ok, new_wh} =
+               Fluid.Model.create_warehouse(name: warehouse.name, world_id: new_world.id)
+
+      # |> green("new warheouse ")
     end
   end
 
   describe "warehouse(WH) has one and only one UCT - " do
     setup do
-      default_string = "- #{__MODULE__}"
-      map_or_kv = [name: "Unique world " <> default_string]
+      map_or_kv = [name: "Unique world 2 from warehouse_test"]
 
       {:ok, world} = Fluid.Model.create_world(map_or_kv)
-      {:ok, warehouse} = Fluid.Model.create_warehouse(name: "warehouse1 " <> default_string)
+      {:ok, warehouse} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
 
       # add a default pool to the warehouse
       {:ok, warehouse} =
@@ -85,6 +93,8 @@ defmodule Fluid.WarehouseTest do
 
     test "WH:create: if UCT is given in tank list while creating a warehouse. it is added as it is to WH",
          %{world: _setup_world, warehouse: _warehouse, tanks: tanks} do
+      {:ok, new_test_world} = Fluid.Model.create_world(name: "new test world")
+
       # filter out standalone tanks
       tanks =
         Enum.filter(tanks, fn
@@ -106,7 +116,7 @@ defmodule Fluid.WarehouseTest do
                  false
              end)
 
-      assert {:ok, warehouse} = Fluid.Model.create_warehouse(name: "Other unique name", tanks: tanks)
+      assert {:ok, warehouse} = Fluid.Model.create_warehouse(name: "Other unique name", world_id: new_test_world.id, tanks: tanks)
 
       tank_ids =
         tanks
@@ -122,6 +132,8 @@ defmodule Fluid.WarehouseTest do
 
     test "WH:create: if no UCT is given in tank list while creating a warehouse, default UCT is added to WH ",
          %{world: _setup_world, warehouse: _warehouse, tanks: tanks} do
+      {:ok, new_test_world} = Fluid.Model.create_world(name: "new test world")
+
       # filter out standalone tanks
       tanks =
         Enum.filter(tanks, fn
@@ -143,7 +155,11 @@ defmodule Fluid.WarehouseTest do
         end)
 
       assert {:ok, warehouse} =
-               Fluid.Model.create_warehouse(name: "WH with tank list but no UCT in tank list", tanks: tanks)
+               Fluid.Model.create_warehouse(
+                 name: "WH with tank list but no UCT in tank list",
+                 world_id: new_test_world.id,
+                 tanks: tanks
+               )
 
       tank_ids =
         tanks_without_uct
@@ -241,8 +257,9 @@ defmodule Fluid.WarehouseTest do
       world: _setup_world,
       warehouse: warehouse_1
     } do
-      {:ok, warehouse_2} =
-        Fluid.Model.create_warehouse(name: "warehouse_tag_test ")
+      {:ok, new_test_world} = Fluid.Model.create_world(name: "new test world")
+
+      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_tag_test ", world_id: new_test_world.id)
 
       {:ok, warehouse_2} =
         Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
@@ -259,8 +276,10 @@ defmodule Fluid.WarehouseTest do
 
   describe "add pool to warehouse" do
     test " - verify database persistence" do
+      {:ok, new_test_world} = Fluid.Model.create_world(name: "new test world 2")
+
       {:ok, %{id: wh_id} = warehouse_1} =
-        Fluid.Model.create_warehouse(name: "warehouse_1 wh persistence")
+        Fluid.Model.create_warehouse(name: "warehouse_tag_test with persistence", world_id: new_test_world.id)
 
       {:ok, updated_warehouse} =
         Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
@@ -269,14 +288,21 @@ defmodule Fluid.WarehouseTest do
 
       assert %{id: ^wh_id} = updated_warehouse
 
-      assert %{count_pool: ^count_pool, count_uncapped_tank: ^count_uncapped_tank, pools: ^pools} = Warehouse.read_by_id!(wh_id)
+      assert %{count_pool: ^count_pool, count_uncapped_tank: ^count_uncapped_tank, pools: pools_returned} = Warehouse.read_by_id!(wh_id)
+
+      pool_ids_old = pools |> Enum.map(& &1.id) |> Enum.sort()
+      poold_ids_returned = pools_returned |> Enum.map(& &1.id)|> Enum.sort()\
+
+      assert pool_ids_old == poold_ids_returned
     end
   end
 
   describe "warehouse aggregates and calculations" do
     setup do
+      {:ok, new_test_world} = Fluid.Model.create_world(name: "new test world describe 3")
+
       {:ok, warehouse_1} =
-        Fluid.Model.create_warehouse(name: "warehouse_1 wh ")
+        Fluid.Model.create_warehouse(name: "warehouse_tag_test with persistence", world_id: new_test_world.id)
 
       {:ok, warehouse_1} =
         Model.add_pools_to_warehouse(
