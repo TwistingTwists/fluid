@@ -18,13 +18,14 @@ defmodule Fluid.Model.Warehouse do
   end
 
   identities do
-      identity :unique_name_in_world, [:name, :world_id]
+    identity :unique_name_in_world, [:name, :world_id]
   end
 
   relationships do
     belongs_to :world, Fluid.Model.World do
       attribute_writable? true
     end
+
     has_many(:tanks, Fluid.Model.Tank)
     has_many(:pools, Fluid.Model.Pool)
   end
@@ -174,4 +175,11 @@ defmodule Fluid.Model.Warehouse do
     table("warehouses")
     repo(Fluid.Repo)
   end
+
+  ###########
+  #  normal module with helper API functions
+  ###########
+
+  # def count_uncapped_tank(%Model.Warehouse{count_uncapped_tank: num_uncapped_tank}), do: num_uncapped_tank
+  # def count_pool(%Model.Warehouse{count_pool: count_pool}), do: count_pool
 end

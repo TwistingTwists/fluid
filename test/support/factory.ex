@@ -2,7 +2,7 @@ defmodule Fluid.Test.Factory do
   alias Fluid.Model
   alias Fluid.Model.Tank
   alias Fluid.Model.Pool
-  import Helpers.ColorIO
+  # import Helpers.ColorIO
 
   def tank_params() do
     [
@@ -63,15 +63,14 @@ defmodule Fluid.Test.Factory do
   # indeterminate warehouses - 2, 3, 4, 5
   """
   def setup_warehouses_for_circularity(:mix_det_indet) do
-    # to ensure that warehouse names never conflict.
-    random_number = Enum.random(1..100)
+    {:ok, world} = Fluid.Model.create_world(name: "Unique world from factories")
 
-    {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6 #{__MODULE__} #{random_number}")
+    {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
+    {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2", world_id: world.id)
+    {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3", world_id: world.id)
+    {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4", world_id: world.id)
+    {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5", world_id: world.id)
+    {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
     {:ok, warehouse_1} =
       Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
@@ -130,25 +129,14 @@ defmodule Fluid.Test.Factory do
     - setup pps : in this case, pps = 2, wh = 2, pps_type = determinate
   """
   def setup_warehouses_for_allocation(:pool_ct_connections) do
-    # to ensure that warehouse names never conflict.
-    random_number = Enum.random(101..400)
+    {:ok, world} = Fluid.Model.create_world(name: "Unique world from factories 2")
 
-    # to_improve: add warehouses to world -> on start and remove random numbers
-
-    # VALID
-    # warehosue_1 -> world_1
-    # warehosue_1 -> world_2
-
-    # INVALID
-    # warehouse_1 -> (world_1)
-    # warehouse_1 -> (world_1)
-
-    {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5 #{__MODULE__} #{random_number}")
-    {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6 #{__MODULE__} #{random_number}")
+    {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
+    {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2", world_id: world.id)
+    {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3", world_id: world.id)
+    {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4", world_id: world.id)
+    {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5", world_id: world.id)
+    {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
     # to_improve: convenience - add_pool_to_warehouse
     # to_discuss: are there uncapped pools? - capped / fixed
@@ -158,28 +146,28 @@ defmodule Fluid.Test.Factory do
     # Do the pools have a default volume? - NO
     # FP - Volume at start HAS TO be defined.
     # Capped - Volume - equal to CT it is connected (tagged) to.
-      # at start, CT, CP both have 0 volume
-      # when we connect CT with CP then, the volume of CT does not change.
-        # capacity of CT and CP MUST be the same. Ensure this when we are connecting the two - CT and CP. (unanswered)
+    # at start, CT, CP both have 0 volume
+    # when we connect CT with CP then, the volume of CT does not change.
+    # capacity of CT and CP MUST be the same. Ensure this when we are connecting the two - CT and CP. (unanswered)
 
-      # at runtime, when volume enters CT -> it flows automatically to CP
+    # at runtime, when volume enters CT -> it flows automatically to CP
 
-      # FP always have a fixed volume. At start.
+    # FP always have a fixed volume. At start.
 
     # Can we have uncapped pools?  - YES
-      # Uncapped - Volume - 0 at start.
+    # Uncapped - Volume - 0 at start.
 
     # Can pools live outside the warehouse? - NO
     # MUST fixed pool need to have volume attribute set at start? - YES
 
     # tanks and pools in warehouse need to have a unique name within a warehouse. - YES
 
-    {:ok, warehouse_1} =
-      # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
-      Model.add_pools_to_warehouse(warehouse_1, {:params, [%{name: "", pool_type: :fixed, volume: 67}]})
-      Model.add_pools_to_warehouse(warehouse_1, {:params, [%{pool_type: :capped / :uncapped }]}) # -- NO :volume ATTRIBUTE
+    # {:ok, warehouse_1} =
+    # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+    # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{name: "", pool_type: :fixed, volume: 67}]})
+    # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{pool_type: :capped / :uncapped }]}) # -- NO :volume ATTRIBUTE
 
-      # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{pool_type: :uncapped, volume: 67}]}) -- INVALID
+    # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{pool_type: :uncapped, volume: 67}]}) -- INVALID
 
     {:ok, warehouse_2} =
       Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
@@ -223,7 +211,6 @@ defmodule Fluid.Test.Factory do
     # LiveView
     # - params from frontend
     # - handle_event -> params => API.changeset() |> Repo.insert()
-
 
     # outbound connections from 1
     {:ok, _} = Fluid.Model.connect(uct_1, ucp_5)
@@ -298,6 +285,7 @@ defmodule Fluid.Test.Factory do
            %{capacity_type: :capped, location_type: :in_wh}
          ]}
       )
+
     # to_improve: make it simpler to use in iex
     # Model.add_tanks_to_warehouse(warehouse)
 
@@ -381,5 +369,30 @@ defmodule Fluid.Test.Factory do
     # caution: re read all warehouses from db - just to make sure all the latest data is reloaded back in them.
     [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
     |> Enum.map(fn wh -> Model.Warehouse.read_by_id!(wh.id) end)
+  end
+
+  ##################
+  ##################
+  def all_tanks_of_type?(tanks,  capacities) when is_list(capacities) do
+    do_enum_all(tanks, capacities)
+  end
+
+  def all_pools_of_type?(pools,  capacities) when is_list(capacities) do
+    do_enum_all(pools, capacities)
+  end
+
+
+  def do_enum_all(tank_or_pools ,capacities ) do
+    Enum.all?(tank_or_pools, fn
+      %{
+        capacity_type: capacity
+      } ->
+      if capacity in capacities do
+        true
+
+      else
+        false
+      end
+    end)
   end
 end

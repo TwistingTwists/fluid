@@ -5,6 +5,8 @@ defmodule Fluid.Model.Tank do
   """
   require Logger
 
+  alias Fluid.Model
+
   use Ash.Resource,
     data_layer: AshPostgres.DataLayer,
     extensions: [AshJason.Extension]
@@ -12,8 +14,7 @@ defmodule Fluid.Model.Tank do
   # alias Fluid.Model.World
   # alias Fluid.Model.Warehouse
 
-  @load_fields [ :residual_capacity, :world,:warehouse]
-
+  @load_fields [:residual_capacity, :world, :warehouse]
 
   attributes do
     uuid_primary_key :id
@@ -82,7 +83,6 @@ defmodule Fluid.Model.Tank do
     read :read_by_id do
       get_by [:id]
       prepare build(load: @load_fields)
-
     end
 
     create :create do
@@ -132,4 +132,14 @@ defmodule Fluid.Model.Tank do
   jason do
     merge(%{module: "#{__MODULE__}"})
   end
+
+  ###########
+  #  normal module with helper API functions
+  ###########
+
+  def is_capped?(%{capacity_type: capacity_type}), do: capacity_type == :capped
+  def is_uncapped?(%{capacity_type: capacity_type}), do: capacity_type == :uncapped
+
+  # def in_wh?(tank, %Model.Warehouse{id: warehouse_id}), do: in_wh?(tank, warehouse_id)
+  # def in_wh?(tank, warehouse_id), do: tank.location_type == :in_wh && tank.warehouse_id == warehouse_id
 end

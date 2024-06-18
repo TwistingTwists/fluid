@@ -11,13 +11,10 @@ defmodule Fluid.WarehouseTest do
       map_or_kv = [name: "Unique world from warehouse_test"]
 
       {:ok, world} = Fluid.Model.create_world(map_or_kv)
+      # world: world in create_warehouse
       {:ok, warehouse} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
 
-      # one tank of each type - sorted by id of their creation
-      tanks = Factory.tanks()
-      pools = Factory.pools()
-
-      [world: world, warehouse: warehouse, tanks: tanks, pools: pools]
+      [world: world, warehouse: warehouse]
     end
 
     test "create: warehouse CANNOT have duplicate name in SAME world",
@@ -47,7 +44,7 @@ defmodule Fluid.WarehouseTest do
          %{world: _setup_world, warehouse: warehouse} do
       {:ok, new_world} = Model.create_world(name: "new test world in warehouse_test")
 
-      assert {:ok, new_wh} =
+      assert {:ok, _new_wh} =
                Fluid.Model.create_warehouse(name: warehouse.name, world_id: new_world.id)
 
       # |> green("new warheouse ")
@@ -69,34 +66,8 @@ defmodule Fluid.WarehouseTest do
       tanks = Factory.tanks()
       pools = Factory.pools()
 
-      [world: world, warehouse: warehouse, tanks: tanks, pools: pools]
-    end
-
-    test " WH - create - default UCT is created if not provided",
-         %{world: _setup_world, warehouse: warehouse} do
-      # only the default uct is present in the default warehouse
-      [uct] = warehouse.tanks
-
-      wh_id = warehouse.id
-
-      # also asserts that uct is `:regular`
-      assert %{
-               warehouse_id: ^wh_id,
-               capacity_type: :uncapped,
-               regularity_type: :regular,
-               location_type: :in_wh
-             } = uct
-
-      # check if calculations are working properly
-      assert warehouse.count_uncapped_tank == 1
-    end
-
-    test "WH:create: if UCT is given in tank list while creating a warehouse. it is added as it is to WH",
-         %{world: _setup_world, warehouse: _warehouse, tanks: tanks} do
-      {:ok, new_test_world} = Fluid.Model.create_world(name: "new test world")
-
       # filter out standalone tanks
-      tanks =
+      tanks_no_suct =
         Enum.filter(tanks, fn
           %Model.Tank{
             location_type: :in_wh
@@ -107,14 +78,27 @@ defmodule Fluid.WarehouseTest do
             false
         end)
 
-      # assert that tanks list has at least one UCT
-      assert Enum.any?(tanks, fn
-               %Model.Tank{location_type: :in_wh, capacity_type: :uncapped} ->
-                 true
+      [world: world, warehouse: warehouse, tanks: tanks, pools: pools, tanks_no_suct: tanks_no_suct]
+    end
 
-               _ ->
-                 false
-             end)
+    test " WH:create - default UCT is created if not provided",
+         %{world: _setup_world, warehouse: warehouse} do
+      # only the default uct is present in the default warehouse
+      [uct] = warehouse.tanks
+
+      wh_id = warehouse.id
+
+      assert Model.Tank.is_uncapped?(uct)
+
+      # check if calculations are working properly
+      # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
+      assert warehouse.count_uncapped_tank == 1
+
+    end
+
+    test "WH:create: if UCT is given in tank list while creating a warehouse. it is added as it is to WH",
+         %{world: _setup_world, warehouse: _warehouse, tanks_no_suct: tanks} do
+      {:ok, new_test_world} = Fluid.Model.create_world(name: "new test world")
 
       assert {:ok, warehouse} = Fluid.Model.create_warehouse(name: "Other unique name", world_id: new_test_world.id, tanks: tanks)
 
@@ -131,18 +115,18 @@ defmodule Fluid.WarehouseTest do
     end
 
     test "WH:create: if no UCT is given in tank list while creating a warehouse, default UCT is added to WH ",
-         %{world: _setup_world, warehouse: _warehouse, tanks: tanks} do
+         %{world: _setup_world, warehouse: _warehouse, tanks_no_suct: tanks} do
       {:ok, new_test_world} = Fluid.Model.create_world(name: "new test world")
 
-      # filter out standalone tanks
-      tanks =
-        Enum.filter(tanks, fn
-          %Tank{location_type: :in_wh} ->
-            true
+      # # filter out standalone tanks
+      # tanks =
+      #   Enum.filter(tanks, fn
+      #     %Tank{location_type: :in_wh} ->
+      #       true
 
-          _ ->
-            false
-        end)
+      #     _ ->
+      #       false
+      #   end)
 
       # tanks list doesn't have UCT
       tanks_without_uct =
@@ -197,20 +181,12 @@ defmodule Fluid.WarehouseTest do
 
       # |> purple()
 
-      assert Enum.all?(tanks, fn
-               %{
-                 location_type: :in_wh,
-                 capacity_type: capacity
-               }
-               when capacity in [:capped, :uncapped] ->
-                 true
-
-               _ ->
-                 false
-             end)
+      assert Factory.all_tanks_of_type?(tanks, [:capped, :uncapped])
 
       # sanity check on calculations
+      # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
       assert warehouse.count_uncapped_tank == 1
+
 
       # warehouse2.tanks |> green("warehouse2")
     end
@@ -236,21 +212,25 @@ defmodule Fluid.WarehouseTest do
 
       # warehouse2.pools |> green("warehouse2")
 
-      assert Enum.all?(pools_result, fn
-               %{
-                 location_type: :in_wh,
-                 capacity_type: capacity
-               }
-               when capacity in [:fixed, :uncapped] ->
-                 true
+      # assert Enum.all?(pools_result, fn
+      #          %{
+      #            location_type: :in_wh,
+      #            capacity_type: capacity
+      #          }
+      #          when capacity in [:fixed, :uncapped] ->
+      #            true
 
-               _ ->
-                 false
-             end)
+      #          _ ->
+      #            false
+      #        end)
+      assert Factory.all_pools_of_type?(pools_result, [:fixed, :uncapped])
 
       # sanity check on calculations
+      # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
       assert warehouse.count_uncapped_tank == 1
       assert warehouse.count_pool == 1
+
+      # assert Model.Warehouse.count_pool(warehouse) == 1
     end
 
     test "Can connect a given tank in wh_1 to a pool in wh_2", %{
@@ -288,11 +268,11 @@ defmodule Fluid.WarehouseTest do
 
       assert %{id: ^wh_id} = updated_warehouse
 
-      assert %{count_pool: ^count_pool, count_uncapped_tank: ^count_uncapped_tank, pools: pools_returned} = Warehouse.read_by_id!(wh_id)
+      assert %{count_pool: ^count_pool, count_uncapped_tank: ^count_uncapped_tank, pools: pools_returned} =
+               Warehouse.read_by_id!(wh_id)
 
       pool_ids_old = pools |> Enum.map(& &1.id) |> Enum.sort()
-      poold_ids_returned = pools_returned |> Enum.map(& &1.id)|> Enum.sort()\
-
+      poold_ids_returned = pools_returned |> Enum.map(& &1.id) |> Enum.sort()
       assert pool_ids_old == poold_ids_returned
     end
   end
@@ -322,6 +302,8 @@ defmodule Fluid.WarehouseTest do
       assert warehouse_1.count_ucp_cp == 2
       assert warehouse_1.count_pool == 3
       assert warehouse_1.count_uncapped_tank == 1
+      # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
+
     end
   end
 end
