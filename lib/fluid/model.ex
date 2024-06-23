@@ -333,4 +333,65 @@ defmodule Fluid.Model do
       raise "Could not find tag linking the given tank and pool !"
     end
   end
+
+  ########
+  # utils
+  ########
+
+  ########
+  # warehouse
+  ########
+
+  def wh_count_uncapped_tank(%Model.Warehouse{count_uncapped_tank: num_uncapped_tank}), do: num_uncapped_tank
+  def wh_count_pool(%Model.Warehouse{count_pool: count_pool}), do: count_pool
+
+  def wh_get_tanks(%Model.Warehouse{tanks: tanks}), do: tanks
+  def wh_get_pools(%Model.Warehouse{pools: pools}), do: pools
+
+
+
+
+  def in_wh?(tank, %Model.Warehouse{id: warehouse_id}), do: in_wh?(tank, warehouse_id)
+  def in_wh?(tank, warehouse_id), do: tank.location_type == :in_wh && tank.warehouse_id == warehouse_id
+
+  @doc """
+  Arguments:
+
+  tag
+  source warehouse
+  destination warehouse
+
+  source and destination can be given in any order.
+
+  Checks whether the tag connects the two given warehouses
+  """
+  def tag_connects?(
+        %Model.Tag{source: %{"warehouse_id" => warehouse_1_id}, destination: %{"warehouse_id" => warehouse_2_id}},
+        %Model.Warehouse{id: warehouse_1_id},
+        %Model.Warehouse{id: warehouse_2_id}
+      ),
+      do: true
+
+  def tag_connects?(
+        %Model.Tag{source: %{"warehouse_id" => warehouse_1_id}, destination: %{"warehouse_id" => warehouse_2_id}},
+        %Model.Warehouse{id: warehouse_2_id},
+        %Model.Warehouse{id: warehouse_1_id}
+      ),
+      do: true
+
+  def tag_connects?(
+        %Model.Tag{source: %{"warehouse_id" => warehouse_1_id}, destination: %{"warehouse_id" => warehouse_2_id}},
+        warehouse_1_id,
+        warehouse_2_id
+      ),
+      do: true
+
+  def tag_connects?(
+        %Model.Tag{source: %{"warehouse_id" => warehouse_1_id}, destination: %{"warehouse_id" => warehouse_2_id}},
+        warehouse_2_id,
+        warehouse_1_id
+      ),
+      do: true
+
+  def tag_connects?(_, _, _), do: false
 end

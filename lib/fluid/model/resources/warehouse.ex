@@ -1,6 +1,7 @@
 defmodule Fluid.Model.Warehouse do
   # alias Fluid.Model.Pool
   alias __MODULE__
+  alias Fluid.Model
 
   require Logger
 
@@ -176,10 +177,9 @@ defmodule Fluid.Model.Warehouse do
     repo(Fluid.Repo)
   end
 
-  ###########
-  #  normal module with helper API functions
-  ###########
+  ########
+  # utils
+  ########
 
-  # def count_uncapped_tank(%Model.Warehouse{count_uncapped_tank: num_uncapped_tank}), do: num_uncapped_tank
-  # def count_pool(%Model.Warehouse{count_pool: count_pool}), do: count_pool
+
 end

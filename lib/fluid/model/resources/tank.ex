@@ -133,13 +133,11 @@ defmodule Fluid.Model.Tank do
     merge(%{module: "#{__MODULE__}"})
   end
 
-  ###########
-  #  normal module with helper API functions
-  ###########
+
+  ########
+  # utils
+  ########
 
   def is_capped?(%{capacity_type: capacity_type}), do: capacity_type == :capped
   def is_uncapped?(%{capacity_type: capacity_type}), do: capacity_type == :uncapped
-
-  # def in_wh?(tank, %Model.Warehouse{id: warehouse_id}), do: in_wh?(tank, warehouse_id)
-  # def in_wh?(tank, warehouse_id), do: tank.location_type == :in_wh && tank.warehouse_id == warehouse_id
 end

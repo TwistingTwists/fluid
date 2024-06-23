@@ -95,4 +95,9 @@ defmodule Fluid.Model.Tag do
     table "tags"
     repo Fluid.Repo
   end
+
+  ########
+  # utils
+  ########
+
 end

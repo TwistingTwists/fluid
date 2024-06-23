@@ -91,9 +91,8 @@ defmodule Fluid.WarehouseTest do
       assert Model.Tank.is_uncapped?(uct)
 
       # check if calculations are working properly
-      # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
-      assert warehouse.count_uncapped_tank == 1
-
+      assert Model.wh_count_uncapped_tank(warehouse) == 1
+      # assert warehouse.count_uncapped_tank == 1
     end
 
     test "WH:create: if UCT is given in tank list while creating a warehouse. it is added as it is to WH",
@@ -184,9 +183,8 @@ defmodule Fluid.WarehouseTest do
       assert Factory.all_tanks_of_type?(tanks, [:capped, :uncapped])
 
       # sanity check on calculations
-      # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
-      assert warehouse.count_uncapped_tank == 1
-
+      assert Model.wh_count_uncapped_tank(warehouse) == 1
+      # assert warehouse.count_uncapped_tank == 1
 
       # warehouse2.tanks |> green("warehouse2")
     end
@@ -226,11 +224,11 @@ defmodule Fluid.WarehouseTest do
       assert Factory.all_pools_of_type?(pools_result, [:fixed, :uncapped])
 
       # sanity check on calculations
-      # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
-      assert warehouse.count_uncapped_tank == 1
-      assert warehouse.count_pool == 1
+      assert Model.wh_count_uncapped_tank(warehouse) == 1
+      # assert warehouse.count_uncapped_tank == 1
+      # assert warehouse.count_pool == 1
 
-      # assert Model.Warehouse.count_pool(warehouse) == 1
+      assert Model.wh_count_pool(warehouse) == 1
     end
 
     test "Can connect a given tank in wh_1 to a pool in wh_2", %{
@@ -244,13 +242,16 @@ defmodule Fluid.WarehouseTest do
       {:ok, warehouse_2} =
         Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      [uct] = warehouse_1.tanks
-      [ucp] = warehouse_2.pools
-      warehouse_1_id = warehouse_1.id
-      warehouse_2_id = warehouse_2.id
+      [uct] = Model.wh_get_tanks(warehouse_1)
+      [ucp] = Model.wh_get_pools(warehouse_2)
+      # [uct] = warehouse_1.tanks
+      # [ucp] = warehouse_2.pools
+      # warehouse_1_id = warehouse_1.id
+      # warehouse_2_id = warehouse_2.id
 
       assert {:ok, tag} = Fluid.Model.connect(uct, ucp)
-      assert %{source: %{"warehouse_id" => ^warehouse_1_id}, destination: %{"warehouse_id" => ^warehouse_2_id}} = tag
+      assert Model.tag_connects?(tag, warehouse_1, warehouse_2)
+      # assert %{source: %{"warehouse_id" => ^warehouse_1_id}, destination: %{"warehouse_id" => ^warehouse_2_id}} = tag
     end
   end
 
@@ -303,7 +304,6 @@ defmodule Fluid.WarehouseTest do
       assert warehouse_1.count_pool == 3
       assert warehouse_1.count_uncapped_tank == 1
       # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
-
     end
   end
 end
