@@ -90,19 +90,27 @@ defmodule Fluid.Test.Factory do
     {:ok, warehouse_6} =
       Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-    [uct_1] = warehouse_1.tanks
-    [uct_2] = warehouse_2.tanks
-    [uct_3] = warehouse_3.tanks
-    [uct_4] = warehouse_4.tanks
+    [[uct_1], [uct_2], [uct_3], [uct_4]] =
+      [warehouse_1, warehouse_2, warehouse_3, warehouse_4]
+      |> Enum.map(&Model.wh_get_tanks/1)
+
+    # [uct_1] = warehouse_1.tanks
+    # [uct_2] = warehouse_2.tanks
+    # [uct_3] = warehouse_3.tanks
+    # [uct_4] = warehouse_4.tanks
     # [uct_5] = warehouse_5.tanks
     # [uct_6] = warehouse_6.tanks
 
     # [ucp_1] = warehouse_1.pools
-    [ucp_2] = warehouse_2.pools
-    [ucp_3] = warehouse_3.pools
-    [ucp_4] = warehouse_4.pools
-    [ucp_5] = warehouse_5.pools
-    [ucp_6] = warehouse_6.pools
+    [ [ucp_2], [ucp_3], [ucp_4],[ucp_5],[ucp_6]] =
+      [ warehouse_2, warehouse_3, warehouse_4,warehouse_5,warehouse_6]
+      |> Enum.map(&Model.wh_get_pools/1)
+
+    # [ucp_2] = warehouse_2.pools
+    # [ucp_3] = warehouse_3.pools
+    # [ucp_4] = warehouse_4.pools
+    # [ucp_5] = warehouse_5.pools
+    # [ucp_6] = warehouse_6.pools
 
     # outbound connections from 1
     {:ok, _} = Fluid.Model.connect(uct_1, ucp_5)
@@ -189,19 +197,29 @@ defmodule Fluid.Test.Factory do
 
     # todo: wh: add a `is_valid` key in warehouse, `reason` - the reason to show in UI
 
-    [uct_1] = warehouse_1.tanks
-    [uct_2] = warehouse_2.tanks
-    [uct_3] = warehouse_3.tanks
-    [uct_4] = warehouse_4.tanks
+    [[uct_1], [uct_2], [uct_3], [uct_4]] =
+      [warehouse_1, warehouse_2, warehouse_3, warehouse_4]
+      |> Enum.map(&Model.wh_get_tanks/1)
+
+
+    # [uct_1] = warehouse_1.tanks
+    # [uct_2] = warehouse_2.tanks
+    # [uct_3] = warehouse_3.tanks
+    # [uct_4] = warehouse_4.tanks
     # [uct_5] = warehouse_5.tanks
     # [uct_6] = warehouse_6.tanks
 
-    # [ucp_1] = warehouse_1.pools
-    [ucp_2] = warehouse_2.pools
-    [ucp_3] = warehouse_3.pools
-    [ucp_4] = warehouse_4.pools
-    [ucp_5] = warehouse_5.pools
-    [ucp_6] = warehouse_6.pools
+    [ [ucp_2], [ucp_3], [ucp_4],[ucp_5],[ucp_6]] =
+      [ warehouse_2, warehouse_3, warehouse_4,warehouse_5,warehouse_6]
+      |> Enum.map(&Model.wh_get_pools/1)
+
+
+    # # [ucp_1] = warehouse_1.pools
+    # [ucp_2] = warehouse_2.pools
+    # [ucp_3] = warehouse_3.pools
+    # [ucp_4] = warehouse_4.pools
+    # [ucp_5] = warehouse_5.pools
+    # [ucp_6] = warehouse_6.pools
 
     # Fluid.Model.connect("wh_1" , "ct_1", "wh_2", "cp_1")
     # Frontend
@@ -291,11 +309,11 @@ defmodule Fluid.Test.Factory do
 
     ####################################
 
-    [cp_1, cp_2] = warehouse_1.capped_pools
-    [fp_1, fp_2] = warehouse_1.fixed_pools
+    # [cp_1, cp_2] = warehouse_1.capped_pools
+    # [fp_1, fp_2] = warehouse_1.fixed_pools
 
-    # to_improve: try to build wh from iex.
-    #
+    [cp_1, cp_2] = Model.wh_get_capped_pools(warehouse_1)
+    [fp_1, fp_2] = Model.wh_get_fixed_pools(warehouse_1)
 
     [cp_1, cp_2, fp_1, fp_2] =
       [{cp_1, 2000, "cp_1"}, {cp_2, 500, "cp_2"}, {fp_1, 2500, "fp_1"}, {fp_2, 1000, "fp_2"}]
@@ -373,26 +391,24 @@ defmodule Fluid.Test.Factory do
 
   ##################
   ##################
-  def all_tanks_of_type?(tanks,  capacities) when is_list(capacities) do
+  def all_tanks_of_type?(tanks, capacities) when is_list(capacities) do
     do_enum_all(tanks, capacities)
   end
 
-  def all_pools_of_type?(pools,  capacities) when is_list(capacities) do
+  def all_pools_of_type?(pools, capacities) when is_list(capacities) do
     do_enum_all(pools, capacities)
   end
 
-
-  def do_enum_all(tank_or_pools ,capacities ) do
+  def do_enum_all(tank_or_pools, capacities) do
     Enum.all?(tank_or_pools, fn
       %{
         capacity_type: capacity
       } ->
-      if capacity in capacities do
-        true
-
-      else
-        false
-      end
+        if capacity in capacities do
+          true
+        else
+          false
+        end
     end)
   end
 end

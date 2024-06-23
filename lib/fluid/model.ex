@@ -349,6 +349,8 @@ defmodule Fluid.Model do
 
   def wh_get_tanks(%Model.Warehouse{tanks: tanks}), do: tanks
   def wh_get_pools(%Model.Warehouse{pools: pools}), do: pools
+  def wh_get_fixed_pools(%Model.Warehouse{fixed_pools: pools}), do: pools
+  def wh_get_capped_pools(%Model.Warehouse{capped_pools: pools}), do: pools
 
 
 
