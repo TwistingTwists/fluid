@@ -5,6 +5,19 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.8.0](https://github.com/TwistingTwists/fluid/compare/v0.7.0...v0.8.0) (2024-06-23)
+
+
+
+
+### Features:
+
+* connect/2 takes ids
+
+* warehosue_tests passing with world.id
+
+* new migrations
+
 ## [v0.7.0](https://github.com/TwistingTwists/fluid/compare/v0.6.3...v0.7.0) (2024-05-31)
 
 
