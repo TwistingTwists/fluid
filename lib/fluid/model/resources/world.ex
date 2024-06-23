@@ -46,6 +46,14 @@ defmodule Fluid.Model.World do
     end
 
     create :create do
+      # argument :tanks, {:array, :struct} do
+      #   allow_nil?  true
+      #   constraints  [items: [instance_of: Model.Tank]]
+      #   description  """
+      #     additionally, a set of tanks maybe passed while creating the world.
+      #   """
+      # end
+
       argument :tanks, {:array, Tank}, allow_nil?: true
 
       # todo validate that the given list has at least one suct
