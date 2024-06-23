@@ -344,6 +344,8 @@ defmodule Fluid.Model do
 
   def wh_count_uncapped_tank(%Model.Warehouse{count_uncapped_tank: num_uncapped_tank}), do: num_uncapped_tank
   def wh_count_pool(%Model.Warehouse{count_pool: count_pool}), do: count_pool
+  def wh_count_ucp_cp(%Model.Warehouse{count_ucp_cp: count_ucp_cp}), do: count_ucp_cp
+
 
   def wh_get_tanks(%Model.Warehouse{tanks: tanks}), do: tanks
   def wh_get_pools(%Model.Warehouse{pools: pools}), do: pools

@@ -271,8 +271,12 @@ defmodule Fluid.WarehouseTest do
 
       assert %{id: ^wh_id} = updated_warehouse
 
-      assert %{count_pool: ^count_pool, count_uncapped_tank: ^count_uncapped_tank, pools: pools_returned} =
-               Warehouse.read_by_id!(wh_id)
+      # assert %{count_pool: ^count_pool, count_uncapped_tank: ^count_uncapped_tank, pools: pools_returned} = Warehouse.read_by_id!(wh_id)
+      wh_from_db =  Warehouse.read_by_id!(wh_id)
+      pools_returned = Model.wh_get_pools(wh_from_db)
+
+      assert count_pool == Model.wh_count_pool(wh_from_db)
+      assert count_uncapped_tank == Model.wh_count_uncapped_tank(wh_from_db)
 
       pool_ids_old = pools |> Enum.map(& &1.id) |> Enum.sort()
       poold_ids_returned = pools_returned |> Enum.map(& &1.id) |> Enum.sort()
@@ -302,10 +306,12 @@ defmodule Fluid.WarehouseTest do
     end
 
     test "aggregates and calcs", %{warehouse: warehouse_1} do
-      assert warehouse_1.count_ucp_cp == 2
-      assert warehouse_1.count_pool == 3
-      assert warehouse_1.count_uncapped_tank == 1
-      # assert Model.Warehouse.count_uncapped_tank(warehouse) == 1
+      # assert warehouse_1.count_ucp_cp == 2
+      # assert warehouse_1.count_pool == 3
+      # assert warehouse_1.count_uncapped_tank == 1
+      assert Model.wh_count_uncapped_tank(warehouse_1) == 1
+      assert Model.wh_count_pool(warehouse_1) == 3
+      assert Model.wh_count_ucp_cp(warehouse_1) == 2
     end
   end
 end
