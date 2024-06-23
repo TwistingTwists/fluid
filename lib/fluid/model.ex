@@ -353,6 +353,14 @@ defmodule Fluid.Model do
   def wh_count_ucp_cp(%Model.Warehouse{count_ucp_cp: count_ucp_cp}), do: count_ucp_cp
 
   def wh_get_tanks(%Model.Warehouse{tanks: tanks}), do: tanks
+
+  def wh_get_capped_tanks(%Model.Warehouse{tanks: tanks}) do
+    Enum.filter(tanks, fn
+      %{capacity_type: :capped} -> true
+    _ -> false
+    end)
+  end
+
   def wh_get_pools(%Model.Warehouse{pools: pools}), do: pools
   def wh_get_fixed_pools(%Model.Warehouse{fixed_pools: pools}), do: pools
   def wh_get_capped_pools(%Model.Warehouse{capped_pools: pools}), do: pools

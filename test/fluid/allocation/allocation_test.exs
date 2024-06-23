@@ -76,7 +76,7 @@ defmodule Fluid.AllocationTest do
     result =
       pools
       |> Model.allocations_for_pools()
-      |> log( "raw allocations")
+      # |> log( "raw allocations")
       |> Enum.sort_by(fn {k, _v} -> k end, :asc)
       |> Enum.flat_map(fn {k, v} ->
         Enum.map(v, fn vv -> {k, vv.volume, vv.tag_id} end)
@@ -85,8 +85,8 @@ defmodule Fluid.AllocationTest do
         fn {pool_id, vol, tagid} -> Model.Pool.read_by_id!(pool_id).name end,
         fn {pool_id, vol, tagid} -> vol end
       )
-      |> blue( "calculate allocations")
-
+      # |> blue( "calculate allocations")
+mix
       assert %{
         "cp_1" => [700.0, 1300.0],
         "cp_10" => [100.0],
