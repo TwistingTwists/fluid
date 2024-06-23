@@ -98,6 +98,12 @@ defmodule Fluid.Model do
     end)
   end
 
+  def connect(tank_id, pool_id) when is_binary(tank_id) and is_binary(pool_id) do
+    tank = Model.Tank.read_by_id!(tank_id)
+    pool = Model.Pool.read_by_id!(pool_id)
+    connect(tank, pool)
+  end
+
   def connect(%Tank{} = tank, %Pool{} = pool) do
     Tag.create(tank, pool)
   end
@@ -346,14 +352,10 @@ defmodule Fluid.Model do
   def wh_count_pool(%Model.Warehouse{count_pool: count_pool}), do: count_pool
   def wh_count_ucp_cp(%Model.Warehouse{count_ucp_cp: count_ucp_cp}), do: count_ucp_cp
 
-
   def wh_get_tanks(%Model.Warehouse{tanks: tanks}), do: tanks
   def wh_get_pools(%Model.Warehouse{pools: pools}), do: pools
   def wh_get_fixed_pools(%Model.Warehouse{fixed_pools: pools}), do: pools
   def wh_get_capped_pools(%Model.Warehouse{capped_pools: pools}), do: pools
-
-
-
 
   def in_wh?(tank, %Model.Warehouse{id: warehouse_id}), do: in_wh?(tank, warehouse_id)
   def in_wh?(tank, warehouse_id), do: tank.location_type == :in_wh && tank.warehouse_id == warehouse_id
