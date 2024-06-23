@@ -201,25 +201,9 @@ defmodule Fluid.Test.Factory do
       [warehouse_1, warehouse_2, warehouse_3, warehouse_4]
       |> Enum.map(&Model.wh_get_tanks/1)
 
-
-    # [uct_1] = warehouse_1.tanks
-    # [uct_2] = warehouse_2.tanks
-    # [uct_3] = warehouse_3.tanks
-    # [uct_4] = warehouse_4.tanks
-    # [uct_5] = warehouse_5.tanks
-    # [uct_6] = warehouse_6.tanks
-
     [ [ucp_2], [ucp_3], [ucp_4],[ucp_5],[ucp_6]] =
       [ warehouse_2, warehouse_3, warehouse_4,warehouse_5,warehouse_6]
       |> Enum.map(&Model.wh_get_pools/1)
-
-
-    # # [ucp_1] = warehouse_1.pools
-    # [ucp_2] = warehouse_2.pools
-    # [ucp_3] = warehouse_3.pools
-    # [ucp_4] = warehouse_4.pools
-    # [ucp_5] = warehouse_5.pools
-    # [ucp_6] = warehouse_6.pools
 
     # Fluid.Model.connect("wh_1" , "ct_1", "wh_2", "cp_1")
     # Frontend
