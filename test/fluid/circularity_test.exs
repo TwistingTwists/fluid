@@ -60,12 +60,14 @@ defmodule Fluid.CircularityTest do
   describe "circularity - ALL determinate -  " do
     setup do
       ####### world having circularity - ALL determinate nodes #####
-      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1_0 circularity ")
-      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2_0 circularity ")
-      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3_0 circularity ")
-      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4_0 circularity ")
-      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5_0 circularity ")
-      # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6_0 circularity ")
+      {:ok, world} = Fluid.Model.create_world(name: "Unique world from all determinate")
+
+      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
+      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2", world_id: world.id)
+      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3", world_id: world.id)
+      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4", world_id: world.id)
+      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5", world_id: world.id)
+      # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
       {:ok, warehouse_1} =
         Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :fixed, location_type: :in_wh}]})
@@ -85,18 +87,26 @@ defmodule Fluid.CircularityTest do
       # {:ok, warehouse_6} =
       #   Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :fixed, location_type: :in_wh}]})
 
-      [uct_1] = warehouse_1.tanks
-      [uct_2] = warehouse_2.tanks
-      [uct_3] = warehouse_3.tanks
-      # [uct_4] = warehouse_4.tanks
-      # [uct_5] = warehouse_5.tanks
-      # [uct_6] = warehouse_6.tanks
+      [[uct_1], [uct_2], [uct_3]] =
+        [warehouse_1, warehouse_2, warehouse_3]
+        |> Enum.map(&Model.wh_get_tanks/1)
 
-      # [fp_1] = warehouse_1.pools
-      [ucp_2] = warehouse_2.pools
-      [ucp_3] = warehouse_3.pools
-      [ucp_4] = warehouse_4.pools
-      [ucp_5] = warehouse_5.pools
+      [[ucp_2], [ucp_3], [ucp_4], [ucp_5]] =
+        [warehouse_2, warehouse_3, warehouse_4, warehouse_5]
+        |> Enum.map(&Model.wh_get_pools/1)
+
+      # [uct_1] = warehouse_1.tanks
+      # [uct_2] = warehouse_2.tanks
+      # [uct_3] = warehouse_3.tanks
+      # # [uct_4] = warehouse_4.tanks
+      # # [uct_5] = warehouse_5.tanks
+      # # [uct_6] = warehouse_6.tanks
+
+      # # [fp_1] = warehouse_1.pools
+      # [ucp_2] = warehouse_2.pools
+      # [ucp_3] = warehouse_3.pools
+      # [ucp_4] = warehouse_4.pools
+      # [ucp_5] = warehouse_5.pools
       # [ucp_6] = warehouse_6.pools
 
       # outbound connections from 1
@@ -132,11 +142,14 @@ defmodule Fluid.CircularityTest do
   describe "circularity - ALL determinate - subclassify - " do
     setup do
       ####### world having circularity - ALL determinate nodes #####
-      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1_0 circularity ")
-      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2_0 circularity ")
-      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3_0 circularity ")
-      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4_0 circularity ")
-      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5_0 circularity ")
+      {:ok, world} = Fluid.Model.create_world(name: "Unique world sub classify")
+
+      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
+      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2", world_id: world.id)
+      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3", world_id: world.id)
+      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4", world_id: world.id)
+      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5", world_id: world.id)
+      # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
       {:ok, warehouse_1} =
         Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :fixed, location_type: :in_wh}]})
@@ -153,19 +166,28 @@ defmodule Fluid.CircularityTest do
       {:ok, warehouse_5} =
         Model.add_pools_to_warehouse(warehouse_5, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      [uct_1] = warehouse_1.tanks
-      [uct_2] = warehouse_2.tanks
-      [uct_3] = warehouse_3.tanks
-      # [uct_4] = warehouse_4.tanks
-      # [uct_5] = warehouse_5.tanks
-      # [uct_6] = warehouse_6.tanks
+        [[uct_1], [uct_2], [uct_3]] =
+          [warehouse_1, warehouse_2, warehouse_3]
+          |> Enum.map(&Model.wh_get_tanks/1)
 
-      # [fp_1] = warehouse_1.pools
-      [ucp_2] = warehouse_2.pools
-      [ucp_3] = warehouse_3.pools
-      [ucp_4] = warehouse_4.pools
-      [ucp_5] = warehouse_5.pools
-      # [ucp_6] = warehouse_6.pools
+        [[ucp_2], [ucp_3], [ucp_4], [ucp_5]] =
+          [warehouse_2, warehouse_3, warehouse_4, warehouse_5]
+          |> Enum.map(&Model.wh_get_pools/1)
+
+
+      # [uct_1] = warehouse_1.tanks
+      # [uct_2] = warehouse_2.tanks
+      # [uct_3] = warehouse_3.tanks
+      # # [uct_4] = warehouse_4.tanks
+      # # [uct_5] = warehouse_5.tanks
+      # # [uct_6] = warehouse_6.tanks
+
+      # # [fp_1] = warehouse_1.pools
+      # [ucp_2] = warehouse_2.pools
+      # [ucp_3] = warehouse_3.pools
+      # [ucp_4] = warehouse_4.pools
+      # [ucp_5] = warehouse_5.pools
+      # # [ucp_6] = warehouse_6.pools
 
       # outbound connections from 1
       {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
@@ -220,12 +242,14 @@ defmodule Fluid.CircularityTest do
   describe "circularity - ALL INdeterminate - subclassify - " do
     setup do
       ####### world having circularity - ALL indeterminate nodes #####
-      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "01 warehouse indeterminate")
-      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "02 warehouse indeterminate")
-      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "03 warehouse indeterminate")
-      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "04 warehouse indeterminate")
-      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "05 warehouse indeterminate")
-      {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "06 warehouse indeterminate")
+      {:ok, world} = Fluid.Model.create_world(name: "Unique all indeterminate")
+
+      {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
+      {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_2", world_id: world.id)
+      {:ok, warehouse_3} = Fluid.Model.create_warehouse(name: "warehouse_3", world_id: world.id)
+      {:ok, warehouse_4} = Fluid.Model.create_warehouse(name: "warehouse_4", world_id: world.id)
+      {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5", world_id: world.id)
+      {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
       {:ok, warehouse_1} =
         Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
@@ -245,19 +269,30 @@ defmodule Fluid.CircularityTest do
       {:ok, warehouse_6} =
         Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      [uct_1] = warehouse_1.tanks
-      [uct_2] = warehouse_2.tanks
-      [uct_3] = warehouse_3.tanks
-      [uct_4] = warehouse_4.tanks
-      [uct_5] = warehouse_5.tanks
-      [uct_6] = warehouse_6.tanks
 
-      [ucp_1] = warehouse_1.pools
-      [ucp_2] = warehouse_2.pools
-      [ucp_3] = warehouse_3.pools
-      [ucp_4] = warehouse_4.pools
-      [ucp_5] = warehouse_5.pools
-      [ucp_6] = warehouse_6.pools
+
+        [[uct_1], [uct_2], [uct_3],[uct_4], [uct_5], [uct_6]] =
+          [warehouse_1, warehouse_2, warehouse_3,warehouse_4,warehouse_5,warehouse_6]
+          |> Enum.map(&Model.wh_get_tanks/1)
+
+        [[ucp_1],[ucp_2], [ucp_3], [ucp_4], [ucp_5],[ucp_6]] =
+          [warehouse_1, warehouse_2, warehouse_3,warehouse_4,warehouse_5,warehouse_6]
+          |> Enum.map(&Model.wh_get_pools/1)
+
+
+      # [uct_1] = warehouse_1.tanks
+      # [uct_2] = warehouse_2.tanks
+      # [uct_3] = warehouse_3.tanks
+      # [uct_4] = warehouse_4.tanks
+      # [uct_5] = warehouse_5.tanks
+      # [uct_6] = warehouse_6.tanks
+
+      # [ucp_1] = warehouse_1.pools
+      # [ucp_2] = warehouse_2.pools
+      # [ucp_3] = warehouse_3.pools
+      # [ucp_4] = warehouse_4.pools
+      # [ucp_5] = warehouse_5.pools
+      # [ucp_6] = warehouse_6.pools
 
       # outbound connections from 1
       {:ok, _} = Fluid.Model.connect(uct_1, ucp_2)
@@ -316,7 +351,7 @@ defmodule Fluid.CircularityTest do
           |> Enum.sort_by(fn {_k, v} -> v.name end)
           |> Enum.at(str_rep - 1)
 
-        assert warehouses[wh_id] == "0#{str_rep} warehouse indeterminate"
+        assert warehouses[wh_id] == "warehouse_#{str_rep}"
         assert circularity.indeterminate_classes == [unquote(class)]
       end
     end
