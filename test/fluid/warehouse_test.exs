@@ -265,7 +265,9 @@ defmodule Fluid.WarehouseTest do
       {:ok, updated_warehouse} =
         Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      %{count_pool: count_pool, count_uncapped_tank: count_uncapped_tank, pools: pools} = updated_warehouse
+      count_pool = Model.wh_count_pool(updated_warehouse)
+      count_uncapped_tank = Model.wh_count_uncapped_tank(updated_warehouse)
+      pools = Model.wh_get_pools(updated_warehouse)
 
       assert %{id: ^wh_id} = updated_warehouse
 
