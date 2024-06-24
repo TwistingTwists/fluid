@@ -86,7 +86,7 @@ defmodule Fluid.AllocationTest do
         fn {pool_id, vol, tagid} -> vol end
       )
       # |> blue( "calculate allocations")
-mix
+
       assert %{
         "cp_1" => [700.0, 1300.0],
         "cp_10" => [100.0],
