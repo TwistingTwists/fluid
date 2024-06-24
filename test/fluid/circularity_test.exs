@@ -89,11 +89,11 @@ defmodule Fluid.CircularityTest do
 
       [[uct_1], [uct_2], [uct_3]] =
         [warehouse_1, warehouse_2, warehouse_3]
-        |> Enum.map(&Model.wh_get_tanks/1)
+        |> Enum.map(&Model.get_tanks_from_wh/1)
 
       [[ucp_2], [ucp_3], [ucp_4], [ucp_5]] =
         [warehouse_2, warehouse_3, warehouse_4, warehouse_5]
-        |> Enum.map(&Model.wh_get_pools/1)
+        |> Enum.map(&Model.get_pools_from_wh/1)
 
       # [uct_1] = warehouse_1.tanks
       # [uct_2] = warehouse_2.tanks
@@ -168,11 +168,11 @@ defmodule Fluid.CircularityTest do
 
         [[uct_1], [uct_2], [uct_3]] =
           [warehouse_1, warehouse_2, warehouse_3]
-          |> Enum.map(&Model.wh_get_tanks/1)
+          |> Enum.map(&Model.get_tanks_from_wh/1)
 
         [[ucp_2], [ucp_3], [ucp_4], [ucp_5]] =
           [warehouse_2, warehouse_3, warehouse_4, warehouse_5]
-          |> Enum.map(&Model.wh_get_pools/1)
+          |> Enum.map(&Model.get_pools_from_wh/1)
 
 
       # [uct_1] = warehouse_1.tanks
@@ -273,11 +273,11 @@ defmodule Fluid.CircularityTest do
 
         [[uct_1], [uct_2], [uct_3],[uct_4], [uct_5], [uct_6]] =
           [warehouse_1, warehouse_2, warehouse_3,warehouse_4,warehouse_5,warehouse_6]
-          |> Enum.map(&Model.wh_get_tanks/1)
+          |> Enum.map(&Model.get_tanks_from_wh/1)
 
         [[ucp_1],[ucp_2], [ucp_3], [ucp_4], [ucp_5],[ucp_6]] =
           [warehouse_1, warehouse_2, warehouse_3,warehouse_4,warehouse_5,warehouse_6]
-          |> Enum.map(&Model.wh_get_pools/1)
+          |> Enum.map(&Model.get_pools_from_wh/1)
 
 
       # [uct_1] = warehouse_1.tanks

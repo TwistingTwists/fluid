@@ -348,22 +348,22 @@ defmodule Fluid.Model do
   # warehouse
   ########
 
-  def wh_count_uncapped_tank(%Model.Warehouse{count_uncapped_tank: num_uncapped_tank}), do: num_uncapped_tank
-  def wh_count_pool(%Model.Warehouse{count_pool: count_pool}), do: count_pool
-  def wh_count_ucp_cp(%Model.Warehouse{count_ucp_cp: count_ucp_cp}), do: count_ucp_cp
+  def count_uncapped_tanks_in_wh(%Model.Warehouse{count_uncapped_tank: num_uncapped_tank}), do: num_uncapped_tank
+  def count_pool_in_wh(%Model.Warehouse{count_pool: count_pool}), do: count_pool
+  def count_ucp_cp_in_wh(%Model.Warehouse{count_ucp_cp: count_ucp_cp}), do: count_ucp_cp
 
-  def wh_get_tanks(%Model.Warehouse{tanks: tanks}), do: tanks
+  def get_tanks_from_wh(%Model.Warehouse{tanks: tanks}), do: tanks
 
-  def wh_get_capped_tanks(%Model.Warehouse{tanks: tanks}) do
+  def get_capped_tanks_from_wh(%Model.Warehouse{tanks: tanks}) do
     Enum.filter(tanks, fn
       %{capacity_type: :capped} -> true
     _ -> false
     end)
   end
 
-  def wh_get_pools(%Model.Warehouse{pools: pools}), do: pools
-  def wh_get_fixed_pools(%Model.Warehouse{fixed_pools: pools}), do: pools
-  def wh_get_capped_pools(%Model.Warehouse{capped_pools: pools}), do: pools
+  def get_pools_from_wh(%Model.Warehouse{pools: pools}), do: pools
+  def get_fixed_pools_from_wh(%Model.Warehouse{fixed_pools: pools}), do: pools
+  def get_capped_pools_from_wh(%Model.Warehouse{capped_pools: pools}), do: pools
 
   def in_wh?(tank, %Model.Warehouse{id: warehouse_id}), do: in_wh?(tank, warehouse_id)
   def in_wh?(tank, warehouse_id), do: tank.location_type == :in_wh && tank.warehouse_id == warehouse_id

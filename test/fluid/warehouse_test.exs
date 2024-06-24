@@ -22,6 +22,7 @@ defmodule Fluid.WarehouseTest do
       assert {:error, error} =
                Fluid.Model.create_warehouse(name: warehouse.name, world_id: setup_world.id)
 
+      # convert this to warehouse_already_exists
       assert %Fluid.Error.ModelError{
                class: :create_error,
                target: "warehouse",
@@ -84,14 +85,15 @@ defmodule Fluid.WarehouseTest do
     test " WH:create - default UCT is created if not provided",
          %{world: _setup_world, warehouse: warehouse} do
       # only the default uct is present in the default warehouse
-      [uct] = warehouse.tanks
+      [uct] = Model.get_tanks_from_wh(warehouse)
+      # [uct] = warehouse.tanks
 
       wh_id = warehouse.id
 
       assert Model.Tank.is_uncapped?(uct)
 
       # check if calculations are working properly
-      assert Model.wh_count_uncapped_tank(warehouse) == 1
+      assert Model.count_uncapped_tanks_in_wh(warehouse) == 1
       # assert warehouse.count_uncapped_tank == 1
     end
 
@@ -172,7 +174,7 @@ defmodule Fluid.WarehouseTest do
       assert Factory.all_tanks_of_type?(tanks, [:capped, :uncapped])
 
       # sanity check on calculations
-      assert Model.wh_count_uncapped_tank(warehouse) == 1
+      assert Model.count_uncapped_tanks_in_wh(warehouse) == 1
     end
 
     test "Can add pools to a given warehouse", %{world: _setup_world, warehouse: warehouse, pools: pools} do
@@ -195,9 +197,9 @@ defmodule Fluid.WarehouseTest do
       assert Factory.all_pools_of_type?(pools_result, [:fixed, :uncapped])
 
       # sanity check on calculations
-      assert Model.wh_count_uncapped_tank(warehouse) == 1
+      assert Model.count_uncapped_tanks_in_wh(warehouse) == 1
 
-      assert Model.wh_count_pool(warehouse) == 1
+      assert Model.count_pool_in_wh(warehouse) == 1
     end
 
     test "Can connect a given tank in wh_1 to a pool in wh_2", %{
@@ -211,8 +213,8 @@ defmodule Fluid.WarehouseTest do
       {:ok, warehouse_2} =
         Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      [uct] = Model.wh_get_tanks(warehouse_1)
-      [ucp] = Model.wh_get_pools(warehouse_2)
+      [uct] = Model.get_tanks_from_wh(warehouse_1)
+      [ucp] = Model.get_pools_from_wh(warehouse_2)
 
       assert {:ok, tag} = Fluid.Model.connect(uct, ucp)
       assert Model.tag_connects?(tag, warehouse_1, warehouse_2)
@@ -229,17 +231,17 @@ defmodule Fluid.WarehouseTest do
       {:ok, updated_warehouse} =
         Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
 
-      count_pool = Model.wh_count_pool(updated_warehouse)
-      count_uncapped_tank = Model.wh_count_uncapped_tank(updated_warehouse)
-      pools = Model.wh_get_pools(updated_warehouse)
+      count_pool = Model.count_pool_in_wh(updated_warehouse)
+      count_uncapped_tank = Model.count_uncapped_tanks_in_wh(updated_warehouse)
+      pools = Model.get_pools_from_wh(updated_warehouse)
 
       assert %{id: ^wh_id} = updated_warehouse
 
       wh_from_db =  Warehouse.read_by_id!(wh_id)
-      pools_returned = Model.wh_get_pools(wh_from_db)
+      pools_returned = Model.get_pools_from_wh(wh_from_db)
 
-      assert count_pool == Model.wh_count_pool(wh_from_db)
-      assert count_uncapped_tank == Model.wh_count_uncapped_tank(wh_from_db)
+      assert count_pool == Model.count_pool_in_wh(wh_from_db)
+      assert count_uncapped_tank == Model.count_uncapped_tanks_in_wh(wh_from_db)
 
       pool_ids_old = pools |> Enum.map(& &1.id) |> Enum.sort()
       poold_ids_returned = pools_returned |> Enum.map(& &1.id) |> Enum.sort()
@@ -269,9 +271,9 @@ defmodule Fluid.WarehouseTest do
     end
 
     test "aggregates and calcs", %{warehouse: warehouse_1} do
-      assert Model.wh_count_uncapped_tank(warehouse_1) == 1
-      assert Model.wh_count_pool(warehouse_1) == 3
-      assert Model.wh_count_ucp_cp(warehouse_1) == 2
+      assert Model.count_uncapped_tanks_in_wh(warehouse_1) == 1
+      assert Model.count_pool_in_wh(warehouse_1) == 3
+      assert Model.count_ucp_cp_in_wh(warehouse_1) == 2
     end
   end
 end

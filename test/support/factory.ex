@@ -92,7 +92,7 @@ defmodule Fluid.Test.Factory do
 
     [[uct_1], [uct_2], [uct_3], [uct_4]] =
       [warehouse_1, warehouse_2, warehouse_3, warehouse_4]
-      |> Enum.map(&Model.wh_get_tanks/1)
+      |> Enum.map(&Model.get_tanks_from_wh/1)
 
     # [uct_1] = warehouse_1.tanks
     # [uct_2] = warehouse_2.tanks
@@ -104,7 +104,7 @@ defmodule Fluid.Test.Factory do
     # [ucp_1] = warehouse_1.pools
     [ [ucp_2], [ucp_3], [ucp_4],[ucp_5],[ucp_6]] =
       [ warehouse_2, warehouse_3, warehouse_4,warehouse_5,warehouse_6]
-      |> Enum.map(&Model.wh_get_pools/1)
+      |> Enum.map(&Model.get_pools_from_wh/1)
 
     # [ucp_2] = warehouse_2.pools
     # [ucp_3] = warehouse_3.pools
@@ -199,11 +199,11 @@ defmodule Fluid.Test.Factory do
 
     [[uct_1], [uct_2], [uct_3], [uct_4]] =
       [warehouse_1, warehouse_2, warehouse_3, warehouse_4]
-      |> Enum.map(&Model.wh_get_tanks/1)
+      |> Enum.map(&Model.get_tanks_from_wh/1)
 
     [ [ucp_2], [ucp_3], [ucp_4],[ucp_5],[ucp_6]] =
       [ warehouse_2, warehouse_3, warehouse_4,warehouse_5,warehouse_6]
-      |> Enum.map(&Model.wh_get_pools/1)
+      |> Enum.map(&Model.get_pools_from_wh/1)
 
     # Fluid.Model.connect("wh_1" , "ct_1", "wh_2", "cp_1")
     # Frontend
@@ -296,8 +296,8 @@ defmodule Fluid.Test.Factory do
     # [cp_1, cp_2] = warehouse_1.capped_pools
     # [fp_1, fp_2] = warehouse_1.fixed_pools
 
-    [cp_1, cp_2] = Model.wh_get_capped_pools(warehouse_1)
-    [fp_1, fp_2] = Model.wh_get_fixed_pools(warehouse_1)
+    [cp_1, cp_2] = Model.get_capped_pools_from_wh(warehouse_1)
+    [fp_1, fp_2] = Model.get_fixed_pools_from_wh(warehouse_1)
 
     [cp_1, cp_2, fp_1, fp_2] =
       [{cp_1, 2000, "cp_1"}, {cp_2, 500, "cp_2"}, {fp_1, 2500, "fp_1"}, {fp_2, 1000, "fp_2"}]
