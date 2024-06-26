@@ -1,3 +1,11 @@
+
+## module 007 
+
+- pro_rated_a - flow 
+- within one warehouse - tagged rank, pool ranks, maybe untagged
+- design - pictures 
+- 
+
 Todo 
 
 [x] Fluid.Error.ModelError  - warehouse could not be created error 

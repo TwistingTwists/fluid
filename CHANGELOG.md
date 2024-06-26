@@ -5,6 +5,21 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.9.0](https://github.com/TwistingTwists/fluid/compare/v0.8.0...v0.9.0) (2024-06-26)
+
+
+
+
+### Features:
+
+* allocations with the tanks
+
+### Bug Fixes:
+
+* add relevant error
+
+* rename functions
+
 ## [v0.8.0](https://github.com/TwistingTwists/fluid/compare/v0.7.0...v0.8.0) (2024-06-23)
 
 
