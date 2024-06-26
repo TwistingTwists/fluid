@@ -70,33 +70,43 @@ defmodule Fluid.AllocationTest do
       #   |> List.flatten()
       #   |> Enum.uniq()
 
-
       pools = Enum.flat_map(warehouses, fn wh -> wh.pools end)
 
-    result =
-      pools
-      |> Model.allocations_for_pools()
-      # |> log( "raw allocations")
-      |> Enum.sort_by(fn {k, _v} -> k end, :asc)
-      |> Enum.flat_map(fn {k, v} ->
-        Enum.map(v, fn vv -> {k, vv.volume, vv.tag_id} end)
-      end)
-      |> Enum.group_by(
-        fn {pool_id, vol, tagid} -> Model.Pool.read_by_id!(pool_id).name end,
-        fn {pool_id, vol, tagid} -> vol end
-      )
+      result =
+        pools
+        |> Model.allocations_for_pools()
+        # |> log( "raw allocations")
+        |> Enum.sort_by(fn {pool_id, _alloc} -> pool_id end, :asc)
+        |> Enum.flat_map(fn {pool_id, allocations} ->
+          Enum.map(allocations, fn vv -> {pool_id, vv.volume, vv.tag_id} end)
+        end)
+        |> Enum.group_by(
+          fn {pool_id, vol, tagid} -> Model.Pool.read_by_id!(pool_id).name end,
+          fn {pool_id, vol, tagid} ->
+            tag = Model.Tag.read_by_id!(tagid)
+            {tag.destination["name"], vol}
+          end
+        )
+        # |> Enum.sort_by(fn {pool_name, {tank_name, tank_alloc}} -> tank_alloc end, :asc)
+        |> Enum.map(fn {pool_name, cts_capacity} ->
+          {pool_name, Enum.sort_by(cts_capacity, fn {tank_name, tank_alloc} -> tank_alloc end, :asc)}
+        end)
+        |> Enum.into(%{})
+
       # |> blue( "calculate allocations")
 
       assert %{
-        "cp_1" => [700.0, 1300.0],
-        "cp_10" => [100.0],
-        "cp_13" => [2000.0],
-        "cp_2" => [60.0, 50.0, 390.0],
-        "fp_1" => [2500.0],
-        "fp_11" => [100.0],
-        "fp_12" => [1485.0, 1215.0],
-        "fp_2" => [1000.0]
-      } = result
+               "cp_1" => [{"ct_14", 700.0}, {"ct_1", 1300.0}],
+               "cp_10" => [{"ct_14", 100.0}],
+               "cp_13" => [{"ct_17", 2000.0}],
+               "cp_2" => [{"ct_4", 50.0}, {"ct_17", 60.0}, {"ct_3", 390.0}],
+               "fp_1" => [{"ct_2", 2500.0}],
+               "fp_11" => [{"ct_14", 100.0}],
+               "fp_12" => [{"ct_15", 1215.0}, {"ct_17", 1485.0}],
+               "fp_2" => [{"ct_3", 1000.0}]
+             } = result
+
+      # also assert the tank along with the volume
     end
   end
 end
