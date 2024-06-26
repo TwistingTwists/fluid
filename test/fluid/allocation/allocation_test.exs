@@ -81,15 +81,15 @@ defmodule Fluid.AllocationTest do
           Enum.map(allocations, fn vv -> {pool_id, vv.volume, vv.tag_id} end)
         end)
         |> Enum.group_by(
-          fn {pool_id, vol, tagid} -> Model.Pool.read_by_id!(pool_id).name end,
-          fn {pool_id, vol, tagid} ->
+          fn {pool_id, _vol, _tagid} -> Model.Pool.read_by_id!(pool_id).name end,
+          fn {_pool_id, vol, tagid} ->
             tag = Model.Tag.read_by_id!(tagid)
             {tag.destination["name"], vol}
           end
         )
         # |> Enum.sort_by(fn {pool_name, {tank_name, tank_alloc}} -> tank_alloc end, :asc)
         |> Enum.map(fn {pool_name, cts_capacity} ->
-          {pool_name, Enum.sort_by(cts_capacity, fn {tank_name, tank_alloc} -> tank_alloc end, :asc)}
+          {pool_name, Enum.sort_by(cts_capacity, fn {_tank_name, tank_alloc} -> tank_alloc end, :asc)}
         end)
         |> Enum.into(%{})
 
