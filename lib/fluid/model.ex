@@ -32,7 +32,7 @@ defmodule Fluid.Model do
     Warehouse
     |> Ash.Changeset.for_create(:create, params, opts)
     |> Fluid.Model.Api.create()
-    |> or_error("warehouse")
+    |> or_error("warehouse name must be unique within a world")
 
     # |> dbg()
     # |> Results.wrap()

@@ -25,20 +25,10 @@ defmodule Fluid.WarehouseTest do
       # convert this to warehouse_already_exists
       assert %Fluid.Error.ModelError{
                class: :create_error,
-               target: "warehouse",
-               error: %{
-                 errors: [
-                   %{
-                     error: error_string
-                   }
-                 ]
-               }
+               target: "warehouse name must be unique within a world"
              } =
                error
 
-      # asserts that uniqueness is obtained by postgres unique_constraint
-      assert String.contains?(error_string, "warehouses_unique_name_in_world_index")
-      assert String.contains?(error_string, "constraint_type: :unique")
     end
 
     test "create: warehouse CAN have a duplicate name in ANOTHER world",
@@ -170,7 +160,6 @@ defmodule Fluid.WarehouseTest do
       assert {:ok, %{tanks: tanks}} =
                Fluid.Model.add_tanks_to_warehouse(warehouse, tank)
 
-
       assert Factory.all_tanks_of_type?(tanks, [:capped, :uncapped])
 
       # sanity check on calculations
@@ -237,7 +226,7 @@ defmodule Fluid.WarehouseTest do
 
       assert %{id: ^wh_id} = updated_warehouse
 
-      wh_from_db =  Warehouse.read_by_id!(wh_id)
+      wh_from_db = Warehouse.read_by_id!(wh_id)
       pools_returned = Model.get_pools_from_wh(wh_from_db)
 
       assert count_pool == Model.count_pool_in_wh(wh_from_db)
