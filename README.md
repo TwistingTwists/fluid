@@ -1,3 +1,8 @@
+Todo 
+
+[x] Fluid.Error.ModelError  - warehouse could not be created error 
+[x] assert in allocation_test --- include the capped tank to which the volume flows
+
 for each pool that is tagged by more than one ct
     for each ct -> find potential_pps
 
