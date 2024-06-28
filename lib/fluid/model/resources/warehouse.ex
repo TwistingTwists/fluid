@@ -1,6 +1,7 @@
 defmodule Fluid.Model.Warehouse do
   # alias Fluid.Model.Pool
   alias __MODULE__
+  # alias Fluid.Model
 
   require Logger
 
@@ -8,17 +9,24 @@ defmodule Fluid.Model.Warehouse do
     data_layer: AshPostgres.DataLayer
 
   attributes do
-    uuid_primary_key(:id)
+    uuid_primary_key :id
 
-    attribute(:name, :string, allow_nil?: false)
+    attribute :name, :string, allow_nil?: false
 
     # attribute :name, :string, allow_nil?: false
-    create_timestamp(:created_at)
-    update_timestamp(:updated_at)
+    create_timestamp :created_at
+    update_timestamp :updated_at
+  end
+
+  identities do
+    identity :unique_name_in_world, [:name, :world_id]
   end
 
   relationships do
-    belongs_to(:world, Fluid.Model.World)
+    belongs_to :world, Fluid.Model.World do
+      attribute_writable? true
+    end
+
     has_many(:tanks, Fluid.Model.Tank)
     has_many(:pools, Fluid.Model.Pool)
   end
@@ -47,7 +55,7 @@ defmodule Fluid.Model.Warehouse do
 
   aggregates do
     count :count_ucp_cp, :pools do
-      filter(expr(capacity_type in [:uncapped, :capped]))
+      filter(expr(capacity_type in [:capped, :uncapped]))
     end
   end
 
@@ -68,7 +76,7 @@ defmodule Fluid.Model.Warehouse do
     defaults([:update])
 
     read :read_all do
-      primary?(true)
+      primary? true
       prepare(build(load: @load_fields))
     end
 
@@ -76,16 +84,16 @@ defmodule Fluid.Model.Warehouse do
 
     read :read_by_id do
       prepare(build(load: @load_fields))
-      get_by([:id])
+      get_by [:id]
     end
 
     create :create do
-      primary?(true)
+      primary? true
 
       argument(:tanks, {:array, Fluid.Model.Tank}, allow_nil?: true)
       argument(:pools, {:array, Fluid.Model.Pool}, allow_nil?: true)
 
-      change(load(@load_fields))
+      change load(@load_fields)
 
       change({Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tanks, rel: :tanks})
       # change Fluid.Model.Warehouse.Changes.AddDefaultPool
@@ -97,7 +105,7 @@ defmodule Fluid.Model.Warehouse do
     update :add_tank do
       argument(:tank, Fluid.Model.Tank, allow_nil?: false)
 
-      change(load(@load_fields))
+      change load(@load_fields)
 
       # change {Fluid.Model.Changes.AddArgToRelationship, arg: :tank, rel: :tanks}
       change({Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks})
@@ -107,7 +115,7 @@ defmodule Fluid.Model.Warehouse do
     update :add_pool do
       argument(:pool, Fluid.Model.Pool, allow_nil?: false)
 
-      change(load(@load_fields))
+      change load(@load_fields)
 
       change({Fluid.Model.Changes.AddArgToRelationship, arg: :pool, rel: :pools})
       # change {Fluid.Model.Warehouse.Changes.AddDefaultUCT, arg: :tank, rel: :tanks}
@@ -168,4 +176,10 @@ defmodule Fluid.Model.Warehouse do
     table("warehouses")
     repo(Fluid.Repo)
   end
+
+  ########
+  # utils
+  ########
+
+
 end

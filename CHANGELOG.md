@@ -5,6 +5,55 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.9.0](https://github.com/TwistingTwists/fluid/compare/v0.8.0...v0.9.0) (2024-06-26)
+
+
+
+
+### Features:
+
+* allocations with the tanks
+
+### Bug Fixes:
+
+* add relevant error
+
+* rename functions
+
+## [v0.8.0](https://github.com/TwistingTwists/fluid/compare/v0.7.0...v0.8.0) (2024-06-23)
+
+
+
+
+### Features:
+
+* connect/2 takes ids
+
+* warehosue_tests passing with world.id
+
+* new migrations
+
+## [v0.7.0](https://github.com/TwistingTwists/fluid/compare/v0.6.3...v0.7.0) (2024-05-31)
+
+
+
+
+### Features:
+
+* module 009 allocations for pools
+
+* add volume to tank and pools
+
+* allocations module
+
+### Bug Fixes:
+
+* migrations for allocations - string
+
+* factory setup with volumes + tank api updated
+
+* Tag Rank is now represented as Tuple
+
 ## [v0.6.3](https://github.com/TwistingTwists/fluid/compare/v0.6.2...v0.6.3) (2024-05-03)
 
 

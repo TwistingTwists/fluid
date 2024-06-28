@@ -24,6 +24,7 @@ defmodule Fluid.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import Fluid.DataCase
+      import Helpers.ColorIO
     end
   end
 

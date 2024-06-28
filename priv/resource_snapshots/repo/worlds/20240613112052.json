@@ -7,28 +7,18 @@
       "source": "id",
       "references": null,
       "allow_nil?": false,
-      "primary_key?": true,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": true
     },
     {
       "default": "nil",
       "size": null,
-      "type": "map",
-      "source": "source",
+      "type": "text",
+      "source": "name",
       "references": null,
       "allow_nil?": false,
-      "primary_key?": false,
-      "generated?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "map",
-      "source": "destination",
-      "references": null,
-      "allow_nil?": false,
-      "primary_key?": false,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     },
     {
       "default": "fragment(\"now()\")",
@@ -37,8 +27,8 @@
       "source": "created_at",
       "references": null,
       "allow_nil?": false,
-      "primary_key?": false,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     },
     {
       "default": "fragment(\"now()\")",
@@ -47,23 +37,23 @@
       "source": "updated_at",
       "references": null,
       "allow_nil?": false,
-      "primary_key?": false,
-      "generated?": false
+      "generated?": false,
+      "primary_key?": false
     }
   ],
-  "table": "tags",
-  "hash": "1F14B4BC67D739116845E2CFD34025FE2F9F29447A5836AC98D4DAAFBDF586AB",
+  "table": "worlds",
+  "hash": "86D7A4FAE5A9AA42A2E77D5F88D1695F075E6F70914D275CCF39E3E1EFF55A68",
   "repo": "Elixir.Fluid.Repo",
   "schema": null,
-  "check_constraints": [],
   "identities": [],
-  "custom_indexes": [],
   "multitenancy": {
     "global": null,
     "attribute": null,
     "strategy": null
   },
   "base_filter": null,
+  "check_constraints": [],
+  "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true
 }

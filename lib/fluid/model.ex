@@ -32,7 +32,7 @@ defmodule Fluid.Model do
     Warehouse
     |> Ash.Changeset.for_create(:create, params, opts)
     |> Fluid.Model.Api.create()
-    |> or_error("warehouse")
+    |> or_error("warehouse name must be unique within a world")
 
     # |> dbg()
     # |> Results.wrap()
@@ -96,6 +96,12 @@ defmodule Fluid.Model do
             {:halt, {:error, error}}
         end
     end)
+  end
+
+  def connect(tank_id, pool_id) when is_binary(tank_id) and is_binary(pool_id) do
+    tank = Model.Tank.read_by_id!(tank_id)
+    pool = Model.Pool.read_by_id!(pool_id)
+    connect(tank, pool)
   end
 
   def connect(%Tank{} = tank, %Pool{} = pool) do
@@ -195,6 +201,8 @@ defmodule Fluid.Model do
 
   @doc """
   from a given pool, calculate the {`the capped tanks` , ` outbound connections to capped tanks` }
+
+  This function is used in calculations to yield pps.related_ct
   """
   def calculate_outbound_connections_and_cts(%Model.Pool{} = pool) do
     # todo [enhancement]: read tags for world
@@ -217,4 +225,187 @@ defmodule Fluid.Model do
       end
     end)
   end
+
+  ###########################################################################
+  ############### Allocations Module #####################
+  ###########################################################################
+
+  @doc """
+  iex>  Fluid.Model.group_by_rank([~w(r o a b m p z y t q )a, ~w(b g v f s )a, ~w(v f a g h a l uo)a])
+  {10,%{1 => [:v, :b, :r],2 => [:f, :g, :o],3 => [:a, :v, :a],4 => [:g, :f, :b],5 => [:h, :s, :m],6 => [:a, :p],7 => [:l, :z],8 => [:uo, :y],9 => [:t],10 => [:q]}}
+
+  """
+  def group_by_rank(list_of_lists) do
+    list_of_lists
+    |> Enum.reduce({0, %{}}, fn pl, {max_count, acc} ->
+      {local_count, sub_map_for_pps} =
+        Enum.reduce(pl, {1, acc}, fn pool, {count, local_acc} ->
+          existing_pools_of_same_rank = Map.get(acc, count, [])
+
+          {count + 1, Map.put(local_acc, count, [pool] ++ existing_pools_of_same_rank)}
+        end)
+
+      max_count = max(max_count, local_count - 1)
+      {max_count, sub_map_for_pps}
+    end)
+  end
+
+  @doc """
+  pps_list = list of pool_lists
+    each such pool_list forms a pps.
+
+  """
+
+  # def allocate(pps_list) do
+  #   # pools - group_by rank
+  #   # tags - group_by rank
+  #   # allocate from pools of equal rank to tags of equal rank (primary or secondary ranks)
+  #   #
+
+  #   {_, pool_by_rank} = pps_list |> Model.group_by_rank()
+
+  #   pool_by_rank |> Enum.map(fn {_rank, pool_list} -> allocate_same_rank_pools(pool_list) end)
+  # end
+
+  # @doc """
+
+  # """
+  # def allocate_same_rank_pools(pool_list) do
+  #   # find related tags
+  #   tags_for_pools =
+  #     Enum.map(pool_list, fn pool ->
+  #       {_cts, tags} = calculate_outbound_connections_and_cts(pool)
+  #       tags
+  #     end)
+
+  #   # tags - group_by primary rank
+  #   # {_, pool_by_rank} =
+  #   #   pool_list
+  #   #   |> Enum.reduce({0, %{}}, fn pl, {count, acc} -> {count + 1, Map.put(acc, count + 1, pl)} end)
+  # end
+
+  def allocations_for_pools(pools) do
+    Map.new(pools, fn pool ->
+      {pool.id, calculate_allocations(pool)}
+    end)
+  end
+
+  def calculate_allocations(pool) do
+    # find the capped tanks for this pool and their volumes
+    # apply the formula
+    # emit the tuple of tank_id, allocation
+
+    # todo: can a pool have incoming connections as well?
+    # if yes, how to allocate water in that case?
+    {cts, outbound_tags} = calculate_outbound_connections_and_cts(pool)
+
+    # Calculate the total residual capacity of all tanks
+    total_capacity_of_all_cts = Enum.reduce(cts, 0, fn tank, acc -> acc + tank.residual_capacity end)
+
+    # green({pool.name, Enum.count(cts), Enum.count(outbound_tags)})
+    # orange("total_capacity_of_all_cts", total_capacity_of_all_cts)
+
+    # Calculate the volume allocated to each tank using the formula
+    allocations =
+      Enum.map(cts, fn tank ->
+        # Calculate the allocation ratio for the tank
+        allocation_ratio =
+          Float.round(tank.residual_capacity / total_capacity_of_all_cts, 2)
+
+        # Calculate the volume allocated to the tank
+        allocated_volume =
+          Float.round(min(pool.volume * 1.0, pool.volume * allocation_ratio), 2)
+
+        # {tank, allocated_volume}
+        alloc = update_tag_with_volume({tank, pool, outbound_tags}, allocated_volume)
+
+        alloc
+      end)
+
+    allocations
+    # {pool, allocations}
+  end
+
+  def update_tag_with_volume({tank, pool, tags}, allocated_volume) do
+    tag =
+      Enum.find(tags, fn tag ->
+        tag.source["id"] == pool.id && tag.destination["id"] == tank.id
+      end)
+
+    if tag do
+      Model.Allocation.create!(%{volume: allocated_volume, tag_id: tag.id})
+      # Model.Allocation.create!(%{volume: "#{allocated_volume}", tag_id: tag.id})
+    else
+      raise "Could not find tag linking the given tank and pool !"
+    end
+  end
+
+  ########
+  # utils
+  ########
+
+  ########
+  # warehouse
+  ########
+
+  def count_uncapped_tanks_in_wh(%Model.Warehouse{count_uncapped_tank: num_uncapped_tank}), do: num_uncapped_tank
+  def count_pool_in_wh(%Model.Warehouse{count_pool: count_pool}), do: count_pool
+  def count_ucp_cp_in_wh(%Model.Warehouse{count_ucp_cp: count_ucp_cp}), do: count_ucp_cp
+
+  def get_tanks_from_wh(%Model.Warehouse{tanks: tanks}), do: tanks
+
+  def get_capped_tanks_from_wh(%Model.Warehouse{tanks: tanks}) do
+    Enum.filter(tanks, fn
+      %{capacity_type: :capped} -> true
+    _ -> false
+    end)
+  end
+
+  def get_pools_from_wh(%Model.Warehouse{pools: pools}), do: pools
+  def get_fixed_pools_from_wh(%Model.Warehouse{fixed_pools: pools}), do: pools
+  def get_capped_pools_from_wh(%Model.Warehouse{capped_pools: pools}), do: pools
+
+  def in_wh?(tank, %Model.Warehouse{id: warehouse_id}), do: in_wh?(tank, warehouse_id)
+  def in_wh?(tank, warehouse_id), do: tank.location_type == :in_wh && tank.warehouse_id == warehouse_id
+
+  @doc """
+  Arguments:
+
+  tag
+  source warehouse
+  destination warehouse
+
+  source and destination can be given in any order.
+
+  Checks whether the tag connects the two given warehouses
+  """
+  def tag_connects?(
+        %Model.Tag{source: %{"warehouse_id" => warehouse_1_id}, destination: %{"warehouse_id" => warehouse_2_id}},
+        %Model.Warehouse{id: warehouse_1_id},
+        %Model.Warehouse{id: warehouse_2_id}
+      ),
+      do: true
+
+  def tag_connects?(
+        %Model.Tag{source: %{"warehouse_id" => warehouse_1_id}, destination: %{"warehouse_id" => warehouse_2_id}},
+        %Model.Warehouse{id: warehouse_2_id},
+        %Model.Warehouse{id: warehouse_1_id}
+      ),
+      do: true
+
+  def tag_connects?(
+        %Model.Tag{source: %{"warehouse_id" => warehouse_1_id}, destination: %{"warehouse_id" => warehouse_2_id}},
+        warehouse_1_id,
+        warehouse_2_id
+      ),
+      do: true
+
+  def tag_connects?(
+        %Model.Tag{source: %{"warehouse_id" => warehouse_1_id}, destination: %{"warehouse_id" => warehouse_2_id}},
+        warehouse_2_id,
+        warehouse_1_id
+      ),
+      do: true
+
+  def tag_connects?(_, _, _), do: false
 end

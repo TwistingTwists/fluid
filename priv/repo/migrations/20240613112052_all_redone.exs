@@ -1,4 +1,4 @@
-defmodule Fluid.Repo.Migrations.WorldTankPoolWh do
+defmodule Fluid.Repo.Migrations.AllRedone do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 
@@ -17,6 +17,7 @@ defmodule Fluid.Repo.Migrations.WorldTankPoolWh do
 
     create table(:warehouses, primary_key: false) do
       add :id, :uuid, null: false, default: fragment("uuid_generate_v4()"), primary_key: true
+      add :name, :text, null: false
       add :created_at, :utc_datetime_usec, null: false, default: fragment("now()")
       add :updated_at, :utc_datetime_usec, null: false, default: fragment("now()")
 
@@ -29,10 +30,18 @@ defmodule Fluid.Repo.Migrations.WorldTankPoolWh do
           )
     end
 
+    create unique_index(:warehouses, [:name, :world_id],
+             name: "warehouses_unique_name_in_world_index"
+           )
+
     create table(:tanks, primary_key: false) do
       add :id, :uuid, null: false, default: fragment("uuid_generate_v4()"), primary_key: true
       add :name, :text
+      add :tag_id, :uuid
       add :capacity_type, :text
+      add :total_capacity, :bigint
+      add :volume, :bigint, default: 0
+      add :applicable_capacity, :bigint
       add :regularity_type, :text, default: "regular"
       add :location_type, :text
       add :created_at, :utc_datetime_usec, null: false, default: fragment("now()")
@@ -55,11 +64,23 @@ defmodule Fluid.Repo.Migrations.WorldTankPoolWh do
           )
     end
 
+    create table(:tags, primary_key: false) do
+      add :id, :uuid, null: false, default: fragment("uuid_generate_v4()"), primary_key: true
+      add :source, :map, null: false
+      add :destination, :map, null: false
+      add :user_defined_tag, :text
+      add :created_at, :utc_datetime_usec, null: false, default: fragment("now()")
+      add :updated_at, :utc_datetime_usec, null: false, default: fragment("now()")
+    end
+
     create table(:pools, primary_key: false) do
       add :id, :uuid, null: false, default: fragment("uuid_generate_v4()"), primary_key: true
       add :name, :text
+      add :tag_id, :uuid
       add :capacity_type, :text
       add :location_type, :text
+      add :volume, :bigint, default: 0
+      add :total_capacity, :bigint
       add :created_at, :utc_datetime_usec, null: false, default: fragment("now()")
       add :updated_at, :utc_datetime_usec, null: false, default: fragment("now()")
 
@@ -79,20 +100,44 @@ defmodule Fluid.Repo.Migrations.WorldTankPoolWh do
             prefix: "public"
           )
     end
+
+    create table(:allocations, primary_key: false) do
+      add :id, :uuid, null: false, default: fragment("uuid_generate_v4()"), primary_key: true
+      add :volume, :float
+      add :stage, :text, default: ""
+
+      add :tag_id,
+          references(:tags,
+            column: :id,
+            name: "allocations_tag_id_fkey",
+            type: :uuid,
+            prefix: "public"
+          )
+    end
   end
 
   def down do
+    drop constraint(:allocations, "allocations_tag_id_fkey")
+
+    drop table(:allocations)
+
     drop constraint(:pools, "pools_warehouse_id_fkey")
 
     drop constraint(:pools, "pools_world_id_fkey")
 
     drop table(:pools)
 
+    drop table(:tags)
+
     drop constraint(:tanks, "tanks_warehouse_id_fkey")
 
     drop constraint(:tanks, "tanks_world_id_fkey")
 
     drop table(:tanks)
+
+    drop_if_exists unique_index(:warehouses, [:name, :world_id],
+                     name: "warehouses_unique_name_in_world_index"
+                   )
 
     drop constraint(:warehouses, "warehouses_world_id_fkey")
 

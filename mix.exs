@@ -1,7 +1,7 @@
 defmodule Fluid.MixProject do
   use Mix.Project
 
-  @version "0.6.3"
+  @version "0.9.0"
 
   def project do
     [
@@ -53,8 +53,8 @@ defmodule Fluid.MixProject do
 
       # ash dependencies
 
-      {:ash, "~> 2.18"},
-      {:ash_postgres, "~> 1.3.6"},
+      {:ash, "~> 2.21"},
+      {:ash_postgres, "~> 1.3"},
 
       # for future UI admin usage
       {:ash_admin, "~> 0.10.2"},
@@ -81,6 +81,8 @@ defmodule Fluid.MixProject do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ash_postgres.setup": ["ash_postgres.create", "ash_postgres.migrate"],
+      "ash_postgres.reset": ["ash_postgres.drop","ash_postgres.create", "ash_postgres.migrate"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
