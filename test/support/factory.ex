@@ -102,8 +102,8 @@ defmodule Fluid.Test.Factory do
     # [uct_6] = warehouse_6.tanks
 
     # [ucp_1] = warehouse_1.pools
-    [ [ucp_2], [ucp_3], [ucp_4],[ucp_5],[ucp_6]] =
-      [ warehouse_2, warehouse_3, warehouse_4,warehouse_5,warehouse_6]
+    [[ucp_2], [ucp_3], [ucp_4], [ucp_5], [ucp_6]] =
+      [warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
       |> Enum.map(&Model.get_pools_from_wh/1)
 
     # [ucp_2] = warehouse_2.pools
@@ -201,8 +201,8 @@ defmodule Fluid.Test.Factory do
       [warehouse_1, warehouse_2, warehouse_3, warehouse_4]
       |> Enum.map(&Model.get_tanks_from_wh/1)
 
-    [ [ucp_2], [ucp_3], [ucp_4],[ucp_5],[ucp_6]] =
-      [ warehouse_2, warehouse_3, warehouse_4,warehouse_5,warehouse_6]
+    [[ucp_2], [ucp_3], [ucp_4], [ucp_5], [ucp_6]] =
+      [warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
       |> Enum.map(&Model.get_pools_from_wh/1)
 
     # Fluid.Model.connect("wh_1" , "ct_1", "wh_2", "cp_1")
@@ -371,6 +371,75 @@ defmodule Fluid.Test.Factory do
     # caution: re read all warehouses from db - just to make sure all the latest data is reloaded back in them.
     [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
     |> Enum.map(fn wh -> Model.Warehouse.read_by_id!(wh.id) end)
+  end
+
+  def setup_warehouses_for_tag_evaluation() do
+    {:ok, world} = Fluid.Model.create_world(name: "Unique world for tag_evaluation asdfasdfasdf")
+
+    {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
+
+    {:ok, warehouse_1} =
+      Model.add_pools_to_warehouse(
+        warehouse_1,
+        {:params,
+         [
+           %{name: "fp1", capacity_type: :fixed, location_type: :in_wh, total_capacity: 500, volume: 500},
+           %{name: "fp2", capacity_type: :fixed, location_type: :in_wh, total_capacity: 300, volume: 300},
+           %{name: "fp3", capacity_type: :fixed, location_type: :in_wh, total_capacity: 200, volume: 200},
+           %{name: "fp4", capacity_type: :fixed, location_type: :in_wh, total_capacity: 400, volume: 400}
+         ]}
+      )
+
+    {:ok, warehouse_1} =
+      Model.add_tanks_to_warehouse(
+        warehouse_1,
+        {:params,
+         [
+           %{capacity_type: :capped, location_type: :in_wh, name: "ct1", total_capacity: 1200},
+           %{capacity_type: :capped, location_type: :in_wh, name: "ct2", total_capacity: 1100},
+           %{capacity_type: :capped, location_type: :in_wh, name: "ct3", total_capacity: 1600}
+         ]}
+      )
+
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct1"}, {warehouse_1, "fp1"}, "1T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct1"}, {warehouse_1, "fp2"}, "2T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct1"}, {warehouse_1, "fp3"}, "3T")
+
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct2"}, {warehouse_1, "fp2"}, "1T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct2"}, {warehouse_1, "fp3"}, "2T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct2"}, {warehouse_1, "fp4"}, "3T")
+
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp1"}, "1T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp2"}, "2T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp3"}, "3T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp4"}, "3T")
+
+    # Warehouse.add_fixed_pool(gamma, "fp1", 500)
+    # Warehouse.add_fixed_pool(gamma, "fp2", 300)
+    # Warehouse.add_fixed_pool(gamma, "fp3", 200)
+    # Warehouse.add_fixed_pool(gamma, "fp4", 400)
+
+    # Warehouse.add_capped_tank(gamma, "ct1", 1_200, "sct1")
+    # Warehouse.add_capped_tank(gamma, "ct2", 1_100, "sct2")
+    # Warehouse.add_capped_tank(gamma, "ct3", 1_600, "sct3")
+
+    # Container.start_link("suct11")
+    # Warehouse.add_uncapped_tank(gamma, "uct11", [{:suct11, 100}])
+
+    # Warehouse.add_tag(gamma, "ct1", "fp1", 1)
+    # Warehouse.add_tag(gamma, "ct1", "fp2", 2)
+    # Warehouse.add_tag(gamma, "ct1", "fp3", 3)
+
+    # Warehouse.add_tag(gamma, "ct2", "fp2", 1)
+    # Warehouse.add_tag(gamma, "ct2", "fp3", 2)
+    # Warehouse.add_tag(gamma, "ct2", "fp4", 3)
+
+    # Warehouse.add_tag(gamma, "ct3", "fp1", 1)
+    # Warehouse.add_tag(gamma, "ct3", "fp2", 2)
+    # Warehouse.add_tag(gamma, "ct3", "fp3", 3)
+    # Warehouse.add_tag(gamma, "ct3", "fp4", 3)
+
+    [warehouse: warehouse_1]
   end
 
   ##################

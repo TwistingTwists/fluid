@@ -6,6 +6,7 @@ defmodule Fluid.Model.Pool do
     extensions: [AshJason.Extension]
 
   @load_fields [ :warehouse]
+  def load_fields, do: @load_fields
 
   attributes do
     uuid_primary_key(:id)
@@ -99,4 +100,7 @@ defmodule Fluid.Model.Pool do
   jason do
     merge(%{module: "#{__MODULE__}"})
   end
+
+  ### normal module ####
+
 end

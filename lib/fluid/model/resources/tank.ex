@@ -5,7 +5,7 @@ defmodule Fluid.Model.Tank do
   """
   require Logger
 
-  # alias Fluid.Model
+  alias Fluid.Model
 
   use Ash.Resource,
     data_layer: AshPostgres.DataLayer,
@@ -15,6 +15,7 @@ defmodule Fluid.Model.Tank do
   # alias Fluid.Model.Warehouse
 
   @load_fields [:residual_capacity, :world, :warehouse]
+  def load_fields, do: @load_fields
 
   attributes do
     uuid_primary_key :id
@@ -84,6 +85,16 @@ defmodule Fluid.Model.Tank do
       get_by [:id]
       prepare build(load: @load_fields)
     end
+
+
+    # read :read_by_name do
+    #   argument :warehouse, Model.Warehouse, allow_nil?: false
+    #   # get_by [:name]
+    #   prepare build(load: @load_fields)
+
+    #   # prepare query, opts, context ->
+
+    # end
 
     create :create do
       primary? true

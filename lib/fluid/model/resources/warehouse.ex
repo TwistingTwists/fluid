@@ -72,6 +72,8 @@ defmodule Fluid.Model.Warehouse do
     :capped_tanks
   ]
 
+  def load_fields, do: @load_fields
+
   actions do
     defaults([:update])
 

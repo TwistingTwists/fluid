@@ -12,6 +12,7 @@ defmodule Fluid.Model do
   alias Fluid.Model.Tag
   # import Helpers.ColorIO
   require Logger
+  require Ash.Query
 
   def create_world(params, opts \\ []) do
     # it is important to convert `params` to map and `opts` to be a keyword list
@@ -98,12 +99,53 @@ defmodule Fluid.Model do
     end)
   end
 
+  @doc """
+  {wh1 , tank_name}, {wh2,pool_name}
+
+  wh1 - is warehouse struct
+  tank_name - is string representation of the name
+  """
+  def connect({%{id: wh1_id} = _wh1, tank_name}, {%{id: wh2_id} = _wh2, pool_name}, tag_rank)
+      when is_binary(tank_name) and is_binary(pool_name) do
+    # since only one tank with given warehouse and given tank_name exists
+    # i.e. one warehouse cannot have two tanks of same name
+
+    [tank] =
+      Model.Tank
+      |> Ash.Query.filter(warehouse_id == ^wh1_id)
+      |> Ash.Query.filter(name == ^tank_name)
+      # |> Ash.Query.load(Model.Tank.load_fields())
+      |> Model.Api.read!()
+
+    [pool] =
+      Model.Pool
+      |> Ash.Query.filter(warehouse_id == ^wh2_id)
+      |> Ash.Query.filter(name == ^pool_name)
+      # |> Ash.Query.load(Model.Pool.load_fields())
+      |> Model.Api.read!()
+
+    connect(tank, pool, tag_rank)
+  end
+
   def connect(tank_id, pool_id) when is_binary(tank_id) and is_binary(pool_id) do
     tank = Model.Tank.read_by_id!(tank_id)
     pool = Model.Pool.read_by_id!(pool_id)
     connect(tank, pool)
   end
 
+  # arity 3
+  # tag_rank = "1T1", "1T", "", "3T2"
+  def connect(%Tank{} = tank, %Pool{} = pool, tag_rank) do
+    # Tag.create(tank, pool, tag_rank)
+    Tag.create_vanilla(%{user_defined_tag: tag_rank, source: tank, destination: pool})
+  end
+
+  def connect(%Pool{} = pool, %Tank{} = tank, tag_rank) do
+    # Tag.create_reverse(pool, tank, %{user_defined_tag: tag_rank})
+    Tag.create_vanilla(%{user_defined_tag: tag_rank, source: pool, destination: tank})
+  end
+
+  # arity 2
   def connect(%Tank{} = tank, %Pool{} = pool) do
     Tag.create(tank, pool)
   end
@@ -357,7 +399,7 @@ defmodule Fluid.Model do
   def get_capped_tanks_from_wh(%Model.Warehouse{tanks: tanks}) do
     Enum.filter(tanks, fn
       %{capacity_type: :capped} -> true
-    _ -> false
+      _ -> false
     end)
   end
 
