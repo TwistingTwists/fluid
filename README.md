@@ -4,6 +4,11 @@
 - pro_rated_a - flow 
 - within one warehouse - tagged rank, pool ranks, maybe untagged
 - design - pictures 
+
+
+- when creating a world, additional flag -> for pro-rating calculations (residual or total capacity)
+  - pro-rates -> residual capacity
+  - pro-rates -> total capacity
 - 
 
 Todo 

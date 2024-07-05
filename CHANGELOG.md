@@ -5,6 +5,17 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.10.0](https://github.com/TwistingTwists/fluid/compare/v0.9.0...v0.10.0) (2024-07-05)
+
+
+
+
+### Features:
+
+* tag evalution test
+
+* setup for tag_evaluation
+
 ## [v0.9.0](https://github.com/TwistingTwists/fluid/compare/v0.8.0...v0.9.0) (2024-06-26)
 
 
