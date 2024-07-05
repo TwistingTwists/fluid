@@ -14,7 +14,7 @@ defmodule Fluid.Model.Tag.TagCalculation do
     {:ok,
      Enum.map(tags, fn tag ->
        {primary, secondary} = Parser.parse(tag.user_defined_tag)
-       struct!(Model.Tag.TagRank,%{primary: primary, secondary: secondary})
+       struct!(Model.Tag.TagRank, %{primary: primary, secondary: secondary})
      end)}
   end
 

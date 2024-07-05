@@ -5,7 +5,7 @@ defmodule Fluid.Model.Pool do
     data_layer: AshPostgres.DataLayer,
     extensions: [AshJason.Extension]
 
-  @load_fields [ :warehouse]
+  @load_fields [:warehouse]
   def load_fields, do: @load_fields
 
   attributes do
@@ -22,12 +22,13 @@ defmodule Fluid.Model.Pool do
       description("Whether it is standalone or in warehouse")
     end
 
-    attribute :volume, :integer do
+    attribute :volume, :float do
       default 0
+      # constraints min: 0
       description "the volume of water `currently` in that pool."
     end
 
-    attribute :total_capacity, :integer do
+    attribute :total_capacity, :float do
       description "The TOTAL capacity of a pool when it is empty state."
     end
 
@@ -39,7 +40,9 @@ defmodule Fluid.Model.Pool do
     # toask cannot belong to both at the same time?
     belongs_to(:warehouse, Fluid.Model.Warehouse)
     # toask can belong_to world directly - iff pool is standalone?
-    belongs_to(:world, Fluid.Model.World)
+    belongs_to :world, Fluid.Model.World do
+      attribute_writable? true
+    end
   end
 
   actions do
@@ -102,5 +105,4 @@ defmodule Fluid.Model.Pool do
   end
 
   ### normal module ####
-
 end

@@ -27,11 +27,11 @@ defmodule Fluid.Model.Tank do
       description "uncapped, capped"
     end
 
-    attribute :total_capacity, :integer do
+    attribute :total_capacity, :float do
       description "The capacity of a CT when it is empty."
     end
 
-    attribute :volume, :integer do
+    attribute :volume, :float do
       default 0
       description "the volume of water `currently` in that CT."
     end
@@ -61,7 +61,7 @@ defmodule Fluid.Model.Tank do
   end
 
   calculations do
-    calculate :residual_capacity, :integer, expr(total_capacity - volume) do
+    calculate :residual_capacity, :float, expr(total_capacity - volume) do
       description "total_capacity - volume"
     end
   end
@@ -85,7 +85,6 @@ defmodule Fluid.Model.Tank do
       get_by [:id]
       prepare build(load: @load_fields)
     end
-
 
     # read :read_by_name do
     #   argument :warehouse, Model.Warehouse, allow_nil?: false
@@ -143,7 +142,6 @@ defmodule Fluid.Model.Tank do
   jason do
     merge(%{module: "#{__MODULE__}"})
   end
-
 
   ########
   # utils

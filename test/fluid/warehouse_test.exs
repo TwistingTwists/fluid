@@ -28,7 +28,6 @@ defmodule Fluid.WarehouseTest do
                target: "warehouse name must be unique within a world"
              } =
                error
-
     end
 
     test "create: warehouse CAN have a duplicate name in ANOTHER world",

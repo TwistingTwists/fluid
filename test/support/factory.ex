@@ -439,7 +439,8 @@ defmodule Fluid.Test.Factory do
     # Warehouse.add_tag(gamma, "ct3", "fp3", 3)
     # Warehouse.add_tag(gamma, "ct3", "fp4", 3)
 
-    [warehouse: warehouse_1]
+
+    [warehouse_1]
   end
 
   ##################

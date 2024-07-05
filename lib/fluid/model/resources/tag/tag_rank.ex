@@ -1,4 +1,3 @@
-
 defmodule Fluid.Model.Tag.TagRank do
   use Ash.Resource
 

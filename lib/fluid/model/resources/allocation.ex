@@ -45,7 +45,7 @@ defmodule Fluid.Model.Allocation do
 
   relationships do
     belongs_to :tag, Model.Tag do
-    attribute_writable? true
+      attribute_writable? true
     end
   end
 
@@ -55,7 +55,7 @@ defmodule Fluid.Model.Allocation do
   end
 
   actions do
-    defaults [:update,:create]
+    defaults [:update, :create]
 
     read :read_all do
       primary? true
@@ -65,7 +65,6 @@ defmodule Fluid.Model.Allocation do
       get_by [:id]
       # prepare build(load: @load_fields)
     end
-
   end
 
   code_interface do
@@ -76,5 +75,4 @@ defmodule Fluid.Model.Allocation do
     define :read_by_id, args: [:id]
     define :update
   end
-
 end

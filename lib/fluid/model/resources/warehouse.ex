@@ -182,6 +182,4 @@ defmodule Fluid.Model.Warehouse do
   ########
   # utils
   ########
-
-
 end
