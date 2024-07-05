@@ -2,7 +2,7 @@ defmodule Fluid.Test.Factory do
   alias Fluid.Model
   alias Fluid.Model.Tank
   alias Fluid.Model.Pool
-  # import Helpers.ColorIO
+  import Helpers.ColorIO
 
   def tank_params() do
     [
@@ -439,6 +439,9 @@ defmodule Fluid.Test.Factory do
     # Warehouse.add_tag(gamma, "ct3", "fp3", 3)
     # Warehouse.add_tag(gamma, "ct3", "fp4", 3)
 
+    Model.Tag.read_all!()
+    |> Enum.map(&Model.Tag.display/1)
+    |> green()
 
     [warehouse_1]
   end

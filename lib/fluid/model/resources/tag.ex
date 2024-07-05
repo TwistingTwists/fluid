@@ -106,4 +106,11 @@ defmodule Fluid.Model.Tag do
   # utils
   ########
 
+  def display(tags) when is_list(tags) do
+    Enum.map(tags, &display/1)
+  end
+
+  def display(tag) do
+    "#{tag.source["name"]} ->  {#{tag.tag.primary}, #{tag.tag.secondary}} -> #{tag.destination["name"]}"
+  end
 end

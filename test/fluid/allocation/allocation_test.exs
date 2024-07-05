@@ -75,23 +75,25 @@ defmodule Fluid.AllocationTest do
       result =
         pools
         |> Model.allocations_for_pools()
-        # |> log( "raw allocations")
-        |> Enum.sort_by(fn {pool_id, _alloc} -> pool_id end, :asc)
-        |> Enum.flat_map(fn {pool_id, allocations} ->
-          Enum.map(allocations, fn vv -> {pool_id, vv.volume, vv.tag_id} end)
-        end)
-        |> Enum.group_by(
-          fn {pool_id, _vol, _tagid} -> Model.Pool.read_by_id!(pool_id).name end,
-          fn {_pool_id, vol, tagid} ->
-            tag = Model.Tag.read_by_id!(tagid)
-            {tag.destination["name"], vol}
-          end
-        )
-        # |> Enum.sort_by(fn {pool_name, {tank_name, tank_alloc}} -> tank_alloc end, :asc)
-        |> Enum.map(fn {pool_name, cts_capacity} ->
-          {pool_name, Enum.sort_by(cts_capacity, fn {_tank_name, tank_alloc} -> tank_alloc end, :asc)}
-        end)
-        |> Enum.into(%{})
+        |> render_assertable()
+
+      # |> log( "raw allocations")
+      # |> Enum.sort_by(fn {pool_id, _alloc} -> pool_id end, :asc)
+      # |> Enum.flat_map(fn {pool_id, allocations} ->
+      #   Enum.map(allocations, fn vv -> {pool_id, vv.volume, vv.tag_id} end)
+      # end)
+      # |> Enum.group_by(
+      #   fn {pool_id, _vol, _tagid} -> Model.Pool.read_by_id!(pool_id).name end,
+      #   fn {_pool_id, vol, tagid} ->
+      #     tag = Model.Tag.read_by_id!(tagid)
+      #     {tag.destination["name"], vol}
+      #   end
+      # )
+      # # |> Enum.sort_by(fn {pool_name, {tank_name, tank_alloc}} -> tank_alloc end, :asc)
+      # |> Enum.map(fn {pool_name, cts_capacity} ->
+      #   {pool_name, Enum.sort_by(cts_capacity, fn {_tank_name, tank_alloc} -> tank_alloc end, :asc)}
+      # end)
+      # |> Enum.into(%{})
 
       # |> blue( "calculate allocations")
 
@@ -108,5 +110,25 @@ defmodule Fluid.AllocationTest do
 
       # also assert the tank along with the volume
     end
+  end
+
+  defp render_assertable(map_or_kv) do
+    map_or_kv
+    |> Enum.sort_by(fn {pool_id, _alloc} -> pool_id end, :asc)
+    |> Enum.flat_map(fn {pool_id, allocations} ->
+      Enum.map(allocations, fn vv -> {pool_id, vv.volume, vv.tag_id} end)
+    end)
+    |> Enum.group_by(
+      fn {pool_id, _vol, _tagid} -> Model.Pool.read_by_id!(pool_id).name end,
+      fn {_pool_id, vol, tagid} ->
+        tag = Model.Tag.read_by_id!(tagid)
+        {tag.destination["name"], vol}
+      end
+    )
+    # |> Enum.sort_by(fn {pool_name, {tank_name, tank_alloc}} -> tank_alloc end, :asc)
+    |> Enum.map(fn {pool_name, cts_capacity} ->
+      {pool_name, Enum.sort_by(cts_capacity, fn {_tank_name, tank_alloc} -> tank_alloc end, :asc)}
+    end)
+    |> Enum.into(%{})
   end
 end

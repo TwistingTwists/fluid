@@ -10,7 +10,7 @@ defmodule Fluid.Model do
   alias Fluid.Model.Pool
   alias Fluid.Model.Tank
   alias Fluid.Model.Tag
-  # import Helpers.ColorIO
+  import Helpers.ColorIO
   require Logger
   require Ash.Query
 
@@ -76,6 +76,7 @@ defmodule Fluid.Model do
       when is_list(pool_opts) do
     pools =
       Enum.map(pool_opts, fn pool_option ->
+        pool_option = Map.merge(%{world_id: warehouse.world_id}, pool_option)
         Model.Pool.create!(pool_option)
       end)
 
@@ -124,7 +125,7 @@ defmodule Fluid.Model do
       # |> Ash.Query.load(Model.Pool.load_fields())
       |> Model.Api.read!()
 
-    connect(tank, pool, tag_rank)
+    connect(pool, tank, tag_rank)
   end
 
   def connect(tank_id, pool_id) when is_binary(tank_id) and is_binary(pool_id) do
@@ -248,6 +249,7 @@ defmodule Fluid.Model do
   """
   def calculate_outbound_connections_and_cts(%Model.Pool{} = pool) do
     # todo [enhancement]: read tags for world
+    # all_tags = Model.Tag.read_all!(pool.world_id)
     all_tags = Model.Tag.read_all!()
     cts_acc = []
     tags_acc = []
@@ -339,46 +341,93 @@ defmodule Fluid.Model do
 
     # todo: can a pool have incoming connections as well?
     # if yes, how to allocate water in that case?
-    {cts, outbound_tags} = calculate_outbound_connections_and_cts(pool)
+    {_cts, outbound_tags} = calculate_outbound_connections_and_cts(pool)
 
+    # Enum.map(outbound_tags, fn tag -> Model.Tag.display(tag) |> purple("--") end)
+
+    outbound_tags_with_rank =
+      outbound_tags |> Enum.group_by(fn %{tag: %{primary: primary_tag_rank}} -> primary_tag_rank end)
+
+    Enum.flat_map(outbound_tags_with_rank, fn {rank, tags} ->
+      Model.Tag.display(tags) |> purple("outbound_tags_with_rank: rank - #{rank}")
+    end)
+
+    outbound_tags_with_rank
+    |> Enum.flat_map(fn {rank, outbound_tags} ->
+      yellow("pro-rate: pool = #{pool.name}, tag = #{rank} ")
+      tank_ids = outbound_tags |> Enum.map(fn tag -> tag.destination["id"] end)
+      cts = tank_ids |> Enum.map(&Model.Tank.read_by_id!/1)
+
+      # make sure to read pool from db again because it is updated during process_tanks
+      pool = Model.Pool.read_by_id!(pool.id)
+
+      process_tanks(pool, outbound_tags, cts)
+    end)
+
+    # process only tanks which have tag 1T
+    ### process only tanks which have tag 1T1
+    ### process only tanks which have tag 1T2
+    ### process only tanks which have tag 1T3
+
+    # process only tanks which have tag 2T
+    # process only tanks which have tag 3T
+
+    # allocations
+    # {pool, allocations}
+  end
+
+  @doc """
+  given a set of tanks, allocate the volume.
+
+  pool - to which these tanks are tagged to.
+  outbound_tags - the tags of same rank emerging from the pool
+
+  The decision for which tag rank to process happens before this function.
+  """
+  def process_tanks(pool, outbound_tags, cts) do
     # Calculate the total residual capacity of all tanks
-    total_capacity_of_all_cts = Enum.reduce(cts, 0, fn tank, acc -> acc + tank.residual_capacity end)
+    # total_capacity_of_all_cts = Enum.reduce(cts, 0, fn tank, acc -> acc + tank.residual_capacity end)
+    total_capacity_of_all_cts = Enum.reduce(cts, 0, fn tank, acc -> acc + tank.total_capacity end)
 
     # green({pool.name, Enum.count(cts), Enum.count(outbound_tags)})
     # orange("total_capacity_of_all_cts", total_capacity_of_all_cts)
 
     # Calculate the volume allocated to each tank using the formula
-    allocations =
-      Enum.map(cts, fn tank ->
-        # Calculate the allocation ratio for the tank
-        allocation_ratio =
-          Float.round(tank.residual_capacity / total_capacity_of_all_cts, 2)
+    # allocations =
+    Enum.map(cts, fn tank ->
+      # Calculate the allocation ratio for the tank
+      allocation_ratio =
+        Float.round(tank.total_capacity / total_capacity_of_all_cts, 2)
 
-        # Calculate the volume allocated to the tank
-        allocated_volume =
-          Float.round(min(pool.volume * 1.0, pool.volume * allocation_ratio), 2)
+      # Calculate the volume allocated to the tank
+      allocated_volume =
+        Float.round(min(pool.volume * 1.0, pool.volume * allocation_ratio), 2)
 
-        # {tank, allocated_volume}
-        alloc = update_tag_with_volume({tank, pool, outbound_tags}, allocated_volume)
+      # {tank, allocated_volume}
+      alloc = update_tag_with_volume({tank, pool, outbound_tags}, allocated_volume)
 
-        alloc
-      end)
-
-    allocations
-    # {pool, allocations}
+      alloc
+    end)
   end
 
   def update_tag_with_volume({tank, pool, tags}, allocated_volume) do
+    Model.Tag.display(tags) |> orange("update")
+
     tag =
       Enum.find(tags, fn tag ->
         tag.source["id"] == pool.id && tag.destination["id"] == tank.id
       end)
 
     if tag do
+      Model.Pool.update!(pool, %{volume: pool.volume - allocated_volume})
       Model.Allocation.create!(%{volume: allocated_volume, tag_id: tag.id})
       # Model.Allocation.create!(%{volume: "#{allocated_volume}", tag_id: tag.id})
     else
-      raise "Could not find tag linking the given tank and pool !"
+      raise """
+      Could not find tag linking the given tank and pool !
+      tank_id: #{tank.id},
+      pool_id: #{pool.id},
+      """
     end
   end
 

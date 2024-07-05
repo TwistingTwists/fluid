@@ -27,10 +27,14 @@ defmodule Fluid.Allocation.AllocationModuleTest do
       [tank | _r] = wh.tanks
       [pool | _r] = wh.pools
 
-      assert %{total_capacity: 500000, name: "from tests"} = Model.Tank.update!(tank, %{total_capacity: 500000, name: "from tests"})
-      assert %{total_capacity: 500000, name: "from tests"} = Model.Pool.update!(pool, %{total_capacity: 500000, name: "from tests"})
-      assert %{total_capacity: 500000, name: "from tests"} = Model.Pool.read_by_id!(pool.id)
-      assert %{total_capacity: 500000, name: "from tests"} = Model.Tank.read_by_id!(tank.id)
+      assert %{total_capacity: 500_000.0, name: "from tests"} =
+               Model.Tank.update!(tank, %{total_capacity: 500_000.0, name: "from tests"})
+
+      assert %{total_capacity: 500_000.0, name: "from tests"} =
+               Model.Pool.update!(pool, %{total_capacity: 500_000.0, name: "from tests"})
+
+      assert %{total_capacity: 500_000.0, name: "from tests"} = Model.Pool.read_by_id!(pool.id)
+      assert %{total_capacity: 500_000.0, name: "from tests"} = Model.Tank.read_by_id!(tank.id)
     end
   end
 end
