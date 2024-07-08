@@ -334,11 +334,19 @@ defmodule Fluid.Model do
     end)
   end
 
-  def calculate_allocations(pool) do
-    # find the capped tanks for this pool and their volumes
-    # apply the formula
-    # emit the tuple of tank_id, allocation
+  @doc """
 
+  For each pool,
+    # process only tanks which have tag 1T
+    ### process only tanks which have tag 1T1
+    ### process only tanks which have tag 1T2
+    ### process only tanks which have tag 1T3
+
+    # process only tanks which have tag 2T
+    # process only tanks which have tag 3T
+
+  """
+  def calculate_allocations(pool) do
     # todo: can a pool have incoming connections as well?
     # if yes, how to allocate water in that case?
     {_cts, outbound_tags} = calculate_outbound_connections_and_cts(pool)
@@ -355,37 +363,34 @@ defmodule Fluid.Model do
     outbound_tags_with_rank
     |> Enum.flat_map(fn {rank, outbound_tags} ->
       yellow("pro-rate: pool = #{pool.name}, tag = #{rank} ")
-      tank_ids = outbound_tags |> Enum.map(fn tag -> tag.destination["id"] end)
-      cts = tank_ids |> Enum.map(&Model.Tank.read_by_id!/1)
 
-      process_tanks(pool, outbound_tags, cts)
+      process_tanks(pool, outbound_tags)
     end)
-
-    # process only tanks which have tag 1T
-    ### process only tanks which have tag 1T1
-    ### process only tanks which have tag 1T2
-    ### process only tanks which have tag 1T3
-
-    # process only tanks which have tag 2T
-    # process only tanks which have tag 3T
-
-    # allocations
-    # {pool, allocations}
   end
 
   @doc """
   given a set of tanks, allocate the volume.
+  High level idea of the process function.
+    # find the capped tanks for this pool and their volumes
+    # apply the formula
+    # emit the tuple of tank_id, allocation
 
   pool - to which these tanks are tagged to.
   outbound_tags - the tags of same rank emerging from the pool
 
   The decision for which tag rank to process happens before this function.
 
-  stateful function
+  Stateful function - meaning it interacts with database!
   """
-  def process_tanks(pool, outbound_tags, cts) do
+  def process_tanks(pool, outbound_tags) do
     # make sure to read pool from db again because it might be updated during previous process_tanks
     pool = Model.Pool.read_by_id!(pool.id)
+
+    # make sure to read all tanks again from db
+    cts =
+      outbound_tags
+      |> Enum.map(fn tag -> tag.destination["id"] end)
+      |> Enum.map(&Model.Tank.read_by_id!/1)
 
     # Calculate the total residual capacity of all tanks
     # total_capacity_of_all_cts = Enum.reduce(cts, 0, fn tank, acc -> acc + tank.residual_capacity end)
