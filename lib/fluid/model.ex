@@ -348,18 +348,15 @@ defmodule Fluid.Model do
     outbound_tags_with_rank =
       outbound_tags |> Enum.group_by(fn %{tag: %{primary: primary_tag_rank}} -> primary_tag_rank end)
 
-    Enum.flat_map(outbound_tags_with_rank, fn {rank, tags} ->
-      Model.Tag.display(tags) |> purple("outbound_tags_with_rank: rank - #{rank}")
-    end)
+    # Enum.flat_map(outbound_tags_with_rank, fn {rank, tags} ->
+    #   Model.Tag.display(tags) |> purple("outbound_tags_with_rank: rank - #{rank}")
+    # end)
 
     outbound_tags_with_rank
     |> Enum.flat_map(fn {rank, outbound_tags} ->
       yellow("pro-rate: pool = #{pool.name}, tag = #{rank} ")
       tank_ids = outbound_tags |> Enum.map(fn tag -> tag.destination["id"] end)
       cts = tank_ids |> Enum.map(&Model.Tank.read_by_id!/1)
-
-      # make sure to read pool from db again because it is updated during process_tanks
-      pool = Model.Pool.read_by_id!(pool.id)
 
       process_tanks(pool, outbound_tags, cts)
     end)
@@ -383,8 +380,13 @@ defmodule Fluid.Model do
   outbound_tags - the tags of same rank emerging from the pool
 
   The decision for which tag rank to process happens before this function.
+
+  stateful function
   """
   def process_tanks(pool, outbound_tags, cts) do
+    # make sure to read pool from db again because it might be updated during previous process_tanks
+    pool = Model.Pool.read_by_id!(pool.id)
+
     # Calculate the total residual capacity of all tanks
     # total_capacity_of_all_cts = Enum.reduce(cts, 0, fn tank, acc -> acc + tank.residual_capacity end)
     total_capacity_of_all_cts = Enum.reduce(cts, 0, fn tank, acc -> acc + tank.total_capacity end)
@@ -419,6 +421,7 @@ defmodule Fluid.Model do
       end)
 
     if tag do
+      # distribution of volume from pool
       Model.Pool.update!(pool, %{volume: pool.volume - allocated_volume})
       Model.Allocation.create!(%{volume: allocated_volume, tag_id: tag.id})
       # Model.Allocation.create!(%{volume: "#{allocated_volume}", tag_id: tag.id})
