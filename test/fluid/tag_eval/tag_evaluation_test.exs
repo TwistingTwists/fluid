@@ -30,7 +30,7 @@ defmodule Fluid.TagEvaluationTest do
         |> Model.allocations_for_pools()
         |> render_assertable()
 
-      # %{
+      # %{ old code with rounding errors gave this result
       #   "fp1" => [{"ct1", 215.0}, {"ct3", 285.0}],
       #   "fp2" => [{"ct1", 129.0}, {"ct3", 171.0}, {"ct2", 300.0}],
       #   "fp3" => [{"ct1", 86.0}, {"ct3", 114.0}, {"ct2", 200.0}],

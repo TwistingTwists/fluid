@@ -32,6 +32,10 @@ defmodule Fluid.Model.Pool do
       description "The TOTAL capacity of a pool when it is empty state."
     end
 
+    attribute :pool_rank, :integer do
+      description "pool_rank for processing during tag_evaluation / allocation"
+    end
+
     create_timestamp :created_at
     update_timestamp :updated_at
   end
