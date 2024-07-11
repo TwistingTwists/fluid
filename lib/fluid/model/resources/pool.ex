@@ -33,7 +33,13 @@ defmodule Fluid.Model.Pool do
     end
 
     attribute :pool_rank, :integer do
-      description "pool_rank for processing during tag_evaluation / allocation"
+      default 1
+      description """
+      pool_rank for processing during tag_evaluation / allocation.
+      Pool ranks maybe internally denoted with ascii value of letters.
+
+      like, ?a with 65
+      """
     end
 
     create_timestamp :created_at

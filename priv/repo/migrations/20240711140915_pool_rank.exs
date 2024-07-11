@@ -9,13 +9,13 @@ defmodule Fluid.Repo.Migrations.PoolRank do
 
   def up do
     alter table(:pools) do
-      add :pool_rank, :bigint
+      modify :pool_rank, :bigint, default: 1
     end
   end
 
   def down do
     alter table(:pools) do
-      remove :pool_rank
+      modify :pool_rank, :bigint, default: nil
     end
   end
 end
