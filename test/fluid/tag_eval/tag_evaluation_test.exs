@@ -45,7 +45,14 @@ defmodule Fluid.TagEvaluationTest do
         end)
         |> log()
 
-      assert %{"ct1" => 215.0, "ct2" => 664.0, "ct3" => 521.0} = transformed_data
+      assert %{"ct1" => ct1, "ct2" => ct2, "ct3" => ct3} = transformed_data
+
+      # %{"ct1" => 214.28571428571428, "ct2" => 662.9629629629629, "ct3" => 522.7513227513227}
+
+      assert_in_delta ct1, 214.3, 0.02
+      assert_in_delta ct2, 663.0, 0.05
+      assert_in_delta ct3, 522.7, 0.08
+
     end
   end
 

@@ -404,11 +404,13 @@ defmodule Fluid.Model do
     Enum.map(cts, fn tank ->
       # Calculate the allocation ratio for the tank
       allocation_ratio =
-        Float.round(tank.total_capacity / total_capacity_of_all_cts, 2)
+        # Float.round(tank.total_capacity / total_capacity_of_all_cts, 2)
+        tank.total_capacity / total_capacity_of_all_cts
 
       # Calculate the volume allocated to the tank
       allocated_volume =
-        Float.round(min(pool.volume * 1.0, pool.volume * allocation_ratio), 2)
+        min(pool.volume * 1.0, pool.volume * allocation_ratio)
+        # Float.round(min(pool.volume * 1.0, pool.volume * allocation_ratio), 2)
 
       # {tank, allocated_volume}
       alloc = update_tag_with_volume({tank, pool, outbound_tags}, allocated_volume)
