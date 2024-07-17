@@ -3,7 +3,7 @@ defmodule Fluid.MultiWHTagEvaluationTest do
   alias Fluid.Model
   alias Fluid.Test.Factory
 
-  describe "pool ranks and tag ranks" do
+  describe "pool ranks and tag ranks - scenario 12 July 2024" do
     setup do
       warehouses = Factory.setup_warehouses_for_tag_evaluation(:ranked_pools)
 
@@ -14,16 +14,42 @@ defmodule Fluid.MultiWHTagEvaluationTest do
       }
     end
 
-    test "scenario 12 July 2024",
+    test "pps assertions",
          %{
-           circularity_analysis: circularity_analysis,
+           circularity_analysis: %{determinate: determinate},
            warehouses: warehouses,
            pps_analysis_map: pps_analysis_map
          } do
-      pps_analysis_map |> purple("pps_analysis_map")
-      circularity_analysis |> yellow("circularity_analysis")
+      %{determinate: det_pps_list, indeterminate: indet_pps_list, excess_circularity: excess_circularity_pps_list} =
+        pps_analysis_map
 
-      # assert false
+      assert indet_pps_list == []
+      assert excess_circularity_pps_list == []
+
+      assert  [["cp1", "fp1", "fp2", "fp5"]] ==
+               det_pps_list
+               # |> EncoderHelper.encode_and_store("pps_analysis_map.json")
+               |> Enum.map(fn %{pools: pools} -> Enum.map(pools, & &1.name) |> Enum.sort() end)
+               |> yellow("det_pps_list")
+
+      # assertions on det_pps_list
+      det_pps_list
+      |> Enum.map(fn
+        %{type: :det_pps_only, related_wh: wh_list} ->
+          Enum.map(wh_list, fn wh ->
+            # 2. assert that all related_wh are only determinate
+            assert Map.has_key?(determinate, wh.id)
+          end)
+
+          # 1. assert that type of pps :det_pps_only
+          assert true
+
+        val ->
+          IO.inspect(val)
+
+          # if type of pps is anything else, assert false
+          assert false
+      end)
     end
   end
 
