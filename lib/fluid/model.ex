@@ -111,6 +111,8 @@ defmodule Fluid.Model do
     # since only one tank with given warehouse and given tank_name exists
     # i.e. one warehouse cannot have two tanks of same name
 
+    # yellow("#{tank_name} -> #{pool_name}")
+
     [tank] =
       Model.Tank
       |> Ash.Query.filter(warehouse_id == ^wh1_id)
@@ -126,12 +128,6 @@ defmodule Fluid.Model do
       |> Model.Api.read!()
 
     connect(pool, tank, tag_rank)
-  end
-
-  def connect(tank_id, pool_id) when is_binary(tank_id) and is_binary(pool_id) do
-    tank = Model.Tank.read_by_id!(tank_id)
-    pool = Model.Pool.read_by_id!(pool_id)
-    connect(tank, pool)
   end
 
   # arity 3
@@ -153,6 +149,12 @@ defmodule Fluid.Model do
 
   def connect(%Pool{} = pool, %Tank{} = tank) do
     Tag.create_reverse(pool, tank)
+  end
+
+  def connect(tank_id, pool_id) when is_binary(tank_id) and is_binary(pool_id) do
+    tank = Model.Tank.read_by_id!(tank_id)
+    pool = Model.Pool.read_by_id!(pool_id)
+    connect(tank, pool)
   end
 
   @doc """
@@ -403,14 +405,15 @@ defmodule Fluid.Model do
     # allocations =
     Enum.map(cts, fn tank ->
       # Calculate the allocation ratio for the tank
+      # Float.round(tank.total_capacity / total_capacity_of_all_cts, 2)
       allocation_ratio =
-        # Float.round(tank.total_capacity / total_capacity_of_all_cts, 2)
         tank.total_capacity / total_capacity_of_all_cts
 
       # Calculate the volume allocated to the tank
       allocated_volume =
         min(pool.volume * 1.0, pool.volume * allocation_ratio)
-        # Float.round(min(pool.volume * 1.0, pool.volume * allocation_ratio), 2)
+
+      # Float.round(min(pool.volume * 1.0, pool.volume * allocation_ratio), 2)
 
       # {tank, allocated_volume}
       alloc = update_tag_with_volume({tank, pool, outbound_tags}, allocated_volume)

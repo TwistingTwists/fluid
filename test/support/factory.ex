@@ -29,11 +29,13 @@ defmodule Fluid.Test.Factory do
       },
       %{
         location_type: :in_wh,
-        entity_type: :capped, total_capacity: 4
+        entity_type: :capped,
+        total_capacity: 4
       },
       %{
         location_type: :in_wh,
-        entity_type: :fixed, volume: 4
+        entity_type: :fixed,
+        volume: 4
       },
       %{
         location_type: :standalone,
@@ -445,21 +447,16 @@ defmodule Fluid.Test.Factory do
          ]}
       )
 
-    {:ok, _} = Fluid.Model.connect({alpha, "fp1"}, {alpha, "ct1"}, "2T1")
-    {:ok, _} = Fluid.Model.connect({alpha, "fp1"}, {alpha, "ct2"}, "1T1")
-    {:ok, _} = Fluid.Model.connect({alpha, "fp2"}, {alpha, "ct1"}, "1T1")
-    {:ok, _} = Fluid.Model.connect({alpha, "cp1"}, {alpha, "ct1"}, "2T1")
-    {:ok, _} = Fluid.Model.connect({alpha, "cp1"}, {alpha, "ct2"}, "1T1")
-    {:ok, _} = Fluid.Model.connect({alpha, "cp1"}, {beta, "ct4"}, "1T1")
-    {:ok, _} = Fluid.Model.connect({alpha, "ucp1"}, {beta, "uct2"}, "1T1")
-
-    {:ok, _} = Fluid.Model.connect({gamma, "fp5"}, {alpha, "ct1"}, "2T1")
-    {:ok, _} = Fluid.Model.connect({gamma, "fp5"}, {gamma, "ct5"}, "1T1")
-    {:ok, _} = Fluid.Model.connect({gamma, "cpt2"}, {beta, "ct3"}, "1T1")
-
-    # Model.Tag.read_all!()
-    # |> Enum.map(&Model.Tag.display/1)
-    # |> green()
+    {:ok, _} = Fluid.Model.connect({alpha, "ct1"}, {alpha, "fp1"}, "2T1")
+    {:ok, _} = Fluid.Model.connect({alpha, "ct2"}, {alpha, "fp1"}, "1T1")
+    {:ok, _} = Fluid.Model.connect({alpha, "ct1"}, {alpha, "fp2"}, "1T1")
+    {:ok, _} = Fluid.Model.connect({alpha, "ct1"}, {alpha, "cp1"}, "2T1")
+    {:ok, _} = Fluid.Model.connect({alpha, "ct2"}, {alpha, "cp1"}, "1T1")
+    {:ok, _} = Fluid.Model.connect({beta, "ct4"}, {alpha, "cp1"}, "1T1")
+    {:ok, _} = Fluid.Model.connect({beta, "uct2"}, {alpha, "ucp1"}, "1T1")
+    {:ok, _} = Fluid.Model.connect({alpha, "ct1"}, {gamma, "fp5"}, "2T1")
+    {:ok, _} = Fluid.Model.connect({gamma, "ct5"}, {gamma, "fp5"}, "1T1")
+    {:ok, _} = Fluid.Model.connect({beta, "ct3"}, {gamma, "cp2"}, "1T1")
 
     [alpha, beta, gamma]
   end
