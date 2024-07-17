@@ -5,6 +5,25 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.11.0](https://github.com/TwistingTwists/fluid/compare/v0.10.0...v0.11.0) (2024-07-17)
+
+
+
+
+### Features:
+
+* migrations for pool types
+
+* pool and tank types
+
+* pool_rank with default rank 1
+
+* add pool_rank
+
+### Bug Fixes:
+
+* remove rounding and use assert_in_delta
+
 ## [v0.10.0](https://github.com/TwistingTwists/fluid/compare/v0.9.0...v0.10.0) (2024-07-05)
 
 

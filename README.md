@@ -1,3 +1,13 @@
+### todo 
+
+[] pool.capacity_type -> pool.pool_type  
+[] /home/abhishek/Downloads/experiments/elixir/rnd/fluid/test/support/factory.ex:455
+    [] changeset validation - make sure that capped tanks are connected to standalone capped tanks
+[] pool -> add_pool_rank -> pool_rank
+
+
+
+[] given case on email
 
 ## module 007 
 
