@@ -41,9 +41,9 @@ defmodule Fluid.Model.Changes.PoolValidations do
       _ ->
         Ash.Changeset.add_error(
           changeset,
-          [field: :total_capacity, message: "Capped pool must have a total_capacity"],
+          [field: :total_capacity, message: "Capped pool must have a total_capacity" ,
           field: :volume,
-          message: "Fixed pool must have a volume"
+          message: "Fixed pool must have a volume"]
         )
     end
   end
