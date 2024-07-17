@@ -73,10 +73,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_1,
           {:params,
            [
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :fixed, location_type: :in_wh},
-             %{entity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4}
            ]}
         )
 
@@ -85,10 +85,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_1,
           {:params,
            [
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4}
            ]}
         )
 
@@ -99,10 +99,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_6,
           {:params,
            [
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :fixed, location_type: :in_wh},
-             %{entity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4}
            ]}
         )
 
@@ -111,10 +111,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_6,
           {:params,
            [
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4}
            ]}
         )
 

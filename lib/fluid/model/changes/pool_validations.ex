@@ -6,9 +6,6 @@ defmodule Fluid.Model.Changes.PoolValidations do
   import Helpers.ColorIO
 
   def change(changeset, opts, _context) do
-    changeset
-    |> purple("`PoolValidations.change`")
-
     case changeset.attributes do
       # fixed pools must have volume
       %{
@@ -32,6 +29,12 @@ defmodule Fluid.Model.Changes.PoolValidations do
       %{
         entity_type: :uncapped,
         location_type: :in_wh
+      } ->
+        changeset
+
+      %{
+        location_type: :standalone,
+        entity_type: :uncapped,
       } ->
         changeset
 

@@ -31,10 +31,10 @@ defmodule Fluid.PPS.PPS2WH101 do
           warehouse_1,
           {:params,
            [
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :fixed, location_type: :in_wh},
-             %{entity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4}
            ]}
         )
 
@@ -168,10 +168,10 @@ defmodule Fluid.PPS.PPS2WH101 do
           warehouse_2,
           {:params,
            [
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
-             %{entity_type: :fixed, location_type: :in_wh},
-             %{entity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4}
            ]}
         )
 

@@ -69,8 +69,9 @@ defmodule Fluid.CircularityTest do
       {:ok, warehouse_5} = Fluid.Model.create_warehouse(name: "warehouse_5", world_id: world.id)
       # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
+      # Volume validations were added later. But they are not needed for circularity analysis.
       {:ok, warehouse_1} =
-        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :fixed, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :fixed, location_type: :in_wh, volume: 20}]})
 
       {:ok, warehouse_2} =
         Model.add_pools_to_warehouse(warehouse_2, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
@@ -152,7 +153,7 @@ defmodule Fluid.CircularityTest do
       # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
       {:ok, warehouse_1} =
-        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :fixed, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :fixed, location_type: :in_wh, volume: 4}]})
 
       {:ok, warehouse_2} =
         Model.add_pools_to_warehouse(warehouse_2, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})

@@ -249,8 +249,8 @@ defmodule Fluid.WarehouseTest do
           warehouse_1,
           {:params,
            [
-             %{entity_type: :fixed, location_type: :in_wh},
-             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 2},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
              %{entity_type: :uncapped, location_type: :in_wh}
            ]}
         )
