@@ -73,10 +73,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_1,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :fixed, location_type: :in_wh},
+             %{entity_type: :fixed, location_type: :in_wh}
            ]}
         )
 
@@ -85,10 +85,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_1,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh}
            ]}
         )
 
@@ -99,10 +99,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_6,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :fixed, location_type: :in_wh},
+             %{entity_type: :fixed, location_type: :in_wh}
            ]}
         )
 
@@ -111,10 +111,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_6,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh}
            ]}
         )
 

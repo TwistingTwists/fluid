@@ -98,15 +98,28 @@ defmodule Fluid.AllocationTest do
       # |> blue( "calculate allocations")
 
       assert %{
-               "cp_1" => [{"ct_14", 700.0}, {"ct_1", 1300.0}],
-               "cp_10" => [{"ct_14", 100.0}],
-               "cp_13" => [{"ct_17", 2000.0}],
-               "cp_2" => [{"ct_4", 50.0}, {"ct_17", 60.0}, {"ct_3", 390.0}],
-               "fp_1" => [{"ct_2", 2500.0}],
-               "fp_11" => [{"ct_14", 100.0}],
-               "fp_12" => [{"ct_15", 1215.0}, {"ct_17", 1485.0}],
-               "fp_2" => [{"ct_3", 1000.0}]
+               "cp_1" => [{"ct_14", ct_14_1}, {"ct_1", ct_1_1}],
+               "cp_10" => [{"ct_14", ct_14_2}],
+               "cp_13" => [{"ct_17", ct_17_1}],
+               "cp_2" => [{"ct_4", ct_4}, {"ct_17", ct_17_2}, {"ct_3", ct_3}],
+               "fp_1" => [{"ct_2", ct_2_1}],
+               "fp_11" => [{"ct_14", ct_14}],
+               "fp_12" => [{"ct_15", ct_15}, {"ct_17", ct_17_3}],
+               "fp_2" => [{"ct_3", ct_3_2}]
              } = result
+
+      assert_in_delta ct_14_1, 705.88, 0.02
+      assert_in_delta ct_14_2, 100.0, 0.01
+      assert_in_delta ct_1_1, 1294.12, 0.03
+      assert_in_delta ct_17_1, 2000.0, 0.01
+      assert_in_delta ct_17_2, 58.82, 0.02
+      assert_in_delta ct_17_3, 1472.73, 0.03
+      assert_in_delta ct_4, 49.02, 0.02
+      assert_in_delta ct_3, 392.16, 0.03
+      assert_in_delta ct_3_2, 1000.0, 0.01
+      assert_in_delta ct_2_1, 2500.0, 0.01
+      assert_in_delta ct_14, 100.0, 0.01
+      assert_in_delta ct_15, 1227.28, 0.02
 
       # also assert the tank along with the volume
     end

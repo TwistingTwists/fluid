@@ -112,13 +112,13 @@ defmodule Fluid.Model.Circularity.Utils do
 
   @doc """
    Enum.all?(wh.pools, fn
-                %{capacity_type: capacity} when capacity not in [:uncapped, :capped] -> true
+                %{entity_type: capacity} when capacity not in [:uncapped, :capped] -> true
                 _ -> false
               end)
   """
   def is_class_0?(pools) do
     Enum.all?(pools, fn
-      %{capacity_type: capacity} when capacity not in [:uncapped, :capped] -> true
+      %{entity_type: capacity} when capacity not in [:uncapped, :capped] -> true
       _ -> false
     end)
   end

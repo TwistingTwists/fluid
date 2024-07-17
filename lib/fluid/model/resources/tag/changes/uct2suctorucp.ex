@@ -21,7 +21,7 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
 
   def ensure_source_dest_types({:cont, cs}, source, dest) do
     case {source, dest} do
-      {%Tank{capacity_type: :capped}, %Pool{capacity_type: pool_capacity}}
+      {%Tank{entity_type: :capped}, %Pool{entity_type: pool_capacity}}
       when pool_capacity in [:fixed, :capped] ->
         # if tank or pool are not uncapped, halt the pipeline and let it pass.
         # todo find out why?
@@ -29,7 +29,7 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
 
       # {:halt, cs}
 
-      {%Pool{capacity_type: pool_capacity}, %Tank{capacity_type: :capped}}
+      {%Pool{entity_type: pool_capacity}, %Tank{entity_type: :capped}}
       when pool_capacity in [:fixed, :capped] ->
         # if tank or pool are not uncapped, halt the pipeline and let it pass.
         {:halt, cs}
@@ -65,7 +65,7 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
       # Every UCT is linked either to one or more SUCTs and/or to one or more UCPs
       # todo : ensure that both tank and pool are from different warehouses
 
-      {%Tank{capacity_type: :uncapped, location_type: :in_wh}, %Pool{capacity_type: :uncapped, location_type: :in_wh}} ->
+      {%Tank{entity_type: :uncapped, location_type: :in_wh}, %Pool{entity_type: :uncapped, location_type: :in_wh}} ->
         cs =
           changeset
           |> Ash.Changeset.change_attribute(:source, to_map(source))
@@ -73,7 +73,7 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
 
         {:cont, cs}
 
-      {%Tank{capacity_type: :uncapped, location_type: :in_wh}, %Tank{capacity_type: :uncapped, location_type: :standalone}} ->
+      {%Tank{entity_type: :uncapped, location_type: :in_wh}, %Tank{entity_type: :uncapped, location_type: :standalone}} ->
         cs =
           changeset
           |> Ash.Changeset.change_attribute(:source, source)
@@ -82,8 +82,8 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
         {:cont, cs}
 
       {source, dest} ->
-        Logger.error("source: #{source.capacity_type} / #{source.location_type}")
-        Logger.error("dest: #{dest.capacity_type} / #{dest.location_type}")
+        Logger.error("source: #{source.entity_type} / #{source.location_type}")
+        Logger.error("dest: #{dest.entity_type} / #{dest.location_type}")
 
         cs =
           Ash.Changeset.add_error(
@@ -110,7 +110,7 @@ defmodule Fluid.Model.Warehouse.Changes.UCT2SUCTorUCP do
     map_args =
       Map.take(struct_tank_pool, [
         :id,
-        :capacity_type,
+        :entity_type,
         :location_type,
         :tag_id,
         :regularity_type,

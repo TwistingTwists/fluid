@@ -55,7 +55,7 @@ defmodule Fluid.Model.Warehouse do
 
   aggregates do
     count :count_ucp_cp, :pools do
-      filter(expr(capacity_type in [:capped, :uncapped]))
+      filter(expr(entity_type in [:capped, :uncapped]))
     end
   end
 

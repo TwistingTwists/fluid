@@ -14,7 +14,7 @@
 #     {:ok, pool} =
 #       Pool.create(%{
 #         location_type: :in_wh,
-#         capacity_type: :uncapped
+#         entity_type: :uncapped
 #       })
 
 #     Ash.Changeset.set_argument(changeset, :pools, [pool])

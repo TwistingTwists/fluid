@@ -457,7 +457,7 @@ defmodule Fluid.Model do
 
   def get_capped_tanks_from_wh(%Model.Warehouse{tanks: tanks}) do
     Enum.filter(tanks, fn
-      %{capacity_type: :capped} -> true
+      %{entity_type: :capped} -> true
       _ -> false
     end)
   end

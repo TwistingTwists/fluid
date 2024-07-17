@@ -8,15 +8,15 @@ defmodule Fluid.Test.Factory do
     [
       %{
         location_type: :in_wh,
-        capacity_type: :uncapped
+        entity_type: :uncapped
       },
       %{
         location_type: :in_wh,
-        capacity_type: :capped
+        entity_type: :capped
       },
       %{
         location_type: :standalone,
-        capacity_type: :uncapped
+        entity_type: :uncapped
       }
     ]
   end
@@ -25,19 +25,19 @@ defmodule Fluid.Test.Factory do
     [
       %{
         location_type: :in_wh,
-        capacity_type: :uncapped
+        entity_type: :uncapped
       },
       %{
         location_type: :in_wh,
-        capacity_type: :capped
+        entity_type: :capped
       },
       %{
         location_type: :in_wh,
-        capacity_type: :fixed
+        entity_type: :fixed
       },
       %{
         location_type: :standalone,
-        capacity_type: :uncapped
+        entity_type: :uncapped
       }
     ]
   end
@@ -73,22 +73,22 @@ defmodule Fluid.Test.Factory do
     {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
     {:ok, warehouse_1} =
-      Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_2} =
-      Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_2, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_3} =
-      Model.add_pools_to_warehouse(warehouse_3, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_3, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_4} =
-      Model.add_pools_to_warehouse(warehouse_4, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_4, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_5} =
-      Model.add_pools_to_warehouse(warehouse_5, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_5, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_6} =
-      Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_6, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     [[uct_1], [uct_2], [uct_3], [uct_4]] =
       [warehouse_1, warehouse_2, warehouse_3, warehouse_4]
@@ -171,26 +171,26 @@ defmodule Fluid.Test.Factory do
     # tanks and pools in warehouse need to have a unique name within a warehouse. - YES
 
     # {:ok, warehouse_1} =
-    # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+    # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
     # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{name: "", pool_type: :fixed, volume: 67}]})
     # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{pool_type: :capped / :uncapped }]}) # -- NO :volume ATTRIBUTE
 
     # Model.add_pools_to_warehouse(warehouse_1, {:params, [%{pool_type: :uncapped, volume: 67}]}) -- INVALID
 
     {:ok, warehouse_2} =
-      Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_2, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_3} =
-      Model.add_pools_to_warehouse(warehouse_3, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_3, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_4} =
-      Model.add_pools_to_warehouse(warehouse_4, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_4, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_5} =
-      Model.add_pools_to_warehouse(warehouse_5, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_5, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     {:ok, warehouse_6} =
-      Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+      Model.add_pools_to_warehouse(warehouse_6, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
     # wh: query tanks by type (API wh.uncapped_tanks)
     # wh: at least one UCT + at least (one of FP / CP) - todo: instead of default uncapped, do capped / fp
@@ -243,10 +243,10 @@ defmodule Fluid.Test.Factory do
         warehouse_1,
         {:params,
          [
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :fixed, location_type: :in_wh},
-           %{capacity_type: :fixed, location_type: :in_wh}
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :fixed, location_type: :in_wh},
+           %{entity_type: :fixed, location_type: :in_wh}
          ]}
       )
 
@@ -255,10 +255,10 @@ defmodule Fluid.Test.Factory do
         warehouse_1,
         {:params,
          [
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :capped, location_type: :in_wh}
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :capped, location_type: :in_wh}
          ]}
       )
 
@@ -269,10 +269,10 @@ defmodule Fluid.Test.Factory do
         warehouse_6,
         {:params,
          [
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :fixed, location_type: :in_wh},
-           %{capacity_type: :fixed, location_type: :in_wh}
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :fixed, location_type: :in_wh},
+           %{entity_type: :fixed, location_type: :in_wh}
          ]}
       )
 
@@ -281,10 +281,10 @@ defmodule Fluid.Test.Factory do
         warehouse_6,
         {:params,
          [
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :capped, location_type: :in_wh},
-           %{capacity_type: :capped, location_type: :in_wh}
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :capped, location_type: :in_wh},
+           %{entity_type: :capped, location_type: :in_wh}
          ]}
       )
 
@@ -373,8 +373,8 @@ defmodule Fluid.Test.Factory do
     |> Enum.map(fn wh -> Model.Warehouse.read_by_id!(wh.id) end)
   end
 
-  def setup_warehouses_for_tag_evaluation() do
-    {:ok, world} = Fluid.Model.create_world(name: "Unique world for tag_evaluation asdfasdfasdf")
+  def setup_warehouses_for_tag_evaluation(:ranked_pools) do
+    {:ok, world} = Fluid.Model.create_world(name: "Unique world for tag_evaluation with ranked pools")
 
     {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
 
@@ -383,10 +383,10 @@ defmodule Fluid.Test.Factory do
         warehouse_1,
         {:params,
          [
-           %{name: "fp1", capacity_type: :fixed, location_type: :in_wh, total_capacity: 500, volume: 500},
-           %{name: "fp2", capacity_type: :fixed, location_type: :in_wh, total_capacity: 300, volume: 300},
-           %{name: "fp3", capacity_type: :fixed, location_type: :in_wh, total_capacity: 200, volume: 200},
-           %{name: "fp4", capacity_type: :fixed, location_type: :in_wh, total_capacity: 400, volume: 400}
+           %{name: "fp1", entity_type: :fixed, location_type: :in_wh, total_capacity: 500, volume: 500},
+           %{name: "fp2", entity_type: :fixed, location_type: :in_wh, total_capacity: 300, volume: 300},
+           %{name: "fp3", entity_type: :fixed, location_type: :in_wh, total_capacity: 200, volume: 200},
+           %{name: "fp4", entity_type: :fixed, location_type: :in_wh, total_capacity: 400, volume: 400}
          ]}
       )
 
@@ -395,9 +395,9 @@ defmodule Fluid.Test.Factory do
         warehouse_1,
         {:params,
          [
-           %{capacity_type: :capped, location_type: :in_wh, name: "ct1", total_capacity: 1200},
-           %{capacity_type: :capped, location_type: :in_wh, name: "ct2", total_capacity: 1100},
-           %{capacity_type: :capped, location_type: :in_wh, name: "ct3", total_capacity: 1600}
+           %{entity_type: :capped, location_type: :in_wh, name: "ct1", total_capacity: 1200},
+           %{entity_type: :capped, location_type: :in_wh, name: "ct2", total_capacity: 1100},
+           %{entity_type: :capped, location_type: :in_wh, name: "ct3", total_capacity: 1600}
          ]}
       )
 
@@ -414,30 +414,59 @@ defmodule Fluid.Test.Factory do
     {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp3"}, "3T")
     {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp4"}, "3T")
 
-    # Warehouse.add_fixed_pool(gamma, "fp1", 500)
-    # Warehouse.add_fixed_pool(gamma, "fp2", 300)
-    # Warehouse.add_fixed_pool(gamma, "fp3", 200)
-    # Warehouse.add_fixed_pool(gamma, "fp4", 400)
+    # Model.Tag.read_all!()
+    # |> Enum.map(&Model.Tag.display/1)
+    # |> green()
+
+    [warehouse_1]
+  end
+
+  def setup_warehouses_for_tag_evaluation() do
+    {:ok, world} = Fluid.Model.create_world(name: "Unique world for tag_evaluation asdfasdfasdf")
+
+    {:ok, warehouse_1} = Fluid.Model.create_warehouse(name: "warehouse_1", world_id: world.id)
+
+    {:ok, warehouse_1} =
+      Model.add_pools_to_warehouse(
+        warehouse_1,
+        {:params,
+         [
+           %{name: "fp1", entity_type: :fixed, location_type: :in_wh, volume: 500},
+           %{name: "fp2", entity_type: :fixed, location_type: :in_wh, volume: 300},
+           %{name: "fp3", entity_type: :fixed, location_type: :in_wh, volume: 200},
+           %{name: "fp4", entity_type: :fixed, location_type: :in_wh, volume: 400}
+         ]}
+      )
+
+    {:ok, warehouse_1} =
+      Model.add_tanks_to_warehouse(
+        warehouse_1,
+        {:params,
+         [
+           %{entity_type: :capped, location_type: :in_wh, name: "ct1", total_capacity: 1200},
+           %{entity_type: :capped, location_type: :in_wh, name: "ct2", total_capacity: 1100},
+           %{entity_type: :capped, location_type: :in_wh, name: "ct3", total_capacity: 1600}
+         ]}
+      )
 
     # Warehouse.add_capped_tank(gamma, "ct1", 1_200, "sct1")
     # Warehouse.add_capped_tank(gamma, "ct2", 1_100, "sct2")
     # Warehouse.add_capped_tank(gamma, "ct3", 1_600, "sct3")
+    # make sure that capped tanks are connected to standalone capped tanks
 
-    # Container.start_link("suct11")
-    # Warehouse.add_uncapped_tank(gamma, "uct11", [{:suct11, 100}])
+    # 1T = 1T1 = 1
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct1"}, {warehouse_1, "fp1"}, "1T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct1"}, {warehouse_1, "fp2"}, "2T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct1"}, {warehouse_1, "fp3"}, "3T")
 
-    # Warehouse.add_tag(gamma, "ct1", "fp1", 1)
-    # Warehouse.add_tag(gamma, "ct1", "fp2", 2)
-    # Warehouse.add_tag(gamma, "ct1", "fp3", 3)
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct2"}, {warehouse_1, "fp2"}, "1T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct2"}, {warehouse_1, "fp3"}, "2T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct2"}, {warehouse_1, "fp4"}, "3T")
 
-    # Warehouse.add_tag(gamma, "ct2", "fp2", 1)
-    # Warehouse.add_tag(gamma, "ct2", "fp3", 2)
-    # Warehouse.add_tag(gamma, "ct2", "fp4", 3)
-
-    # Warehouse.add_tag(gamma, "ct3", "fp1", 1)
-    # Warehouse.add_tag(gamma, "ct3", "fp2", 2)
-    # Warehouse.add_tag(gamma, "ct3", "fp3", 3)
-    # Warehouse.add_tag(gamma, "ct3", "fp4", 3)
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp1"}, "1T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp2"}, "2T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp3"}, "3T")
+    {:ok, _} = Fluid.Model.connect({warehouse_1, "ct3"}, {warehouse_1, "fp4"}, "3T")
 
     Model.Tag.read_all!()
     |> Enum.map(&Model.Tag.display/1)
@@ -459,7 +488,7 @@ defmodule Fluid.Test.Factory do
   def do_enum_all(tank_or_pools, capacities) do
     Enum.all?(tank_or_pools, fn
       %{
-        capacity_type: capacity
+        entity_type: capacity
       } ->
         if capacity in capacities do
           true

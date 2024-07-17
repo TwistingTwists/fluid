@@ -23,7 +23,7 @@ defmodule Fluid.Model.Tank do
     attribute :name, :string, allow_nil?: true
     attribute :tag_id, :uuid, allow_nil?: true
 
-    attribute :capacity_type, Fluid.TankCapacityTypes do
+    attribute :entity_type, Fluid.TankCapacityTypes do
       description "uncapped, capped"
     end
 
@@ -147,6 +147,6 @@ defmodule Fluid.Model.Tank do
   # utils
   ########
 
-  def is_capped?(%{capacity_type: capacity_type}), do: capacity_type == :capped
-  def is_uncapped?(%{capacity_type: capacity_type}), do: capacity_type == :uncapped
+  def is_capped?(%{entity_type: entity_type}), do: entity_type == :capped
+  def is_uncapped?(%{entity_type: entity_type}), do: entity_type == :uncapped
 end

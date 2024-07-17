@@ -82,7 +82,7 @@ defmodule Fluid.Model.Circularity.DeterminateClassification do
          wh_with_prev_class_ids
        ) do
     Enum.filter(wh.pools, fn
-      %{id: pool_id, capacity_type: capacity} when capacity in [:uncapped, :capped] ->
+      %{id: pool_id, entity_type: capacity} when capacity in [:uncapped, :capped] ->
         # a pool may receive water from many sources
         inbound_connections_for_pool =
           Enum.filter(inbound_connections, fn %{destination: %{"id" => pid}} -> pool_id == pid end)

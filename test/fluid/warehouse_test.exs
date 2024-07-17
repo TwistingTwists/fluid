@@ -50,7 +50,7 @@ defmodule Fluid.WarehouseTest do
 
       # add a default pool to the warehouse
       {:ok, warehouse} =
-        Model.add_pools_to_warehouse(warehouse, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       # one tank of each type - sorted by id of their creation
       tanks = Factory.tanks()
@@ -111,7 +111,7 @@ defmodule Fluid.WarehouseTest do
       # tanks list doesn't have UCT
       tanks_without_uct =
         Enum.reject(tanks, fn
-          %Tank{location_type: :in_wh, capacity_type: :uncapped} ->
+          %Tank{location_type: :in_wh, entity_type: :uncapped} ->
             true
 
           _ ->
@@ -148,7 +148,7 @@ defmodule Fluid.WarehouseTest do
         Enum.filter(tanks, fn
           %{
             location_type: :in_wh,
-            capacity_type: :capped
+            entity_type: :capped
           } ->
             true
 
@@ -171,7 +171,7 @@ defmodule Fluid.WarehouseTest do
         Enum.filter(pools, fn
           %{
             location_type: :in_wh,
-            capacity_type: :fixed
+            entity_type: :fixed
           } ->
             true
 
@@ -199,7 +199,7 @@ defmodule Fluid.WarehouseTest do
       {:ok, warehouse_2} = Fluid.Model.create_warehouse(name: "warehouse_tag_test ", world_id: new_test_world.id)
 
       {:ok, warehouse_2} =
-        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       [uct] = Model.get_tanks_from_wh(warehouse_1)
       [ucp] = Model.get_pools_from_wh(warehouse_2)
@@ -217,7 +217,7 @@ defmodule Fluid.WarehouseTest do
         Fluid.Model.create_warehouse(name: "warehouse_tag_test with persistence", world_id: new_test_world.id)
 
       {:ok, updated_warehouse} =
-        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       count_pool = Model.count_pool_in_wh(updated_warehouse)
       count_uncapped_tank = Model.count_uncapped_tanks_in_wh(updated_warehouse)
@@ -249,9 +249,9 @@ defmodule Fluid.WarehouseTest do
           warehouse_1,
           {:params,
            [
-             %{capacity_type: :fixed, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :uncapped, location_type: :in_wh}
+             %{entity_type: :fixed, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :uncapped, location_type: :in_wh}
            ]}
         )
 

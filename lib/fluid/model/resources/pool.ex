@@ -14,7 +14,7 @@ defmodule Fluid.Model.Pool do
     attribute :name, :string, allow_nil?: true
     attribute :tag_id, :uuid, allow_nil?: true
 
-    attribute :capacity_type, Fluid.PoolTypes do
+    attribute :entity_type, Fluid.PoolTypes do
       description("fixed, uncapped, or capped pools can exist")
     end
 

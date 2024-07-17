@@ -33,7 +33,7 @@ defmodule Fluid.Model.Warehouse.Calculations.UCT do
 
   defp do_calculate(tanks) do
     Enum.count(tanks, fn
-      %{location_type: :in_wh, capacity_type: :uncapped} ->
+      %{location_type: :in_wh, entity_type: :uncapped} ->
         true
 
       _tank ->

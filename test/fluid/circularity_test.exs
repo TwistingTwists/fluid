@@ -70,22 +70,22 @@ defmodule Fluid.CircularityTest do
       # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
       {:ok, warehouse_1} =
-        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :fixed, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :fixed, location_type: :in_wh}]})
 
       {:ok, warehouse_2} =
-        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_3} =
-        Model.add_pools_to_warehouse(warehouse_3, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_3, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_4} =
-        Model.add_pools_to_warehouse(warehouse_4, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_4, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_5} =
-        Model.add_pools_to_warehouse(warehouse_5, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_5, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       # {:ok, warehouse_6} =
-      #   Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :fixed, location_type: :in_wh}]})
+      #   Model.add_pools_to_warehouse(warehouse_6, {:params, [%{entity_type: :fixed, location_type: :in_wh}]})
 
       [[uct_1], [uct_2], [uct_3]] =
         [warehouse_1, warehouse_2, warehouse_3]
@@ -152,19 +152,19 @@ defmodule Fluid.CircularityTest do
       # {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
       {:ok, warehouse_1} =
-        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :fixed, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :fixed, location_type: :in_wh}]})
 
       {:ok, warehouse_2} =
-        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_3} =
-        Model.add_pools_to_warehouse(warehouse_3, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_3, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_4} =
-        Model.add_pools_to_warehouse(warehouse_4, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_4, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_5} =
-        Model.add_pools_to_warehouse(warehouse_5, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_5, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       [[uct_1], [uct_2], [uct_3]] =
         [warehouse_1, warehouse_2, warehouse_3]
@@ -251,22 +251,22 @@ defmodule Fluid.CircularityTest do
       {:ok, warehouse_6} = Fluid.Model.create_warehouse(name: "warehouse_6", world_id: world.id)
 
       {:ok, warehouse_1} =
-        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_1, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_2} =
-        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_2, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_3} =
-        Model.add_pools_to_warehouse(warehouse_3, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_3, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_4} =
-        Model.add_pools_to_warehouse(warehouse_4, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_4, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_5} =
-        Model.add_pools_to_warehouse(warehouse_5, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_5, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       {:ok, warehouse_6} =
-        Model.add_pools_to_warehouse(warehouse_6, {:params, [%{capacity_type: :uncapped, location_type: :in_wh}]})
+        Model.add_pools_to_warehouse(warehouse_6, {:params, [%{entity_type: :uncapped, location_type: :in_wh}]})
 
       [[uct_1], [uct_2], [uct_3], [uct_4], [uct_5], [uct_6]] =
         [warehouse_1, warehouse_2, warehouse_3, warehouse_4, warehouse_5, warehouse_6]
