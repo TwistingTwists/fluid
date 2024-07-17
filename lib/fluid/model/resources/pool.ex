@@ -69,6 +69,7 @@ defmodule Fluid.Model.Pool do
 
     create :create do
       change load(@load_fields)
+      change(Fluid.Model.Changes.PoolValidations)
     end
 
     # update :update_volume do
