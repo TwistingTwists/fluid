@@ -1,4 +1,4 @@
-defmodule Fluid.Repo.Migrations.AllRedone do
+defmodule Fluid.Repo.Migrations.RedoWithPoolRanks do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 
@@ -38,9 +38,9 @@ defmodule Fluid.Repo.Migrations.AllRedone do
       add :id, :uuid, null: false, default: fragment("uuid_generate_v4()"), primary_key: true
       add :name, :text
       add :tag_id, :uuid
-      add :capacity_type, :text
-      add :total_capacity, :bigint
-      add :volume, :bigint, default: 0
+      add :entity_type, :text
+      add :total_capacity, :float
+      add :volume, :float, default: 0.0
       add :applicable_capacity, :bigint
       add :regularity_type, :text, default: "regular"
       add :location_type, :text
@@ -77,10 +77,11 @@ defmodule Fluid.Repo.Migrations.AllRedone do
       add :id, :uuid, null: false, default: fragment("uuid_generate_v4()"), primary_key: true
       add :name, :text
       add :tag_id, :uuid
-      add :capacity_type, :text
+      add :entity_type, :text
       add :location_type, :text
-      add :volume, :bigint, default: 0
-      add :total_capacity, :bigint
+      add :volume, :float, default: 0.0
+      add :total_capacity, :float
+      add :pool_rank, :bigint, default: 1
       add :created_at, :utc_datetime_usec, null: false, default: fragment("now()")
       add :updated_at, :utc_datetime_usec, null: false, default: fragment("now()")
 
