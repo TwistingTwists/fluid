@@ -3,9 +3,9 @@ defmodule Fluid.Model.Changes.PoolValidations do
 
   alias Fluid.Model
 
-  import Helpers.ColorIO
+  # import Helpers.ColorIO
 
-  def change(changeset, opts, _context) do
+  def change(changeset, _opts, _context) do
     case changeset.attributes do
       # fixed pools must have volume
       %{

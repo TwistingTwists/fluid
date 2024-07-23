@@ -5,7 +5,7 @@ defmodule Fluid.Model.Tank do
   """
   require Logger
 
-  alias Fluid.Model
+  # alias Fluid.Model
 
   use Ash.Resource,
     data_layer: AshPostgres.DataLayer,
