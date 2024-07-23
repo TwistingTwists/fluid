@@ -100,6 +100,12 @@ defmodule Fluid.Model do
     end)
   end
 
+  def update_pool_rank!(pool_name, pool_rank) do
+    pool_name
+    |> Model.Pool.read_by_name!()
+    |> Model.Pool.update_rank!(%{pool_rank: pool_rank})
+  end
+
   @doc """
   {wh1 , tank_name}, {wh2,pool_name}
 
@@ -137,19 +143,19 @@ defmodule Fluid.Model do
     Tag.create_vanilla(%{user_defined_tag: tag_rank, source: tank, destination: pool})
   end
 
-  def connect(%Pool{} = pool, %Tank{} = tank, tag_rank) do
-    # Tag.create_reverse(pool, tank, %{user_defined_tag: tag_rank})
-    Tag.create_vanilla(%{user_defined_tag: tag_rank, source: pool, destination: tank})
-  end
+  # def connect(%Pool{} = pool, %Tank{} = tank, tag_rank) do
+  #   # Tag.create_reverse(pool, tank, %{user_defined_tag: tag_rank})
+  #   Tag.create_vanilla(%{user_defined_tag: tag_rank, source: pool, destination: tank})
+  # end
 
   # arity 2
   def connect(%Tank{} = tank, %Pool{} = pool) do
     Tag.create(tank, pool)
   end
 
-  def connect(%Pool{} = pool, %Tank{} = tank) do
-    Tag.create_reverse(pool, tank)
-  end
+  # def connect(%Pool{} = pool, %Tank{} = tank) do
+  #   Tag.create_reverse(pool, tank)
+  # end
 
   def connect(tank_id, pool_id) when is_binary(tank_id) and is_binary(pool_id) do
     tank = Model.Tank.read_by_id!(tank_id)

@@ -34,6 +34,7 @@ defmodule Fluid.Model.Pool do
 
     attribute :pool_rank, :integer do
       default 1
+
       description """
       pool_rank for processing during tag_evaluation / allocation.
       Pool ranks maybe internally denoted with ascii value of letters.
@@ -67,9 +68,19 @@ defmodule Fluid.Model.Pool do
       prepare build(load: @load_fields)
     end
 
+    read :read_by_name do
+      get_by [:name]
+      prepare build(load: @load_fields)
+    end
+
     create :create do
       change load(@load_fields)
       change(Fluid.Model.Changes.PoolValidations)
+    end
+
+    update :update_rank do
+      accept [:pool_rank]
+      change load(@load_fields)
     end
 
     # update :update_volume do
@@ -96,12 +107,13 @@ defmodule Fluid.Model.Pool do
     define_for(Fluid.Model.Api)
 
     define(:create)
-    # define :update
+    define :update_rank
     # define :create_with_world, args: [:world]
     # define :create_with_warehouse, args: [:warehouse]
 
     define(:read_all)
     define(:read_by_id, args: [:id])
+    define(:read_by_name, args: [:name])
 
     define(:update)
   end

@@ -447,6 +447,18 @@ defmodule Fluid.Test.Factory do
          ]}
       )
 
+    fp5 = Model.update_pool_rank!("fp5", 1)
+    fp5.pool_rank |> green("fp5")
+
+    cp1 = Model.update_pool_rank!("cp1", 2)
+    cp1.pool_rank |> green("cp1")
+
+    fp1 = Model.update_pool_rank!("fp1", 3)
+    fp1.pool_rank |> green("fp1 ")
+
+    fp2 = Model.update_pool_rank!("fp2", 4)
+    fp2.pool_rank |> green("fp2")
+
     {:ok, _} = Fluid.Model.connect({alpha, "ct1"}, {alpha, "fp1"}, "2T1")
     {:ok, _} = Fluid.Model.connect({alpha, "ct2"}, {alpha, "fp1"}, "1T1")
     {:ok, _} = Fluid.Model.connect({alpha, "ct1"}, {alpha, "fp2"}, "1T1")
