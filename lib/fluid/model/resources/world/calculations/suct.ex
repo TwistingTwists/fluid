@@ -38,7 +38,7 @@ defmodule Fluid.Model.World.Calculations.SUCT do
 
   defp do_calculate(tanks) do
     Enum.count(tanks, fn
-      %{location_type: :standalone, capacity_type: :uncapped} ->
+      %{location_type: :standalone, entity_type: :uncapped} ->
         1
 
       tank ->

@@ -31,10 +31,10 @@ defmodule Fluid.PPS.PPS2WH101 do
           warehouse_1,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4}
            ]}
         )
 
@@ -43,17 +43,21 @@ defmodule Fluid.PPS.PPS2WH101 do
           warehouse_1,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh}
            ]}
         )
 
-      [cp_1, cp_2] = warehouse_1.capped_pools
-      [fp_1, fp_2] = warehouse_1.fixed_pools
+      # [cp_1, cp_2] = warehouse_1.capped_pools
+      # [fp_1, fp_2] = warehouse_1.fixed_pools
 
-      [ct_1, ct_2, ct_3, ct_4] = warehouse_1.capped_tanks
+      [cp_1, cp_2] = Model.get_capped_pools_from_wh(warehouse_1)
+      [fp_1, fp_2] = Model.get_fixed_pools_from_wh(warehouse_1)
+
+      # [ct_1, ct_2, ct_3, ct_4] = warehouse_1.capped_tanks
+      [ct_1, ct_2, ct_3, ct_4] = Model.get_capped_tanks_from_wh(warehouse_1)
 
       # connections inside WH
       {:ok, _} = Fluid.Model.connect(cp_1, ct_1)
@@ -164,10 +168,10 @@ defmodule Fluid.PPS.PPS2WH101 do
           warehouse_2,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4}
            ]}
         )
 
@@ -176,10 +180,10 @@ defmodule Fluid.PPS.PPS2WH101 do
           warehouse_2,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh},
+             %{entity_type: :capped, location_type: :in_wh}
            ]}
         )
 

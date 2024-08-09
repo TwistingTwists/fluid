@@ -1,3 +1,31 @@
+### todo 
+
+[] pool.capacity_type -> pool.pool_type  
+[] /home/abhishek/Downloads/experiments/elixir/rnd/fluid/test/support/factory.ex:455
+    [] changeset validation - make sure that capped tanks are connected to standalone capped tanks
+[] pool -> add_pool_rank -> pool_rank
+
+
+
+[] given case on email
+
+## module 007 
+
+- pro_rated_a - flow 
+- within one warehouse - tagged rank, pool ranks, maybe untagged
+- design - pictures 
+
+
+- when creating a world, additional flag -> for pro-rating calculations (residual or total capacity)
+  - pro-rates -> residual capacity
+  - pro-rates -> total capacity
+- 
+
+Todo 
+
+[x] Fluid.Error.ModelError  - warehouse could not be created error 
+[x] assert in allocation_test --- include the capped tank to which the volume flows
+
 for each pool that is tagged by more than one ct
     for each ct -> find potential_pps
 

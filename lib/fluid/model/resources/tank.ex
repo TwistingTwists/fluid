@@ -1,5 +1,11 @@
 defmodule Fluid.Model.Tank do
+  @moduledoc """
+  Some attributes like :applicable_capacity, :residual_capacity only make sense for capped tank.
+  Maybe write a validation around it.
+  """
   require Logger
+
+  # alias Fluid.Model
 
   use Ash.Resource,
     data_layer: AshPostgres.DataLayer,
@@ -8,14 +14,37 @@ defmodule Fluid.Model.Tank do
   # alias Fluid.Model.World
   # alias Fluid.Model.Warehouse
 
+  @load_fields [:residual_capacity, :world, :warehouse]
+  def load_fields, do: @load_fields
+
   attributes do
     uuid_primary_key :id
 
     attribute :name, :string, allow_nil?: true
     attribute :tag_id, :uuid, allow_nil?: true
 
-    attribute :capacity_type, Fluid.TankCapacityTypes do
+    attribute :entity_type, Fluid.TankCapacityTypes do
       description "uncapped, capped"
+    end
+
+    attribute :total_capacity, :float do
+      description "The capacity of a CT when it is empty."
+    end
+
+    attribute :volume, :float do
+      default 0
+      description "the volume of water `currently` in that CT."
+    end
+
+    # attribute :residual_capacity, :integer do
+    #   description "total_capacity - volume"
+    # end
+
+    attribute :applicable_capacity, :integer do
+      description "The capacity of a CT that is used for allocation calculations. It can equal either the
+      Residual Capacity of the CT or the Total Capacity of the CT. The default setting is for
+      it to equal the Residual Capacity of the CT, but the user can change this setting for
+      each CT as they wish."
     end
 
     attribute :regularity_type, Fluid.TankRegularityTypes do
@@ -29,6 +58,12 @@ defmodule Fluid.Model.Tank do
 
     create_timestamp :created_at
     update_timestamp :updated_at
+  end
+
+  calculations do
+    calculate :residual_capacity, :float, expr(total_capacity - volume) do
+      description "total_capacity - volume"
+    end
   end
 
   relationships do
@@ -48,11 +83,26 @@ defmodule Fluid.Model.Tank do
 
     read :read_by_id do
       get_by [:id]
+      prepare build(load: @load_fields)
     end
+
+    # read :read_by_name do
+    #   argument :warehouse, Model.Warehouse, allow_nil?: false
+    #   # get_by [:name]
+    #   prepare build(load: @load_fields)
+
+    #   # prepare query, opts, context ->
+
+    # end
 
     create :create do
       primary? true
-      change load([:world, :warehouse])
+      change load(@load_fields)
+    end
+
+    update :update_volume do
+      accept [:volume]
+      change load(@load_fields)
     end
 
     # create :create_with_world do
@@ -74,6 +124,7 @@ defmodule Fluid.Model.Tank do
     define_for Fluid.Model.Api
 
     define :create
+    # define :update_volume
     # define :create_with_world, args: [:world]
     # define :create_with_warehouse, args: [:warehouse]
 
@@ -91,4 +142,11 @@ defmodule Fluid.Model.Tank do
   jason do
     merge(%{module: "#{__MODULE__}"})
   end
+
+  ########
+  # utils
+  ########
+
+  def is_capped?(%{entity_type: entity_type}), do: entity_type == :capped
+  def is_uncapped?(%{entity_type: entity_type}), do: entity_type == :uncapped
 end

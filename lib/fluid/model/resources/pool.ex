@@ -5,13 +5,16 @@ defmodule Fluid.Model.Pool do
     data_layer: AshPostgres.DataLayer,
     extensions: [AshJason.Extension]
 
+  @load_fields [:warehouse]
+  def load_fields, do: @load_fields
+
   attributes do
     uuid_primary_key(:id)
 
-    attribute(:name, :string, allow_nil?: true)
-    attribute(:tag_id, :uuid, allow_nil?: true)
+    attribute :name, :string, allow_nil?: true
+    attribute :tag_id, :uuid, allow_nil?: true
 
-    attribute :capacity_type, Fluid.PoolTypes do
+    attribute :entity_type, Fluid.PoolTypes do
       description("fixed, uncapped, or capped pools can exist")
     end
 
@@ -19,31 +22,71 @@ defmodule Fluid.Model.Pool do
       description("Whether it is standalone or in warehouse")
     end
 
-    create_timestamp(:created_at)
-    update_timestamp(:updated_at)
+    attribute :volume, :float do
+      default 0
+      # constraints min: 0
+      description "the volume of water `currently` in that pool."
+    end
+
+    attribute :total_capacity, :float do
+      description "The TOTAL capacity of a pool when it is empty state."
+    end
+
+    attribute :pool_rank, :integer do
+      default 1
+
+      description """
+      pool_rank for processing during tag_evaluation / allocation.
+      Pool ranks maybe internally denoted with ascii value of letters.
+
+      like, ?a with 65
+      """
+    end
+
+    create_timestamp :created_at
+    update_timestamp :updated_at
   end
 
   relationships do
     # toask cannot belong to both at the same time?
     belongs_to(:warehouse, Fluid.Model.Warehouse)
     # toask can belong_to world directly - iff pool is standalone?
-    belongs_to(:world, Fluid.Model.World)
+    belongs_to :world, Fluid.Model.World do
+      attribute_writable? true
+    end
   end
 
   actions do
     defaults([:update])
 
     read :read_all do
-      primary?(true)
+      primary? true
     end
 
     read :read_by_id do
-      get_by([:id])
+      get_by [:id]
+      prepare build(load: @load_fields)
+    end
+
+    read :read_by_name do
+      get_by [:name]
+      prepare build(load: @load_fields)
     end
 
     create :create do
-      change(load([:world, :warehouse]))
+      change load(@load_fields)
+      change(Fluid.Model.Changes.PoolValidations)
     end
+
+    update :update_rank do
+      accept [:pool_rank]
+      change load(@load_fields)
+    end
+
+    # update :update_volume do
+    #   accept [:volume]
+    #   change load([:warehouse])
+    # end
 
     # create :create_with_world do
     #   argument :world, World, allow_nil?: true
@@ -64,11 +107,13 @@ defmodule Fluid.Model.Pool do
     define_for(Fluid.Model.Api)
 
     define(:create)
+    define :update_rank
     # define :create_with_world, args: [:world]
     # define :create_with_warehouse, args: [:warehouse]
 
     define(:read_all)
     define(:read_by_id, args: [:id])
+    define(:read_by_name, args: [:name])
 
     define(:update)
   end
@@ -81,4 +126,6 @@ defmodule Fluid.Model.Pool do
   jason do
     merge(%{module: "#{__MODULE__}"})
   end
+
+  ### normal module ####
 end

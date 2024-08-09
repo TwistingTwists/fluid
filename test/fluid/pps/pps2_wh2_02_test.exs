@@ -57,13 +57,7 @@ defmodule Fluid.Pps.Pps2Wh202Test do
   alias Fluid.Model
   alias Fluid.Test.Factory
 
-  # describe "pps = 1 , wh = 2 , pps_type = det" do
-  # end
-
-  # describe "pps = 1 , wh = 2 , pps_type = indet" do
-  # end
-
-  describe "pps = 1 , wh = 2 , pps_type = determinate, " do
+  describe "pps = 2 , wh = 2 , pps_type = determinate, " do
     setup do
       ###### setup warehouses for circularity  ######
       warehouses = Factory.setup_warehouses_for_circularity(:mix_det_indet)
@@ -79,10 +73,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_1,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4}
            ]}
         )
 
@@ -91,10 +85,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_1,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4}
            ]}
         )
 
@@ -105,10 +99,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_6,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh},
-             %{capacity_type: :fixed, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4},
+             %{entity_type: :fixed, location_type: :in_wh, volume: 4}
            ]}
         )
 
@@ -117,10 +111,10 @@ defmodule Fluid.Pps.Pps2Wh202Test do
           warehouse_6,
           {:params,
            [
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh},
-             %{capacity_type: :capped, location_type: :in_wh}
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4},
+             %{entity_type: :capped, location_type: :in_wh, total_capacity: 4}
            ]}
         )
 
@@ -241,7 +235,7 @@ defmodule Fluid.Pps.Pps2Wh202Test do
 
       assert [_pps_1, _pps_2] = det_pps_list
 
-      # # [cp_1, cp_10, fp_11] form a pps (either pps_1 or pps_2)
+      # [cp_1, cp_10, fp_11] form a pps (either pps_1 or pps_2)
       assert forms_pps_either?([cp_1, cp_10, fp_11], det_pps_list)
 
       # [cp_2, fp_2, fp_12, cp_13] form a pps (either pps_1 or pps_2)

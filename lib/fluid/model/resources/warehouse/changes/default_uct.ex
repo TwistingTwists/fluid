@@ -32,7 +32,7 @@ defmodule Fluid.Model.Warehouse.Changes.AddDefaultUCT do
     {:ok, tank} =
       Tank.create(%{
         location_type: :in_wh,
-        capacity_type: :uncapped
+        entity_type: :uncapped
       })
 
     Ash.Changeset.set_argument(changeset, tank_rel_atom, [tank])
@@ -60,7 +60,7 @@ defmodule Fluid.Model.Warehouse.Changes.AddDefaultUCT do
     # if given tank_args does not have any uct -> add one
     if Enum.any?(tank_args, fn
          # checking for uct
-         %Tank{location_type: :in_wh, capacity_type: :uncapped} = _tank -> true
+         %Tank{location_type: :in_wh, entity_type: :uncapped} = _tank -> true
          _ -> false
        end) do
       changeset
@@ -69,7 +69,7 @@ defmodule Fluid.Model.Warehouse.Changes.AddDefaultUCT do
       {:ok, tank} =
         Tank.create(%{
           location_type: :in_wh,
-          capacity_type: :uncapped
+          entity_type: :uncapped
         })
 
       # add existing tanks from the data

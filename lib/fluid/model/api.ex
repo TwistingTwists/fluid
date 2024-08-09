@@ -7,6 +7,8 @@ defmodule Fluid.Model.Api do
     resource(Fluid.Model.Warehouse)
     resource(Fluid.Model.Pool)
     resource(Fluid.Model.Tag)
+    resource(Fluid.Model.Tag.TagRank)
+    resource(Fluid.Model.Allocation)
     resource(Fluid.Model.Circularity)
     resource(Fluid.Model.PPS)
   end

@@ -76,3 +76,20 @@ alias Fluid.Model.World.Calculations.SUCT
 # def load(_, opts, _) do
 #   [opts[:field]]
 # end
+
+# Model.Tag.read_all!() |> Enum.map(&Model.Tag.display/1)    |> green()
+
+# Enum.reduce(all_tags, %{} , fn tag, acc ->
+#     tag.source["id"] |> yellow("")
+#     (tag.source["id"] == pool.id) |> green("")
+#     end )
+
+#     alias Fluid.Model
+#     import Helpers.ColorIO
+#     warehouses =Model.Warehouse.read_all!()
+
+#     [wh1, wh2] = warehouses
+#     [pool | rest_pools] = wh1.pools
+#     [pool | rest_pools] = wh2.pools
+
+#     outbound_tags_with_rank = outbound_tags        |> Enum.group_by(fn %{tag: %{primary: primary_tag_rank}} -> primary_tag_rank end)

@@ -49,7 +49,7 @@ defmodule Fluid.Model.Warehouse.Calculations.PoolorTankType do
   defp do_filter(tanks_or_pools, tank_or_pool_type) when is_atom(tank_or_pool_type) do
     tanks_or_pools
     |> Enum.filter(fn
-      %{capacity_type: ^tank_or_pool_type} -> true
+      %{entity_type: ^tank_or_pool_type} -> true
       _ -> false
     end)
   end

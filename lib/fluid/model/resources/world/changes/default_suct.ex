@@ -7,7 +7,7 @@ defmodule Fluid.Model.World.Changes.AddDefaultSUCT do
     {:ok, tank} =
       Tank.create(%{
         location_type: :standalone,
-        capacity_type: :uncapped
+        entity_type: :uncapped
       })
 
     Ash.Changeset.set_argument(changeset, :tanks, [tank])
